@@ -61,7 +61,7 @@ ignore: null
 theme: vivia
 deploy:
   type: git
-  repo: https://github.com/imconfident11/eleven.github.io.git
+  repo: https://github.com/imconfident11/imconfident11.github.io.git
   branch: main
 search:
   path: search.xml
