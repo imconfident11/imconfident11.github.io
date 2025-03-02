@@ -20,12 +20,12 @@
   <link rel="preload" href="/css/fonts/Roboto-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
   <link rel="preload" href="/css/fonts/Roboto-Bold.ttf" as="font" type="font/ttf" crossorigin="anonymous">
 
-  <meta name="description" content="攻防世界基础android 将apk文件放入010editor中，发现文件头是50 4B 03 04是zip文件,修改后缀,解压 在assets文件夹下发现time_2.zip,放入010editor，文件头是FF D8 FF,jpg文件,修改后缀,打开后是一张图片 flag{08067-wlecome}    android 2.0 将apk文件放入jadx中,源代码里面找到MainActivi">
+  <meta name="description" content="攻防世界基础android用misc方法解题了  将apk文件放入010editor中，发现文件头是50 4B 03 04是zip文件,修改后缀,解压 在assets文件夹下发现time_2.zip,放入010editor，文件头是FF D8 FF,jpg文件,修改后缀,打开后是一张图片 flag{08067-wlecome}    android 2.0 将apk文件放入jadx中,源代码里面找">
 <meta property="og:type" content="article">
 <meta property="og:title" content="安卓逆向 刷题笔记">
 <meta property="og:url" content="http://example.com/2025/02/25/3/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="攻防世界基础android 将apk文件放入010editor中，发现文件头是50 4B 03 04是zip文件,修改后缀,解压 在assets文件夹下发现time_2.zip,放入010editor，文件头是FF D8 FF,jpg文件,修改后缀,打开后是一张图片 flag{08067-wlecome}    android 2.0 将apk文件放入jadx中,源代码里面找到MainActivi">
+<meta property="og:description" content="攻防世界基础android用misc方法解题了  将apk文件放入010editor中，发现文件头是50 4B 03 04是zip文件,修改后缀,解压 在assets文件夹下发现time_2.zip,放入010editor，文件头是FF D8 FF,jpg文件,修改后缀,打开后是一张图片 flag{08067-wlecome}    android 2.0 将apk文件放入jadx中,源代码里面找">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/3/1.png">
 <meta property="og:image" content="http://example.com/images/3/2.jpg">
@@ -35,8 +35,10 @@
 <meta property="og:image" content="http://example.com/images/3/7.png">
 <meta property="og:image" content="http://example.com/images/3/8.png">
 <meta property="og:image" content="http://example.com/images/3/9.png">
+<meta property="og:image" content="http://example.com/images/3/10.png">
+<meta property="og:image" content="http://example.com/images/3/11.png">
 <meta property="article:published_time" content="2025-02-24T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-02-27T11:39:00.468Z">
+<meta property="article:modified_time" content="2025-03-02T06:46:51.296Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta name="twitter:card" content="summary">
@@ -219,7 +221,7 @@
   
           </div>
           <div class="wordcount need-seperator meta-info">
-            574 词 
+            817 词 
           </div>
         </div>
         
@@ -228,7 +230,8 @@
       </header>
       <div class="e-content article-entry" itemprop="articleBody">
         
-          <h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><ol>
+          <h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
+<ol>
 <li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/images/3/1.png" alt="解压"></li>
 <li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/images/3/2.jpg" alt="flag"><blockquote>
 <p>flag{08067-wlecome}</p>
@@ -245,7 +248,7 @@
 <p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
 <p>点进<code>JNI</code><br><img src="/images/3/4.png" alt="mainactivity2"></p>
 <p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
-<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/images/3/6.png" alt=".so"><br>3. </p>
+<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
 <ul>
 <li>分析<code>First</code>函数<br>   <img src="/images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
 </ul>
@@ -265,6 +268,26 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">decode</span>():</span><br><span class="line">  s1=<span class="string">&quot;fgorl&quot;</span></span><br><span class="line">  s2=<span class="string">&quot;l&#123;sra&quot;</span></span><br><span class="line">  s3=<span class="string">&quot;asoy&#125;&quot;</span></span><br><span class="line">  flag=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">5</span>):</span><br><span class="line">     flag+=s1[i]+s2[i]+s3[i]</span><br><span class="line">  <span class="built_in">print</span>(flag)</span><br><span class="line">decode()</span><br><span class="line"><span class="comment">#flag&#123;sosorryla&#125;</span></span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>flag{sosorryla}</p>
+</blockquote>
+<h3 id="apk逆向"><a href="#apk逆向" class="headerlink" title="apk逆向"></a>apk逆向</h3><ol>
+<li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
+<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
+<li>exp</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>bc72f242a6af3857a</p>
+</blockquote>
+<h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
+<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/images/3/11.png" alt="buildconfig"></li>
+<li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
+</ol>
+<p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">versionName=<span class="string">&quot;X&lt;cP[?PHNB&lt;P?aj&quot;</span></span><br><span class="line">versionCode=<span class="number">15</span></span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(versionName)):</span><br><span class="line">   flag+=<span class="built_in">chr</span>(<span class="built_in">ord</span>(versionName[i])^versionCode)</span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#W3l_T0_GAM3_0ne</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>W3l_T0_GAM3_0ne</p>
 </blockquote>
 
         

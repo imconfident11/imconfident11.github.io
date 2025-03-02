@@ -1,30 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Hgame CTF 2025题目复现</title>
-    <url>/2025/02/23/2/</url>
-    <content><![CDATA[<h1 id="REverse"><a href="#REverse" class="headerlink" title="REverse"></a>REverse</h1><h2 id="Turtle"><a href="#Turtle" class="headerlink" title="Turtle"></a>Turtle</h2><ol>
-<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/images/2/1.png" alt="Exeinfo PE"><blockquote>
-<p>ps：有的魔改后的upx壳可以在010editor中改（把add0-&gt;upx0,add1-&gt;upx1……,本题为只读文件改不了） </p>
-</blockquote>
-</li>
-<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/images/2/2.png" alt="xdbg64"></li>
-<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/images/2/3.png" alt="Scylla Dump"><br><img src="/images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/images/2/5.png" alt="IAT Autosearch"><br><img src="/images/2/6.png" alt="Get Imports"></li>
-<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/images/2/7.png" alt="main"></li>
-<li>点开函数后可以看出sub_401550是rc4 init，而sub_40163E（标准）和sub_40175A（魔改）是两个rc4</li>
-<li>解出flag</li>
-</ol>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Cipher.ARC4 <span class="keyword">import</span> *  </span><br><span class="line">enc_key = <span class="built_in">bytes</span>([</span><br><span class="line"> <span class="number">0xCD</span>,</span><br><span class="line"> <span class="number">0x8F</span>,</span><br><span class="line"> <span class="number">0x25</span>,</span><br><span class="line"> <span class="number">0x3D</span>,</span><br><span class="line"> <span class="number">0xE1</span>,</span><br><span class="line"> ])</span><br><span class="line"> </span><br><span class="line">enc_key += <span class="string">b&#x27;QJ&#x27;</span></span><br><span class="line"> </span><br><span class="line">cipher = new(<span class="string">b&#x27;yekyek&#x27;</span>)</span><br><span class="line">dec_key = cipher.decrypt(enc_key)</span><br><span class="line"><span class="built_in">print</span>(dec_key)</span><br><span class="line"><span class="comment">#ecg4ab6</span></span><br><span class="line"> </span><br><span class="line">enc_flag = [<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">40</span>)]</span><br><span class="line">v5 = enc_flag</span><br><span class="line">v5[<span class="number">0</span>] = -<span class="number">8</span></span><br><span class="line">v5[<span class="number">1</span>] = -<span class="number">43</span></span><br><span class="line">v5[<span class="number">2</span>] = <span class="number">98</span></span><br><span class="line">v5[<span class="number">3</span>] = -<span class="number">49</span></span><br><span class="line">v5[<span class="number">4</span>] = <span class="number">67</span></span><br><span class="line">v5[<span class="number">5</span>] = -<span class="number">70</span></span><br><span class="line">v5[<span class="number">6</span>] = -<span class="number">62</span></span><br><span class="line">v5[<span class="number">7</span>] = <span class="number">35</span></span><br><span class="line">v5[<span class="number">8</span>] = <span class="number">21</span></span><br><span class="line">v5[<span class="number">9</span>] = <span class="number">74</span></span><br><span class="line">v5[<span class="number">10</span>] = <span class="number">81</span></span><br><span class="line">v5[<span class="number">11</span>] = <span class="number">16</span></span><br><span class="line">v5[<span class="number">12</span>] = <span class="number">39</span></span><br><span class="line">v5[<span class="number">13</span>] = <span class="number">16</span></span><br><span class="line">v5[<span class="number">14</span>] = -<span class="number">79</span></span><br><span class="line">v5[<span class="number">15</span>] = -<span class="number">49</span></span><br><span class="line">v5[<span class="number">16</span>] = -<span class="number">60</span></span><br><span class="line">v5[<span class="number">17</span>] = <span class="number">9</span></span><br><span class="line">v5[<span class="number">18</span>] = -<span class="number">2</span></span><br><span class="line">v5[<span class="number">19</span>] = -<span class="number">29</span></span><br><span class="line">v5[<span class="number">20</span>] = -<span class="number">97</span></span><br><span class="line">v5[<span class="number">21</span>] = <span class="number">73</span></span><br><span class="line">v5[<span class="number">22</span>] = -<span class="number">121</span></span><br><span class="line">v5[<span class="number">23</span>] = -<span class="number">22</span></span><br><span class="line">v5[<span class="number">24</span>] = <span class="number">89</span></span><br><span class="line">v5[<span class="number">25</span>] = -<span class="number">62</span></span><br><span class="line">v5[<span class="number">26</span>] = <span class="number">7</span></span><br><span class="line">v5[<span class="number">27</span>] = <span class="number">59</span></span><br><span class="line">v5[<span class="number">28</span>] = -<span class="number">87</span></span><br><span class="line">v5[<span class="number">29</span>] = <span class="number">17</span></span><br><span class="line">v5[<span class="number">30</span>] = -<span class="number">63</span></span><br><span class="line">v5[<span class="number">31</span>] = -<span class="number">68</span></span><br><span class="line">v5[<span class="number">32</span>] = -<span class="number">3</span></span><br><span class="line">v5[<span class="number">33</span>] = <span class="number">75</span></span><br><span class="line">v5[<span class="number">34</span>] = <span class="number">87</span></span><br><span class="line">v5[<span class="number">35</span>] = -<span class="number">60</span></span><br><span class="line">v5[<span class="number">36</span>] = <span class="number">126</span></span><br><span class="line">v5[<span class="number">37</span>] = -<span class="number">48</span></span><br><span class="line">v5[<span class="number">38</span>] = -<span class="number">86</span></span><br><span class="line">v5[<span class="number">39</span>] = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">add_bytes = new(<span class="string">b&#x27;ecg4ab6&#x27;</span>).encrypt(<span class="string">b&#x27;\x00&#x27;</span> * <span class="number">40</span>)</span><br><span class="line"> </span><br><span class="line">flag = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">40</span>):</span><br><span class="line">    flag += <span class="built_in">chr</span>((enc_flag[i] + add_bytes[i]) &amp; <span class="number">0xff</span>) </span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"></span><br><span class="line"><span class="comment">#output:</span></span><br><span class="line"><span class="comment">#b&#x27;ecg4ab6&#x27;</span></span><br><span class="line"><span class="comment">#hgame&#123;Y0u&#x27;r3_re4l1y_g3t_0Ut_of_th3_upX!&#125;</span></span><br></pre></td></tr></table></figure>
-<p>flag: hgame{Y0u’r3_re4l1y_g3t_0Ut_of_th3_upX!}</p>
-]]></content>
-      <categories>
-        <category>-CTF</category>
-      </categories>
-      <tags>
-        <tag>Reverse</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>明文攻击(特别的)</title>
     <url>/2025/02/20/1/</url>
     <content><![CDATA[<h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>没有通常会给的已知文件，只给了一个压缩包，里面是被加密的一张png图片</p>
@@ -62,22 +38,10 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
-    <url>/2025/02/26/4/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
-    <title>Hello World</title>
-    <url>/2025/02/17/hello-world/</url>
-    <content><![CDATA[<p><em>Welcome to my blog.</em><br><em>I’m  <strong>Eleven</strong>.</em><br><em>So nice to meet you.</em></p>
-<hr>
-<h3 id="“And-it’s-fine-to-fake-it-‘til-you-make-it"><a href="#“And-it’s-fine-to-fake-it-‘til-you-make-it" class="headerlink" title="“And it’s fine to fake it ‘til you make it"></a>“<em>And it’s fine to fake it ‘til you make it</em></h3><h3 id="‘Til-you-do-’til-it’s-true-“"><a href="#‘Til-you-do-’til-it’s-true-“" class="headerlink" title="‘Til you do,’til it’s true.“"></a>‘<em>Til you do,’til it’s true.</em>“</h3><p><em><strong>It’s better to burn out than to fade away.</strong></em></p>
-]]></content>
-  </entry>
-  <entry>
     <title>安卓逆向 刷题笔记</title>
     <url>/2025/02/25/3/</url>
-    <content><![CDATA[<h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><ol>
+    <content><![CDATA[<h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
+<ol>
 <li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/images/3/1.png" alt="解压"></li>
 <li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/images/3/2.jpg" alt="flag"><blockquote>
 <p>flag{08067-wlecome}</p>
@@ -94,7 +58,7 @@
 <p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
 <p>点进<code>JNI</code><br><img src="/images/3/4.png" alt="mainactivity2"></p>
 <p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
-<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/images/3/6.png" alt=".so"><br>3. </p>
+<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
 <ul>
 <li>分析<code>First</code>函数<br>   <img src="/images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
 </ul>
@@ -115,6 +79,63 @@
 <blockquote>
 <p>flag{sosorryla}</p>
 </blockquote>
+<h3 id="apk逆向"><a href="#apk逆向" class="headerlink" title="apk逆向"></a>apk逆向</h3><ol>
+<li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
+<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
+<li>exp</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>bc72f242a6af3857a</p>
+</blockquote>
+<h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
+<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/images/3/11.png" alt="buildconfig"></li>
+<li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
+</ol>
+<p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">versionName=<span class="string">&quot;X&lt;cP[?PHNB&lt;P?aj&quot;</span></span><br><span class="line">versionCode=<span class="number">15</span></span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(versionName)):</span><br><span class="line">   flag+=<span class="built_in">chr</span>(<span class="built_in">ord</span>(versionName[i])^versionCode)</span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#W3l_T0_GAM3_0ne</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>W3l_T0_GAM3_0ne</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>-CTF</category>
+      </categories>
+      <tags>
+        <tag>Reverse</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hello World</title>
+    <url>/2025/02/17/hello-world/</url>
+    <content><![CDATA[<p><em>Welcome to my blog.</em><br><em>I’m  <strong>Eleven</strong>.</em><br><em>So nice to meet you.</em></p>
+<hr>
+<h3 id="“And-it’s-fine-to-fake-it-‘til-you-make-it"><a href="#“And-it’s-fine-to-fake-it-‘til-you-make-it" class="headerlink" title="“And it’s fine to fake it ‘til you make it"></a>“<em>And it’s fine to fake it ‘til you make it</em></h3><h3 id="‘Til-you-do-’til-it’s-true-“"><a href="#‘Til-you-do-’til-it’s-true-“" class="headerlink" title="‘Til you do,’til it’s true.“"></a>‘<em>Til you do,’til it’s true.</em>“</h3><p><em><strong>It’s better to burn out than to fade away.</strong></em></p>
+]]></content>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/2025/02/26/4/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>Hgame CTF 2025题目复现</title>
+    <url>/2025/02/23/2/</url>
+    <content><![CDATA[<h1 id="REverse"><a href="#REverse" class="headerlink" title="REverse"></a>REverse</h1><h2 id="Turtle"><a href="#Turtle" class="headerlink" title="Turtle"></a>Turtle</h2><ol>
+<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/images/2/1.png" alt="Exeinfo PE"><blockquote>
+<p>ps：有的魔改后的upx壳可以在010editor中改（把add0-&gt;upx0,add1-&gt;upx1……,本题为只读文件改不了） </p>
+</blockquote>
+</li>
+<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/images/2/2.png" alt="xdbg64"></li>
+<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/images/2/3.png" alt="Scylla Dump"><br><img src="/images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/images/2/5.png" alt="IAT Autosearch"><br><img src="/images/2/6.png" alt="Get Imports"></li>
+<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/images/2/7.png" alt="main"></li>
+<li>点开函数后可以看出sub_401550是rc4 init，而sub_40163E（标准）和sub_40175A（魔改）是两个rc4</li>
+<li>解出flag</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> Crypto.Cipher.ARC4 <span class="keyword">import</span> *  </span><br><span class="line">enc_key = <span class="built_in">bytes</span>([</span><br><span class="line"> <span class="number">0xCD</span>,</span><br><span class="line"> <span class="number">0x8F</span>,</span><br><span class="line"> <span class="number">0x25</span>,</span><br><span class="line"> <span class="number">0x3D</span>,</span><br><span class="line"> <span class="number">0xE1</span>,</span><br><span class="line"> ])</span><br><span class="line"> </span><br><span class="line">enc_key += <span class="string">b&#x27;QJ&#x27;</span></span><br><span class="line"> </span><br><span class="line">cipher = new(<span class="string">b&#x27;yekyek&#x27;</span>)</span><br><span class="line">dec_key = cipher.decrypt(enc_key)</span><br><span class="line"><span class="built_in">print</span>(dec_key)</span><br><span class="line"><span class="comment">#ecg4ab6</span></span><br><span class="line"> </span><br><span class="line">enc_flag = [<span class="number">0</span> <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">40</span>)]</span><br><span class="line">v5 = enc_flag</span><br><span class="line">v5[<span class="number">0</span>] = -<span class="number">8</span></span><br><span class="line">v5[<span class="number">1</span>] = -<span class="number">43</span></span><br><span class="line">v5[<span class="number">2</span>] = <span class="number">98</span></span><br><span class="line">v5[<span class="number">3</span>] = -<span class="number">49</span></span><br><span class="line">v5[<span class="number">4</span>] = <span class="number">67</span></span><br><span class="line">v5[<span class="number">5</span>] = -<span class="number">70</span></span><br><span class="line">v5[<span class="number">6</span>] = -<span class="number">62</span></span><br><span class="line">v5[<span class="number">7</span>] = <span class="number">35</span></span><br><span class="line">v5[<span class="number">8</span>] = <span class="number">21</span></span><br><span class="line">v5[<span class="number">9</span>] = <span class="number">74</span></span><br><span class="line">v5[<span class="number">10</span>] = <span class="number">81</span></span><br><span class="line">v5[<span class="number">11</span>] = <span class="number">16</span></span><br><span class="line">v5[<span class="number">12</span>] = <span class="number">39</span></span><br><span class="line">v5[<span class="number">13</span>] = <span class="number">16</span></span><br><span class="line">v5[<span class="number">14</span>] = -<span class="number">79</span></span><br><span class="line">v5[<span class="number">15</span>] = -<span class="number">49</span></span><br><span class="line">v5[<span class="number">16</span>] = -<span class="number">60</span></span><br><span class="line">v5[<span class="number">17</span>] = <span class="number">9</span></span><br><span class="line">v5[<span class="number">18</span>] = -<span class="number">2</span></span><br><span class="line">v5[<span class="number">19</span>] = -<span class="number">29</span></span><br><span class="line">v5[<span class="number">20</span>] = -<span class="number">97</span></span><br><span class="line">v5[<span class="number">21</span>] = <span class="number">73</span></span><br><span class="line">v5[<span class="number">22</span>] = -<span class="number">121</span></span><br><span class="line">v5[<span class="number">23</span>] = -<span class="number">22</span></span><br><span class="line">v5[<span class="number">24</span>] = <span class="number">89</span></span><br><span class="line">v5[<span class="number">25</span>] = -<span class="number">62</span></span><br><span class="line">v5[<span class="number">26</span>] = <span class="number">7</span></span><br><span class="line">v5[<span class="number">27</span>] = <span class="number">59</span></span><br><span class="line">v5[<span class="number">28</span>] = -<span class="number">87</span></span><br><span class="line">v5[<span class="number">29</span>] = <span class="number">17</span></span><br><span class="line">v5[<span class="number">30</span>] = -<span class="number">63</span></span><br><span class="line">v5[<span class="number">31</span>] = -<span class="number">68</span></span><br><span class="line">v5[<span class="number">32</span>] = -<span class="number">3</span></span><br><span class="line">v5[<span class="number">33</span>] = <span class="number">75</span></span><br><span class="line">v5[<span class="number">34</span>] = <span class="number">87</span></span><br><span class="line">v5[<span class="number">35</span>] = -<span class="number">60</span></span><br><span class="line">v5[<span class="number">36</span>] = <span class="number">126</span></span><br><span class="line">v5[<span class="number">37</span>] = -<span class="number">48</span></span><br><span class="line">v5[<span class="number">38</span>] = -<span class="number">86</span></span><br><span class="line">v5[<span class="number">39</span>] = <span class="number">10</span></span><br><span class="line"></span><br><span class="line">add_bytes = new(<span class="string">b&#x27;ecg4ab6&#x27;</span>).encrypt(<span class="string">b&#x27;\x00&#x27;</span> * <span class="number">40</span>)</span><br><span class="line"> </span><br><span class="line">flag = <span class="string">&#x27;&#x27;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">40</span>):</span><br><span class="line">    flag += <span class="built_in">chr</span>((enc_flag[i] + add_bytes[i]) &amp; <span class="number">0xff</span>) </span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"></span><br><span class="line"><span class="comment">#output:</span></span><br><span class="line"><span class="comment">#b&#x27;ecg4ab6&#x27;</span></span><br><span class="line"><span class="comment">#hgame&#123;Y0u&#x27;r3_re4l1y_g3t_0Ut_of_th3_upX!&#125;</span></span><br></pre></td></tr></table></figure>
+<p>flag: hgame{Y0u’r3_re4l1y_g3t_0Ut_of_th3_upX!}</p>
 ]]></content>
       <categories>
         <category>-CTF</category>
