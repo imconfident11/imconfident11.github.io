@@ -1,76 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>安卓逆向 刷题笔记</title>
-    <url>/2025/02/25/3/</url>
-    <content><![CDATA[<h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
-<ol>
-<li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/images/3/1.png" alt="解压"></li>
-<li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/images/3/2.jpg" alt="flag"><blockquote>
-<p>flag{08067-wlecome}</p>
-</blockquote>
-</li>
-</ol>
-<h3 id="android-2-0"><a href="#android-2-0" class="headerlink" title="android 2.0"></a>android 2.0</h3><ol>
-<li>将apk文件放入<code>jadx</code>中,源代码里面找到<code>MainActiviy</code>,找到关键部分函数<br><img src="/images/3/3.png" alt="mainactivity"></li>
-</ol>
-<ul>
-<li>这段代码的功能：</li>
-</ul>
-<p>这段代码实现了一个简单的 Android 应用,它有一个按钮、一个文本框和一个显示结果的文本。<br>用户在文本框(EditText)里输入一个字符串(可能是密码),<br>然后点击按钮时,代码会调用一个名为 JNI.getResult(str) 的本地方法来判断密码是否正确</p>
-<p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
-<p>点进<code>JNI</code><br><img src="/images/3/4.png" alt="mainactivity2"></p>
-<p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
-<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
-<ul>
-<li>分析<code>First</code>函数<br>   <img src="/images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
-</ul>
-   <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">First</span>():</span><br><span class="line">     enc=<span class="string">&quot;LN^dl&quot;</span></span><br><span class="line">     dec=<span class="string">&quot;&quot;</span></span><br><span class="line">     <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">4</span>):</span><br><span class="line">         dec+=(<span class="built_in">chr</span>(<span class="built_in">int</span>((<span class="built_in">ord</span>(enc[i])^<span class="number">0x80</span>)/<span class="number">2</span>)))</span><br><span class="line">     dec+=<span class="string">&#x27;l&#x27;</span></span><br><span class="line">     <span class="built_in">print</span>(dec)</span><br><span class="line">First()</span><br><span class="line"> <span class="comment">#fgorl</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>分析<code>Second</code>函数<br>  <img src="/images/3/8.png" alt="second"><br>  直接异或还原</li>
-</ul>
-  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">def second():</span><br><span class="line">  a5=[ord(&#x27; &#x27;),ord(&#x27;5&#x27;),ord(&#x27;-&#x27;),0x16,ord(&#x27;a&#x27;)]</span><br><span class="line">  a1=[ord(&#x27;L&#x27;),ord(&#x27;N&#x27;),ord(&#x27;^&#x27;),ord(&#x27;d&#x27;),ord(&#x27;l&#x27;)]</span><br><span class="line">  s1=&quot;&quot;</span><br><span class="line">  for i in range(0,4):</span><br><span class="line">      x=a5[i]^a1[i]</span><br><span class="line">      s1+=chr(x)</span><br><span class="line">  s1+=&#x27;a&#x27;</span><br><span class="line">  print(s1)</span><br><span class="line">second()</span><br><span class="line">#l&#123;sra</span><br></pre></td></tr></table></figure>
-<ul>
-<li><code>Third</code>同理<br>  <img src="/images/3/9.png" alt="third"><br>  <strong>note</strong>如果v6&#x3D;a5就执行异或操作，所以v6&#x3D;a5</li>
-</ul>
-  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">def</span> <span class="title function_">third</span>():</span><br><span class="line">    a5 = [<span class="built_in">ord</span>(<span class="string">&#x27; &#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;5&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;-&#x27;</span>), <span class="number">0x16</span>, <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)]</span><br><span class="line">    dec = [<span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;F&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;B&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;o&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;&#125;&#x27;</span>)]</span><br><span class="line">    enc = <span class="string">&quot;&quot;</span>  </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">4</span>):</span><br><span class="line">        x = a5[i] ^ dec[i]</span><br><span class="line">        enc += <span class="built_in">chr</span>(x)</span><br><span class="line">    enc += <span class="string">&#x27;&#125;&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(enc)</span><br><span class="line"></span><br><span class="line">third()</span><br><span class="line"><span class="comment">#asoy&#125;</span></span><br></pre></td></tr></table></figure>
-<ul>
-<li>由<code>Init</code>函数还原flag</li>
-<li>Init函数是将输入的长度为15的字符串，每三个为一组，得到三组字符串（即刚刚解出的三组数据）</li>
-</ul>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">decode</span>():</span><br><span class="line">  s1=<span class="string">&quot;fgorl&quot;</span></span><br><span class="line">  s2=<span class="string">&quot;l&#123;sra&quot;</span></span><br><span class="line">  s3=<span class="string">&quot;asoy&#125;&quot;</span></span><br><span class="line">  flag=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">5</span>):</span><br><span class="line">     flag+=s1[i]+s2[i]+s3[i]</span><br><span class="line">  <span class="built_in">print</span>(flag)</span><br><span class="line">decode()</span><br><span class="line"><span class="comment">#flag&#123;sosorryla&#125;</span></span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>flag{sosorryla}</p>
-</blockquote>
-<h3 id="APK逆向"><a href="#APK逆向" class="headerlink" title="APK逆向"></a>APK逆向</h3><ol>
-<li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
-<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
-<li>exp</li>
-</ol>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
-<p>flag为</p>
-<blockquote>
-<p>bc72f242a6af3857a</p>
-</blockquote>
-<h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
-<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/images/3/11.png" alt="buildconfig"></li>
-<li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
-</ol>
-<p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
-<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">versionName=<span class="string">&quot;X&lt;cP[?PHNB&lt;P?aj&quot;</span></span><br><span class="line">versionCode=<span class="number">15</span></span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(versionName)):</span><br><span class="line">   flag+=<span class="built_in">chr</span>(<span class="built_in">ord</span>(versionName[i])^versionCode)</span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#W3l_T0_GAM3_0ne</span></span><br></pre></td></tr></table></figure>
-<p>flag为</p>
-<blockquote>
-<p>W3l_T0_GAM3_0ne</p>
-</blockquote>
-<h3 id="app2"><a href="#app2" class="headerlink" title="app2"></a>app2</h3>]]></content>
-      <categories>
-        <category>-CTF</category>
-      </categories>
-      <tags>
-        <tag>Reverse</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>明文攻击(特别的)</title>
     <url>/2025/02/20/1/</url>
     <content><![CDATA[<h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>没有通常会给的已知文件，只给了一个压缩包，里面是被加密的一张png图片</p>
@@ -108,21 +38,86 @@
       </tags>
   </entry>
   <entry>
-    <title></title>
-    <url>/2025/02/26/4/</url>
-    <content><![CDATA[]]></content>
+    <title>安卓逆向 刷题笔记</title>
+    <url>/2025/02/25/3/</url>
+    <content><![CDATA[<h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
+<ol>
+<li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/../images/3/1.png" alt="解压"></li>
+<li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/../images/3/2.jpg" alt="flag"><blockquote>
+<p>flag{08067-wlecome}</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="android-2-0"><a href="#android-2-0" class="headerlink" title="android 2.0"></a>android 2.0</h3><ol>
+<li>将apk文件放入<code>jadx</code>中,源代码里面找到<code>MainActiviy</code>,找到关键部分函数<br><img src="/..../images/3/3.png" alt="mainactivity"></li>
+</ol>
+<ul>
+<li>这段代码的功能：</li>
+</ul>
+<p>这段代码实现了一个简单的 Android 应用,它有一个按钮、一个文本框和一个显示结果的文本。<br>用户在文本框(EditText)里输入一个字符串(可能是密码),<br>然后点击按钮时,代码会调用一个名为 JNI.getResult(str) 的本地方法来判断密码是否正确</p>
+<p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
+<p>点进<code>JNI</code><br><img src="/../images/3/4.png" alt="mainactivity2"></p>
+<p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
+<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/../images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
+<ul>
+<li>分析<code>First</code>函数<br>   <img src="/../images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
+</ul>
+   <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">First</span>():</span><br><span class="line">     enc=<span class="string">&quot;LN^dl&quot;</span></span><br><span class="line">     dec=<span class="string">&quot;&quot;</span></span><br><span class="line">     <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">4</span>):</span><br><span class="line">         dec+=(<span class="built_in">chr</span>(<span class="built_in">int</span>((<span class="built_in">ord</span>(enc[i])^<span class="number">0x80</span>)/<span class="number">2</span>)))</span><br><span class="line">     dec+=<span class="string">&#x27;l&#x27;</span></span><br><span class="line">     <span class="built_in">print</span>(dec)</span><br><span class="line">First()</span><br><span class="line"> <span class="comment">#fgorl</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>分析<code>Second</code>函数<br>  <img src="/../images/3/8.png" alt="second"><br>  直接异或还原</li>
+</ul>
+  <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">def second():</span><br><span class="line">  a5=[ord(&#x27; &#x27;),ord(&#x27;5&#x27;),ord(&#x27;-&#x27;),0x16,ord(&#x27;a&#x27;)]</span><br><span class="line">  a1=[ord(&#x27;L&#x27;),ord(&#x27;N&#x27;),ord(&#x27;^&#x27;),ord(&#x27;d&#x27;),ord(&#x27;l&#x27;)]</span><br><span class="line">  s1=&quot;&quot;</span><br><span class="line">  for i in range(0,4):</span><br><span class="line">      x=a5[i]^a1[i]</span><br><span class="line">      s1+=chr(x)</span><br><span class="line">  s1+=&#x27;a&#x27;</span><br><span class="line">  print(s1)</span><br><span class="line">second()</span><br><span class="line">#l&#123;sra</span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>Third</code>同理<br>  <img src="/../images/3/9.png" alt="third"><br>  <strong>note</strong>如果v6&#x3D;a5就执行异或操作，所以v6&#x3D;a5</li>
+</ul>
+  <figure class="highlight python"><table><tr><td class="code"><pre><span class="line"> <span class="keyword">def</span> <span class="title function_">third</span>():</span><br><span class="line">    a5 = [<span class="built_in">ord</span>(<span class="string">&#x27; &#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;5&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;-&#x27;</span>), <span class="number">0x16</span>, <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)]</span><br><span class="line">    dec = [<span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;F&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;B&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;o&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;&#125;&#x27;</span>)]</span><br><span class="line">    enc = <span class="string">&quot;&quot;</span>  </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">4</span>):</span><br><span class="line">        x = a5[i] ^ dec[i]</span><br><span class="line">        enc += <span class="built_in">chr</span>(x)</span><br><span class="line">    enc += <span class="string">&#x27;&#125;&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(enc)</span><br><span class="line"></span><br><span class="line">third()</span><br><span class="line"><span class="comment">#asoy&#125;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>由<code>Init</code>函数还原flag</li>
+<li>Init函数是将输入的长度为15的字符串，每三个为一组，得到三组字符串（即刚刚解出的三组数据）</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">decode</span>():</span><br><span class="line">  s1=<span class="string">&quot;fgorl&quot;</span></span><br><span class="line">  s2=<span class="string">&quot;l&#123;sra&quot;</span></span><br><span class="line">  s3=<span class="string">&quot;asoy&#125;&quot;</span></span><br><span class="line">  flag=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">5</span>):</span><br><span class="line">     flag+=s1[i]+s2[i]+s3[i]</span><br><span class="line">  <span class="built_in">print</span>(flag)</span><br><span class="line">decode()</span><br><span class="line"><span class="comment">#flag&#123;sosorryla&#125;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>flag{sosorryla}</p>
+</blockquote>
+<h3 id="APK逆向"><a href="#APK逆向" class="headerlink" title="APK逆向"></a>APK逆向</h3><ol>
+<li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
+<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/../images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
+<li>exp</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>bc72f242a6af3857a</p>
+</blockquote>
+<h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
+<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/../images/3/11.png" alt="buildconfig"></li>
+<li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
+</ol>
+<p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">versionName=<span class="string">&quot;X&lt;cP[?PHNB&lt;P?aj&quot;</span></span><br><span class="line">versionCode=<span class="number">15</span></span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(versionName)):</span><br><span class="line">   flag+=<span class="built_in">chr</span>(<span class="built_in">ord</span>(versionName[i])^versionCode)</span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#W3l_T0_GAM3_0ne</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>W3l_T0_GAM3_0ne</p>
+</blockquote>
+<h3 id="app2"><a href="#app2" class="headerlink" title="app2"></a>app2</h3>]]></content>
+      <categories>
+        <category>-CTF</category>
+      </categories>
+      <tags>
+        <tag>Reverse</tag>
+      </tags>
   </entry>
   <entry>
     <title>Hgame CTF 2025题目复现</title>
     <url>/2025/02/23/2/</url>
     <content><![CDATA[<h1 id="REverse"><a href="#REverse" class="headerlink" title="REverse"></a>REverse</h1><h2 id="Turtle"><a href="#Turtle" class="headerlink" title="Turtle"></a>Turtle</h2><ol>
-<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/images/2/1.png" alt="Exeinfo PE"><blockquote>
+<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/../images/2/1.png" alt="Exeinfo PE"><blockquote>
 <p>ps：有的魔改后的upx壳可以在010editor中改（把add0-&gt;upx0,add1-&gt;upx1……,本题为只读文件改不了） </p>
 </blockquote>
 </li>
-<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/images/2/2.png" alt="xdbg64"></li>
-<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/images/2/3.png" alt="Scylla Dump"><br><img src="/images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/images/2/5.png" alt="IAT Autosearch"><br><img src="/images/2/6.png" alt="Get Imports"></li>
-<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/images/2/7.png" alt="main"></li>
+<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/../images/2/2.png" alt="xdbg64"></li>
+<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/../images/2/3.png" alt="Scylla Dump"><br><img src="/../images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/../images/2/5.png" alt="IAT Autosearch"><br><img src="/../images/2/6.png" alt="Get Imports"></li>
+<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/../images/2/7.png" alt="main"></li>
 <li>点开函数后可以看出sub_401550是rc4 init，而sub_40163E（标准）和sub_40175A（魔改）是两个rc4</li>
 <li>解出flag</li>
 </ol>
@@ -135,6 +130,27 @@
       <tags>
         <tag>Reverse</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>手动去除间接跳转--Binary Ninja</title>
+    <url>/2025/03/21/4/</url>
+    <content><![CDATA[<h3 id="题目-ez-re-N1-Junior-2025-Reverse"><a href="#题目-ez-re-N1-Junior-2025-Reverse" class="headerlink" title="题目 ez_re (N1 Junior 2025 Reverse)"></a>题目 ez_re (N1 Junior 2025 Reverse)</h3><h4 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h4><p><strong>将文件直接用<code>Binary Ninja</code>打开之后会发现有很多分析不出来的<code>br跳转</code>,需要修一修</strong><br><img src="/../images/4/1.png"><br><img src="/../images/4/2.png"></p>
+<h4 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h4><p><strong>找一个函数<code>my_strlen</code>,可以看到<code>mov     w11, #0  mov     w12, #0x1</code>初始化寄存器的值，下面的<code>cmp     w10, #0 csel    w10, w11, w12, ne  &#123;0x0&#125;  &#123;0x1&#125;</code>是关键，先将w10的值跟0x0比较，如果不等于0，则将w10的值设置为w11，否则设置为w12，这一步就导致了后面两种不同的情况的跳转，也就是我们需要手修的地方</strong><br><img src="/../images/4/4.png"><br><strong>看注释就行</strong><br><strong>note：</strong><br><strong>1.[5230]和[5238]在{data_5230}里面可以找到</strong><br><img src="/../images/4/5.png"><br><strong>2.w11存的值需要往上找对应的sp，先看到w8,然后再往上看需要找[x0]，因为在ARM架构中前 8 个参数通过寄存器 x0-x7 传递，即去找传入函数的第一个参数</strong><br><img src="/../images/4/6.png"><br><strong>这里用伪C看就能很清晰地看到<code>&amp;var_28</code>传入<code>my_strlen</code>,所以<code>w8=[x0]=0xd0deba7d</code></strong><br><img src="/../images/4/3.png"><br><strong>3.计算出来可以知道x8&#x3D;23C8 or 23D8,而23C8就是br x8指令下面一条地址，也正是以为这个跳转有两种情况所以bn分析不出来，需要手动修改</strong></p>
+<h4 id="0x03"><a href="#0x03" class="headerlink" title="0x03"></a>0x03</h4><p><strong>修改<code>br x8</code>,右键-&gt;<code>Patch</code>-&gt;<code>Assemble</code>,这里需要追前面比较的地方<code>csel</code>后面是<code>ne</code>-&gt;not equel,所以改成<code>bne </code>,这里跳转的地址是相对地址，要用需要跳转的地址减去现在的地址即用23D8-23C4得到0x14，最终<code>bne 0x14</code>,最后<code>Reanalyze</code>一下就修好了</strong><br><img src="/../images/4/7.png"></p>
+]]></content>
+      <categories>
+        <category>-CTF</category>
+      </categories>
+      <tags>
+        <tag>Reverse</tag>
+        <tag>Android</tag>
+        <tag>arm汇编</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>5</title>
+    <url>/2025/03/25/5/</url>
+    <content><![CDATA[]]></content>
   </entry>
   <entry>
     <title>Hello World</title>

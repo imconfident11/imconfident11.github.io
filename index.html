@@ -148,7 +148,7 @@
       <div class="category-box">
             <a class="category-link" href="/categories/CTF/">
                 -CTF
-                <div class="category-count">3</div>
+                <div class="category-count">4</div>
             </a>
         </div>
     </div>
@@ -160,7 +160,7 @@
   <div class="widget-wrap">
     <div class="widget">
       <h3 class="widget-title">标签</h3>
-      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li></ul>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
     </div>
   </div>
 
@@ -174,7 +174,7 @@
    
 
 
-<article id="post-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+<article id="post-5" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
    
   <div class="article-inner">
     <div class="article-main">
@@ -185,7 +185,7 @@
   
     
       <h1 itemprop="name">
-        <a class="p-name article-title" href="/2025/02/26/4/">无标题</a>
+        <a class="p-name article-title" href="/2025/03/25/5/">5</a>
       </h1>
     
   
@@ -193,7 +193,7 @@
 
         <div class='meta-info-bar'>
           <div class="meta-info">
-  <time class="dt-published" datetime="2025-02-26T10:59:06.555Z" itemprop="datePublished">2025-02-26</time>
+  <time class="dt-published" datetime="2025-03-24T23:58:21.000Z" itemprop="datePublished">2025-03-25</time>
 </div>
           <div class="need-seperator meta-info">
             <div class="meta-cate-flex">
@@ -225,7 +225,80 @@
      
     <a class="right-panel  non-pic  "
       
-      href="/2025/02/26/4/" 
+      href="/2025/03/25/5/" 
+    >
+       
+      <i class="fa-solid fa-angle-right non-pic"></i>
+       
+    </a>
+     
+  </div>
+  
+</article>
+
+
+
+
+
+
+   
+
+
+<article id="post-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 itemprop="name">
+        <a class="p-name article-title" href="/2025/03/21/4/">手动去除间接跳转--Binary Ninja</a>
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2025-03-20T16:00:00.000Z" itemprop="datePublished">2025-03-21</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/categories/CTF/">-CTF</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            381 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <div class="truncate-text">
+            
+              题目 ez_re (N1 Junior 2025 Reverse)0x01将文件直接用Binary Ninja打开之后会发现有很多分析不出来的br跳转,需要修一修
+0x02找一个函数my_strlen,可以看到mov     w11, #0  mov     w12, #0x1初始化寄存器的值，下面的cmp     w10, #0 csel    w10, w11, w12, ne  &#123;0x0&#125;  &#123;0x1&#125;是关键，先将w10的值跟0x0比较，如果不等于0，则将w10的值设置为w11，否则设置为w12，这一步就导致了后面两种不同的情况的跳转，也就是我们需要手修的地方看注释就行note：1.[5230]和[5238]在{data_5230}里面可以找到2.w11存的值需要往上找对应的sp，先看到w8,然后再往上看需要找[x0]，因为在ARM架构中前 8 个参数通过寄存器 x0-x7 传递，即去找传入函数的第一个参数这里用伪C看就能很清晰地看到&amp;var_28传入my_strlen,所以w8=[x0]=0xd0deba7d3.计算出来可以...
+            
+          </div>
+        
+      </div>
+
+         
+    </div>
+    
+     
+    <a class="right-panel  non-pic  "
+      
+      href="/2025/03/21/4/" 
     >
        
       <i class="fa-solid fa-angle-right non-pic"></i>

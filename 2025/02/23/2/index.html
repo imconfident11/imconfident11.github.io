@@ -35,7 +35,7 @@
 <meta property="og:image" content="http://example.com/images/2/6.png">
 <meta property="og:image" content="http://example.com/images/2/7.png">
 <meta property="article:published_time" content="2025-02-22T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-02-23T14:53:36.291Z">
+<meta property="article:modified_time" content="2025-03-25T01:30:08.454Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta name="twitter:card" content="summary">
@@ -161,7 +161,7 @@
       <div class="category-box">
             <a class="category-link" href="/categories/CTF/">
                 -CTF
-                <div class="category-count">3</div>
+                <div class="category-count">4</div>
             </a>
         </div>
     </div>
@@ -173,7 +173,7 @@
   <div class="widget-wrap">
     <div class="widget">
       <h3 class="widget-title">标签</h3>
-      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li></ul>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
     </div>
   </div>
 
@@ -228,13 +228,13 @@
       <div class="e-content article-entry" itemprop="articleBody">
         
           <h1 id="REverse"><a href="#REverse" class="headerlink" title="REverse"></a>REverse</h1><h2 id="Turtle"><a href="#Turtle" class="headerlink" title="Turtle"></a>Turtle</h2><ol>
-<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/images/2/1.png" alt="Exeinfo PE"><blockquote>
+<li>用<code>Exeinfo PE</code>打开发现是upx壳，而且题目也提示了需要脱壳，upx壳被魔改过了，用普通脱壳工具无效，于是手动脱壳。<br><img src="/../images/2/1.png" alt="Exeinfo PE"><blockquote>
 <p>ps：有的魔改后的upx壳可以在010editor中改（把add0-&gt;upx0,add1-&gt;upx1……,本题为只读文件改不了） </p>
 </blockquote>
 </li>
-<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/images/2/2.png" alt="xdbg64"></li>
-<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/images/2/3.png" alt="Scylla Dump"><br><img src="/images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/images/2/5.png" alt="IAT Autosearch"><br><img src="/images/2/6.png" alt="Get Imports"></li>
-<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/images/2/7.png" alt="main"></li>
+<li>用xdbg64打开，oep脱壳定律找到大跳转，打断点<br><img src="/../images/2/2.png" alt="xdbg64"></li>
+<li>F9运行，接着用<code>Scylla</code>Dump，oep为00000000004014E0,生成Turtle_dump.exe<br><img src="/../images/2/3.png" alt="Scylla Dump"><br><img src="/../images/2/4.png" alt="Turtle_dump.exe"><br>接着先后点击<code>IAT Autosearch</code>,<code>Get Imports</code>,<code>Fix Dump</code>,这里打开Turtle_dump.exe，之后打开文件夹就会看到新生成的Turtle_dump_SCY.exe文件了。<br><img src="/../images/2/5.png" alt="IAT Autosearch"><br><img src="/../images/2/6.png" alt="Get Imports"></li>
+<li>将Turtle_dump_SCY.exe用IDA(64)打开，发现可以正常地看到函数了，找到main函数，F5反汇编一下<br><img src="/../images/2/7.png" alt="main"></li>
 <li>点开函数后可以看出sub_401550是rc4 init，而sub_40163E（标准）和sub_40175A（魔改）是两个rc4</li>
 <li>解出flag</li>
 </ol>
