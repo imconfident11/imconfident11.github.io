@@ -29,7 +29,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/3/1.png">
 <meta property="og:image" content="http://example.com/images/3/2.jpg">
-<meta property="og:image" content="http://example.com/..../images/3/3.png">
+<meta property="og:image" content="http://example.com/.../images/3/3.png">
 <meta property="og:image" content="http://example.com/images/3/4.png">
 <meta property="og:image" content="http://example.com/images/3/6.png">
 <meta property="og:image" content="http://example.com/images/3/7.png">
@@ -38,7 +38,7 @@
 <meta property="og:image" content="http://example.com/images/3/10.png">
 <meta property="og:image" content="http://example.com/images/3/11.png">
 <meta property="article:published_time" content="2025-02-24T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-03-25T00:00:21.719Z">
+<meta property="article:modified_time" content="2025-03-25T06:14:50.648Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta name="twitter:card" content="summary">
@@ -141,9 +141,7 @@
       <div class="subtitle">Make that move you are afraid of making. </div>
       <div class="link-list">
         
-          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/imconfident11/imconfident11.github.io/blob/main/assets/qq.png" title="QQ"><i class="fa-brands fa-qq"></i></a>
-        
-          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/imconfident11/imconfident11.github.io/blob/main/assets/email.jpg" title="email"><i class="fa-regular fa-envelope"></i></a>
+          <a class="link-btn" href="3348016163@qq.com" title="email"><i class="fa-regular fa-envelope"></i></a>
         
           <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/imconfident11" title="GitHub"><i class="fa-brands fa-github"></i></a>
          
@@ -232,33 +230,33 @@
         
           <h2 id="攻防世界"><a href="#攻防世界" class="headerlink" title="攻防世界"></a>攻防世界</h2><h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
 <ol>
-<li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/../images/3/1.png" alt="解压"></li>
-<li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/../images/3/2.jpg" alt="flag"><blockquote>
+<li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/./images/3/1.png" alt="解压"></li>
+<li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/./images/3/2.jpg" alt="flag"><blockquote>
 <p>flag{08067-wlecome}</p>
 </blockquote>
 </li>
 </ol>
 <h3 id="android-2-0"><a href="#android-2-0" class="headerlink" title="android 2.0"></a>android 2.0</h3><ol>
-<li>将apk文件放入<code>jadx</code>中,源代码里面找到<code>MainActiviy</code>,找到关键部分函数<br><img src="/..../images/3/3.png" alt="mainactivity"></li>
+<li>将apk文件放入<code>jadx</code>中,源代码里面找到<code>MainActiviy</code>,找到关键部分函数<br><img src="/.../images/3/3.png" alt="mainactivity"></li>
 </ol>
 <ul>
 <li>这段代码的功能：</li>
 </ul>
 <p>这段代码实现了一个简单的 Android 应用,它有一个按钮、一个文本框和一个显示结果的文本。<br>用户在文本框(EditText)里输入一个字符串(可能是密码),<br>然后点击按钮时,代码会调用一个名为 JNI.getResult(str) 的本地方法来判断密码是否正确</p>
 <p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
-<p>点进<code>JNI</code><br><img src="/../images/3/4.png" alt="mainactivity2"></p>
+<p>点进<code>JNI</code><br><img src="/./images/3/4.png" alt="mainactivity2"></p>
 <p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
-<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/../images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
+<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/./images/3/6.png" alt=".so"><br><strong>考点：算法逆向</strong><br>3. </p>
 <ul>
-<li>分析<code>First</code>函数<br>   <img src="/../images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
+<li>分析<code>First</code>函数<br>   <img src="/./images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
 </ul>
    <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">First</span>():</span><br><span class="line">     enc=<span class="string">&quot;LN^dl&quot;</span></span><br><span class="line">     dec=<span class="string">&quot;&quot;</span></span><br><span class="line">     <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">4</span>):</span><br><span class="line">         dec+=(<span class="built_in">chr</span>(<span class="built_in">int</span>((<span class="built_in">ord</span>(enc[i])^<span class="number">0x80</span>)/<span class="number">2</span>)))</span><br><span class="line">     dec+=<span class="string">&#x27;l&#x27;</span></span><br><span class="line">     <span class="built_in">print</span>(dec)</span><br><span class="line">First()</span><br><span class="line"> <span class="comment">#fgorl</span></span><br></pre></td></tr></table></figure>
 <ul>
-<li>分析<code>Second</code>函数<br>  <img src="/../images/3/8.png" alt="second"><br>  直接异或还原</li>
+<li>分析<code>Second</code>函数<br>  <img src="/./images/3/8.png" alt="second"><br>  直接异或还原</li>
 </ul>
   <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">def second():</span><br><span class="line">  a5=[ord(&#x27; &#x27;),ord(&#x27;5&#x27;),ord(&#x27;-&#x27;),0x16,ord(&#x27;a&#x27;)]</span><br><span class="line">  a1=[ord(&#x27;L&#x27;),ord(&#x27;N&#x27;),ord(&#x27;^&#x27;),ord(&#x27;d&#x27;),ord(&#x27;l&#x27;)]</span><br><span class="line">  s1=&quot;&quot;</span><br><span class="line">  for i in range(0,4):</span><br><span class="line">      x=a5[i]^a1[i]</span><br><span class="line">      s1+=chr(x)</span><br><span class="line">  s1+=&#x27;a&#x27;</span><br><span class="line">  print(s1)</span><br><span class="line">second()</span><br><span class="line">#l&#123;sra</span><br></pre></td></tr></table></figure>
 <ul>
-<li><code>Third</code>同理<br>  <img src="/../images/3/9.png" alt="third"><br>  <strong>note</strong>如果v6&#x3D;a5就执行异或操作，所以v6&#x3D;a5</li>
+<li><code>Third</code>同理<br>  <img src="/./images/3/9.png" alt="third"><br>  <strong>note</strong>如果v6&#x3D;a5就执行异或操作，所以v6&#x3D;a5</li>
 </ul>
   <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">def</span> <span class="title function_">third</span>():</span><br><span class="line">    a5 = [<span class="built_in">ord</span>(<span class="string">&#x27; &#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;5&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;-&#x27;</span>), <span class="number">0x16</span>, <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)]</span><br><span class="line">    dec = [<span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;F&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;B&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;o&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;&#125;&#x27;</span>)]</span><br><span class="line">    enc = <span class="string">&quot;&quot;</span>  </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">4</span>):</span><br><span class="line">        x = a5[i] ^ dec[i]</span><br><span class="line">        enc += <span class="built_in">chr</span>(x)</span><br><span class="line">    enc += <span class="string">&#x27;&#125;&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(enc)</span><br><span class="line"></span><br><span class="line">third()</span><br><span class="line"><span class="comment">#asoy&#125;</span></span><br></pre></td></tr></table></figure>
 <ul>
@@ -271,7 +269,7 @@
 </blockquote>
 <h3 id="APK逆向"><a href="#APK逆向" class="headerlink" title="APK逆向"></a>APK逆向</h3><ol>
 <li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
-<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/../images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
+<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/./images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
 <li>exp</li>
 </ol>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
@@ -280,7 +278,7 @@
 <p>bc72f242a6af3857a</p>
 </blockquote>
 <h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
-<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/../images/3/11.png" alt="buildconfig"></li>
+<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/./images/3/11.png" alt="buildconfig"></li>
 <li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
 </ol>
 <p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
