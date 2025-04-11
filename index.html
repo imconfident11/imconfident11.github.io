@@ -146,6 +146,11 @@
                 -CTF
                 <div class="category-count">4</div>
             </a>
+        
+            <a class="category-link" href="/categories/CTF/">
+                CTF
+                <div class="category-count">1</div>
+            </a>
         </div>
     </div>
   </div>
@@ -156,7 +161,7 @@
   <div class="widget-wrap">
     <div class="widget">
       <h3 class="widget-title">标签</h3>
-      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse-%E6%B7%B7%E6%B7%86-Android/" rel="tag">-Reverse -混淆 -Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
     </div>
   </div>
 
@@ -181,7 +186,7 @@
   
     
       <h1 itemprop="name">
-        <a class="p-name article-title" href="/2025/03/25/5/">5</a>
+        <a class="p-name article-title" href="/2025/04/11/5/">安卓逆向 刷题笔记(1)</a>
       </h1>
     
   
@@ -189,27 +194,34 @@
 
         <div class='meta-info-bar'>
           <div class="meta-info">
-  <time class="dt-published" datetime="2025-03-24T23:58:21.000Z" itemprop="datePublished">2025-03-25</time>
+  <time class="dt-published" datetime="2025-04-10T16:00:00.000Z" itemprop="datePublished">2025-04-11</time>
 </div>
           <div class="need-seperator meta-info">
             <div class="meta-cate-flex">
   
-    未分类 
+  <a class="meta-cate-link" href="/categories/CTF/">-CTF</a>
    
 </div>
   
           </div>
           <div class="wordcount need-seperator meta-info">
-            0 词 
+            3.1k 词 
           </div>
         </div>
         
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li></ul>
+
       </header>
       <div class="e-content article-entry" itemprop="articleBody">
         
           <div class="truncate-text">
             
-              
+              攻防世界 Mobileez_dex
+这道题在网上看了好多 wp 基本都是手撕加密，但这题的 so 层加密挺不好分析的，而用frida-hook可以直接跳过解密，找到已经解密好的 dex 文件。
+用 jadx 打开,在 AndroidManifest.xml 中找到关键信息:android:hasCode=&quot;false&quot;,声明 APK 中不包含 Java&#x2F;Kotlin 字节码(.dex 文件),表示所有逻辑都在 Native 层;当android:value=&quot;native&quot;时，系统会默认加载 libnative.so,此类应用的入口是 Native 层的android_main()函数（而非 Java 的 Activity.onCreate()
+提取出 so 文件,用 ida 分析,直接搜索找到android_main()函数，首先注意到经过加密的filename和name,写一个脚本进行字符串解密
+
+12345678910111213141516171819202122232425262728293031323334353637...
             
           </div>
         
@@ -221,7 +233,87 @@
      
     <a class="right-panel  non-pic  "
       
-      href="/2025/03/25/5/" 
+      href="/2025/04/11/5/" 
+    >
+       
+      <i class="fa-solid fa-angle-right non-pic"></i>
+       
+    </a>
+     
+  </div>
+  
+</article>
+
+
+
+
+
+
+   
+
+
+<article id="post-3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 itemprop="name">
+        <a class="p-name article-title" href="/2025/03/27/3/">OLLVM</a>
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2025-03-26T16:00:00.000Z" itemprop="datePublished">2025-03-27</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/categories/CTF/">CTF</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            498 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reverse-%E6%B7%B7%E6%B7%86-Android/" rel="tag">-Reverse -混淆 -Android</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <div class="truncate-text">
+            
+              0x00 前言
+LLVM是一个优秀的编译器框架,采用经典的三段式设计。前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树AST,然后将分析好的代码转换成LLVM的中间表示IR(intermediate representation);Pass对IR做优化,后端(Backend)负责将优化好的IR解释成对应平台的机器码.
+从字面看,OLLVM就是在LLVM的基础上增加了obfuscator（混淆）,LLVM的pass是用来优化分析的,将这些pass的功能改为混淆代码,就是OLLVM项目.
+
+0x01 OLLVM的几种混淆方式1.指令替换（Instructions Substitution）用功能等效但更复杂的指令序列替换标准的二进制运算符（如加法、减法或布尔运算符）。当有多个等效指令序列时,随机选择一个。如：
+
+加法：a = -(-b + (-c))  ,r = rand (); a = b + r; a = a + c; a = a - r
+AND：a = b &amp; c =&gt; a = (b ^ ~c) &amp; b
+XOR:a = a ^ b =&gt;...
+            
+          </div>
+        
+      </div>
+
+         
+    </div>
+    
+     
+    <a class="right-panel  non-pic  "
+      
+      href="/2025/03/27/3/" 
     >
        
       <i class="fa-solid fa-angle-right non-pic"></i>
@@ -295,95 +387,6 @@
     <a class="right-panel  non-pic  "
       
       href="/2025/03/21/4/" 
-    >
-       
-      <i class="fa-solid fa-angle-right non-pic"></i>
-       
-    </a>
-     
-  </div>
-  
-</article>
-
-
-
-
-
-
-   
-
-
-<article id="post-3" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-   
-  <div class="article-inner">
-    <div class="article-main">
-      <header class="article-header">
-        
-<div class="main-title-bar">
-  <div class="main-title-dot"></div>
-  
-    
-      <h1 itemprop="name">
-        <a class="p-name article-title" href="/2025/02/25/3/">安卓逆向 刷题笔记</a>
-      </h1>
-    
-  
-</div>
-
-        <div class='meta-info-bar'>
-          <div class="meta-info">
-  <time class="dt-published" datetime="2025-02-24T16:00:00.000Z" itemprop="datePublished">2025-02-25</time>
-</div>
-          <div class="need-seperator meta-info">
-            <div class="meta-cate-flex">
-  
-  <a class="meta-cate-link" href="/categories/CTF/">-CTF</a>
-   
-</div>
-  
-          </div>
-          <div class="wordcount need-seperator meta-info">
-            818 词 
-          </div>
-        </div>
-        
-  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li></ul>
-
-      </header>
-      <div class="e-content article-entry" itemprop="articleBody">
-        
-          <div class="truncate-text">
-            
-              攻防世界基础android用misc方法解题了
-
-将apk文件放入010editor中，发现文件头是50 4B 03 04是zip文件,修改后缀,解压
-在assets文件夹下发现time_2.zip,放入010editor，文件头是FF D8 FF,jpg文件,修改后缀,打开后是一张图片
-flag{08067-wlecome}
-
-
-
-android 2.0
-将apk文件放入jadx中,源代码里面找到MainActiviy,找到关键部分函数
-
-
-这段代码的功能：
-
-这段代码实现了一个简单的 Android 应用,它有一个按钮、一个文本框和一个显示结果的文本。用户在文本框(EditText)里输入一个字符串(可能是密码),然后点击按钮时,代码会调用一个名为 JNI.getResult(str) 的本地方法来判断密码是否正确
-如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”如果 JNI.getResult(str) 返回 1,界面会显示 “Great”
-点进JNI
-关键部分是 JNI.getResult(str):JNI.getResult(str) 是...
-            
-          </div>
-        
-      </div>
-
-         
-    </div>
-    
-     
-    <a class="right-panel  non-pic  "
-      
-      href="/2025/02/25/3/" 
     >
        
       <i class="fa-solid fa-angle-right non-pic"></i>

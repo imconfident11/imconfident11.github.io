@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+
+
+<html theme="dark" showBanner="true" hasBanner="true" > 
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet">
+<link href="https://cdn.staticfile.org/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet">
+<script src="/js/color.global.min.js" ></script>
+<script src="/js/load-settings.js" ></script>
+<head>
+  <meta charset="utf-8">
+  
+  
+  
+
+  
+  <title>安卓逆向 刷题笔记(1) | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <link rel="preload" href="/css/fonts/Roboto-Regular.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <link rel="preload" href="/css/fonts/Roboto-Bold.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+
+  <meta name="description" content="攻防世界 Mobileez_dex 这道题在网上看了好多 wp 基本都是手撕加密，但这题的 so 层加密挺不好分析的，而用frida-hook可以直接跳过解密，找到已经解密好的 dex 文件。 用 jadx 打开,在 AndroidManifest.xml 中找到关键信息:android:hasCode&#x3D;&quot;false&quot;,声明 APK 中不包含 Java&#x2F;Kotlin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安卓逆向 刷题笔记(1)">
+<meta property="og:url" content="http://example.com/2025/04/11/5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="攻防世界 Mobileez_dex 这道题在网上看了好多 wp 基本都是手撕加密，但这题的 so 层加密挺不好分析的，而用frida-hook可以直接跳过解密，找到已经解密好的 dex 文件。 用 jadx 打开,在 AndroidManifest.xml 中找到关键信息:android:hasCode&#x3D;&quot;false&quot;,声明 APK 中不包含 Java&#x2F;Kotlin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/3/dex1.png">
+<meta property="og:image" content="http://example.com/images/3/dex3.png">
+<meta property="og:image" content="http://example.com/images/3/dex4.png">
+<meta property="og:image" content="http://example.com/images/3/dex5.png">
+<meta property="og:image" content="http://example.com/images/3/dex6.png">
+<meta property="og:image" content="http://example.com/images/3/dex">
+<meta property="og:image" content="http://example.com/images/3/dex7.png">
+<meta property="og:image" content="http://example.com/images/3/dex8.png">
+<meta property="og:image" content="http://example.com/images/3/dex9.png">
+<meta property="og:image" content="http://example.com/images/3/dex10.png">
+<meta property="og:image" content="http://example.com/images/3/jni1.png">
+<meta property="og:image" content="http://example.com/images/3/ezjava1.png">
+<meta property="og:image" content="http://example.com/images/3/3.png">
+<meta property="og:image" content="http://example.com/images/3/4.png">
+<meta property="og:image" content="http://example.com/images/3/6.png">
+<meta property="og:image" content="http://example.com/images/3/7.png">
+<meta property="og:image" content="http://example.com/images/3/8.png">
+<meta property="og:image" content="http://example.com/images/3/9.png">
+<meta property="og:image" content="http://example.com/images/3/1.png">
+<meta property="og:image" content="http://example.com/images/3/2.jpg">
+<meta property="og:image" content="http://example.com/images/3/10.png">
+<meta property="og:image" content="http://example.com/images/3/14.png">
+<meta property="og:image" content="http://example.com/images/3/13.png">
+<meta property="og:image" content="http://example.com/images/3/11.png">
+<meta property="article:published_time" content="2025-04-10T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-04-11T04:48:15.808Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/images/3/dex1.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/assets/favicon.jpg">
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  
+  
+    
+<div id="banner" class="">
+  <img src="/assets/cover.jpg" itemprop="image">
+  <div id="banner-dim"></div>
+</div>
+ 
+   
+  <div id="main-grid" class="  ">
+    <div id="nav" class=""  >
+      <navbar id="navbar">
+  <nav id="title-nav">
+    <a href="/">
+      <div id="vivia-logo">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div>Hexo </div>
+    </a>
+  </nav>
+  <nav id="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+  <nav id="sub-nav">
+    <a id="theme-btn" class="nav-icon">
+      <span class="light-mode-icon"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M438.5-829.913v-48q0-17.452 11.963-29.476 11.964-12.024 29.326-12.024 17.363 0 29.537 12.024t12.174 29.476v48q0 17.452-11.963 29.476-11.964 12.024-29.326 12.024-17.363 0-29.537-12.024T438.5-829.913Zm0 747.826v-48q0-17.452 11.963-29.476 11.964-12.024 29.326-12.024 17.363 0 29.537 12.024t12.174 29.476v48q0 17.452-11.963 29.476-11.964 12.024-29.326 12.024-17.363 0-29.537-12.024T438.5-82.087ZM877.913-438.5h-48q-17.452 0-29.476-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537t29.476-12.174h48q17.452 0 29.476 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T877.913-438.5Zm-747.826 0h-48q-17.452 0-29.476-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537T82.087-521.5h48q17.452 0 29.476 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T130.087-438.5Zm660.174-290.87-34.239 32q-12.913 12.674-29.565 12.174-16.653-.5-29.327-13.174-12.674-12.673-12.554-28.826.12-16.152 12.794-28.826l33-35q12.913-12.674 30.454-12.674t30.163 12.847q12.709 12.846 12.328 30.826-.38 17.98-13.054 30.653ZM262.63-203.978l-32 34q-12.913 12.674-30.454 12.674t-30.163-12.847q-12.709-12.846-12.328-30.826.38-17.98 13.054-30.653l33.239-31q12.913-12.674 29.565-12.174 16.653.5 29.327 13.174 12.674 12.673 12.554 28.826-.12 16.152-12.794 28.826Zm466.74 33.239-32-33.239q-12.674-12.913-12.174-29.565.5-16.653 13.174-29.327 12.673-12.674 28.826-13.054 16.152-.38 28.826 12.294l35 33q12.674 12.913 12.674 30.454t-12.847 30.163q-12.846 12.709-30.826 12.328-17.98-.38-30.653-13.054ZM203.978-697.37l-34-33q-12.674-12.913-13.174-29.945-.5-17.033 12.174-29.707t31.326-13.293q18.653-.62 31.326 13.054l32 34.239q11.674 12.913 11.174 29.565-.5 16.653-13.174 29.327-12.673 12.674-28.826 12.554-16.152-.12-28.826-12.794ZM480-240q-100 0-170-70t-70-170q0-100 70-170t170-70q100 0 170 70t70 170q0 100-70 170t-170 70Zm-.247-82q65.703 0 111.475-46.272Q637-414.544 637-480.247t-45.525-111.228Q545.95-637 480.247-637t-111.475 45.525Q323-545.95 323-480.247t45.525 111.975Q414.05-322 479.753-322ZM481-481Z"/></svg></span>
+      <span class="dark-mode-icon"><svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M480.239-116.413q-152.63 0-258.228-105.478Q116.413-327.37 116.413-480q0-130.935 77.739-227.435t206.304-125.043q43.022-9.631 63.87 10.869t3.478 62.805q-8.891 22.043-14.315 44.463-5.424 22.42-5.424 46.689 0 91.694 64.326 155.879 64.325 64.186 156.218 64.186 24.369 0 46.978-4.946 22.609-4.945 44.413-14.076 42.826-17.369 62.967 1.142 20.142 18.511 10.511 61.054Q807.174-280 712.63-198.206q-94.543 81.793-232.391 81.793Zm0-95q79.783 0 143.337-40.217 63.554-40.218 95.793-108.283-15.608 4.044-31.097 5.326-15.49 1.283-31.859.805-123.706-4.066-210.777-90.539-87.071-86.473-91.614-212.092-.24-16.369.923-31.978 1.164-15.609 5.446-30.978-67.826 32.478-108.282 96.152Q211.652-559.543 211.652-480q0 111.929 78.329 190.258 78.329 78.329 190.258 78.329ZM466.13-465.891Z"/></svg></span>
+    </a>
+    
+      <a id="nav-rss-link" class="nav-icon mobile-hide" href="/atom.xml" title="RSS 订阅">
+        <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M198-120q-25.846 0-44.23-18.384-18.384-18.385-18.384-44.23 0-25.846 18.384-44.23 18.384-18.385 44.23-18.385 25.846 0 44.23 18.385 18.384 18.384 18.384 44.23 0 25.845-18.384 44.23Q223.846-120 198-120Zm538.385 0q-18.846 0-32.923-13.769-14.076-13.769-15.922-33.23-8.692-100.616-51.077-188.654-42.385-88.039-109.885-155.539-67.5-67.501-155.539-109.885Q283-663.462 182.385-672.154q-19.461-1.846-33.23-16.23-13.769-14.385-13.769-33.846t14.076-32.922q14.077-13.461 32.923-12.23 120.076 8.692 226.038 58.768 105.961 50.077 185.73 129.846 79.769 79.769 129.846 185.731 50.077 105.961 58.769 226.038 1.231 18.846-12.538 32.922Q756.461-120 736.385-120Zm-252 0q-18.231 0-32.423-13.461t-18.653-33.538Q418.155-264.23 348.886-333.5q-69.27-69.27-166.501-84.423-20.077-4.462-33.538-18.961-13.461-14.5-13.461-33.346 0-19.076 13.884-33.23 13.884-14.153 33.115-10.922 136.769 15.384 234.384 112.999 97.615 97.615 112.999 234.384 3.231 19.23-10.538 33.115Q505.461-120 484.385-120Z"/></svg>
+      </a>
+    
+    <div id="nav-menu-btn" class="nav-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20"><path d="M177.37-252.282q-17.453 0-29.477-11.964-12.024-11.963-12.024-29.326t12.024-29.537q12.024-12.174 29.477-12.174h605.26q17.453 0 29.477 11.964 12.024 11.963 12.024 29.326t-12.024 29.537q-12.024 12.174-29.477 12.174H177.37Zm0-186.218q-17.453 0-29.477-11.963-12.024-11.964-12.024-29.326 0-17.363 12.024-29.537T177.37-521.5h605.26q17.453 0 29.477 11.963 12.024 11.964 12.024 29.326 0 17.363-12.024 29.537T782.63-438.5H177.37Zm0-186.217q-17.453 0-29.477-11.964-12.024-11.963-12.024-29.326t12.024-29.537q12.024-12.174 29.477-12.174h605.26q17.453 0 29.477 11.964 12.024 11.963 12.024 29.326t-12.024 29.537q-12.024 12.174-29.477 12.174H177.37Z"/></svg>
+    </div>
+  </nav>
+</navbar>
+<div id="nav-dropdown" class="hidden">
+  <div id="dropdown-link-list">
+    
+      <a class="nav-dropdown-link" href="/">Home</a>
+    
+      <a class="nav-dropdown-link" href="/archives">Archives</a>
+    
+      <a class="nav-dropdown-link" href="/about">About</a>
+    
+    
+      <a class="nav-dropdown-link" href="/atom.xml" title="RSS 订阅">RSS</a>
+     
+    </div>
+</div>
+<script>
+  let dropdownBtn = document.getElementById("nav-menu-btn");
+  let dropdownEle = document.getElementById("nav-dropdown");
+  dropdownBtn.onclick = function() {
+    dropdownEle.classList.toggle("hidden");
+  }
+</script>
+    </div>
+    <div id="sidebar-wrapper">
+      <sidebar id="sidebar">
+  
+    <div class="widget-wrap">
+  <div class="info-card">
+    <div class="avatar">
+      
+        <image src=/assets/avatar.jpg></image>
+      
+      <div class="img-dim"></div>
+    </div>
+    <div class="info">
+      <div class="username">Eleven. </div>
+      <div class="dot"></div>
+      <div class="subtitle">Make that move you are afraid of making. </div>
+      <div class="link-list">
+        
+          <a class="link-btn" target="_blank" rel="noopener" href="https://github.com/imconfident11" title="GitHub"><i class="fa-brands fa-github"></i></a>
+         
+      </div>  
+    </div>
+  </div>
+</div>
+
+  
+  <div class="sticky">
+    
+      
+
+
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">分类</h3>
+      <div class="category-box">
+            <a class="category-link" href="/categories/CTF/">
+                -CTF
+                <div class="category-count">4</div>
+            </a>
+        
+            <a class="category-link" href="/categories/CTF/">
+                CTF
+                <div class="category-count">1</div>
+            </a>
+        </div>
+    </div>
+  </div>
+
+
+    
+      
+  <div class="widget-wrap">
+    <div class="widget">
+      <h3 class="widget-title">标签</h3>
+      <ul class="widget-tag-list" itemprop="keywords"><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse-%E6%B7%B7%E6%B7%86-Android/" rel="tag">-Reverse -混淆 -Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Android/" rel="tag">Android</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Misc/" rel="tag">Misc</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li><li class="widget-tag-list-item"><a class="widget-tag-list-link" href="/tags/arm%E6%B1%87%E7%BC%96/" rel="tag">arm汇编</a></li></ul>
+    </div>
+  </div>
+
+
+    
+  </div>
+</sidebar>
+    </div>
+    <div id="content-body">
+       
+
+
+<article id="post-5" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  
+    
+   
+  <div class="article-inner">
+    <div class="article-main">
+      <header class="article-header">
+        
+<div class="main-title-bar">
+  <div class="main-title-dot"></div>
+  
+    
+      <h1 class="p-name article-title" itemprop="headline name">
+        安卓逆向 刷题笔记(1)
+      </h1>
+    
+  
+</div>
+
+        <div class='meta-info-bar'>
+          <div class="meta-info">
+  <time class="dt-published" datetime="2025-04-10T16:00:00.000Z" itemprop="datePublished">2025-04-11</time>
+</div>
+          <div class="need-seperator meta-info">
+            <div class="meta-cate-flex">
+  
+  <a class="meta-cate-link" href="/categories/CTF/">-CTF</a>
+   
+</div>
+  
+          </div>
+          <div class="wordcount need-seperator meta-info">
+            3.1k 词 
+          </div>
+        </div>
+        
+  <ul class="article-tag-list" itemprop="keywords"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Reverse/" rel="tag">Reverse</a></li></ul>
+
+      </header>
+      <div class="e-content article-entry" itemprop="articleBody">
+        
+          <h2 id="攻防世界-Mobile"><a href="#攻防世界-Mobile" class="headerlink" title="攻防世界 Mobile"></a>攻防世界 Mobile</h2><h3 id="ez-dex"><a href="#ez-dex" class="headerlink" title="ez_dex"></a>ez_dex</h3><ol start="0">
+<li>这道题在网上看了好多 wp 基本都是手撕加密，但这题的 so 层加密挺不好分析的，而用frida-hook可以直接跳过解密，找到已经解密好的 dex 文件。</li>
+<li>用 jadx 打开,在 AndroidManifest.xml 中找到关键信息:<code>android:hasCode=&quot;false&quot;</code>,声明 APK 中不包含 Java&#x2F;Kotlin 字节码(<strong>.dex 文件</strong>),表示所有逻辑都在 Native 层;当<code>android:value=&quot;native&quot;</code>时，系统会默认加载 libnative.so,此类应用的入口是 Native 层的<code>android_main()</code>函数（而非 Java 的 Activity.onCreate()<br><img src="/./images/3/dex1.png"></li>
+<li>提取出 so 文件,用 ida 分析,直接搜索找到<code>android_main()</code>函数，首先注意到经过加密的<code>filename</code>和<code>name</code>,写一个脚本进行字符串解密</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> struct</span><br><span class="line">filename_dwords=[-<span class="number">1651995345</span>,-<span class="number">2003974520</span>,-<span class="number">1966700387</span>,</span><br><span class="line"> -<span class="number">2000190330</span>,-<span class="number">2071422265</span>,-<span class="number">947092071</span>, -<span class="number">1920499569</span>,</span><br><span class="line"> -<span class="number">1936879484</span>,-<span class="number">2138061167</span>,-<span class="number">962950011</span>, -<span class="number">1702328950</span>,</span><br><span class="line"> -<span class="number">946172774</span>, -<span class="number">376337267</span>, ]</span><br><span class="line"><span class="comment">#13*4=52</span></span><br><span class="line">filename_bytes=<span class="built_in">bytearray</span>()</span><br><span class="line"><span class="keyword">for</span> dword <span class="keyword">in</span> filename_dwords:</span><br><span class="line">    filename_bytes.extend(struct.pack(<span class="string">&#x27;&lt;i&#x27;</span>,dword))</span><br><span class="line">    <span class="comment">#stuck.pack(&#x27;&lt;i&#x27;,dword) 将每个整数打包为小端序的四字节二进制数据</span></span><br><span class="line">    <span class="comment">#extend()将这些字节添加到字节数组中</span></span><br><span class="line">filename_bytes.append(<span class="number">0</span>)</span><br><span class="line"><span class="comment">#在字节数组末尾添加一个空字节，作为字符串的终止符</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">53</span>):</span><br><span class="line">    filename_bytes[i]^=<span class="number">0xE9</span></span><br><span class="line">filename=filename_bytes.split(<span class="string">b&#x27;\0&#x27;</span>)[<span class="number">0</span>].decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"></span><br><span class="line">name_dwords=[-<span class="number">1651995194</span>,-<span class="number">2003974520</span>,-<span class="number">1966700387</span>,-<span class="number">2000190330</span>,</span><br><span class="line">-<span class="number">2071422265</span>,-<span class="number">947092071</span> ,-<span class="number">1920499569</span>,-<span class="number">1936879484</span>,<span class="number">2138061167</span>,</span><br><span class="line">-<span class="number">962950011</span> ,-<span class="number">1853059706</span>]</span><br><span class="line"><span class="comment">#11*4+1+1=46</span></span><br><span class="line">name_bytes=<span class="built_in">bytearray</span>()</span><br><span class="line"><span class="keyword">for</span> dword <span class="keyword">in</span> name_dwords:</span><br><span class="line">    name_bytes.extend(struct.pack(<span class="string">&#x27;&lt;i&#x27;</span>,dword))</span><br><span class="line">v42=-<span class="number">5690</span></span><br><span class="line">name_bytes.extend(struct.pack(<span class="string">&#x27;&lt;h&#x27;</span>,v42))</span><br><span class="line">name_bytes.append(<span class="number">0</span>)</span><br><span class="line">name_bytes[<span class="number">0</span>]=<span class="number">0x2f</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">47</span>):</span><br><span class="line">    name_bytes[i]^=<span class="number">0xE9</span></span><br><span class="line">name=name_bytes.split(<span class="string">b&#x27;\0&#x27;</span>)[<span class="number">0</span>].decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;filename: &quot;</span>,filename)</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;name: &quot;</span>,name)</span><br><span class="line"></span><br><span class="line"><span class="comment"># filename:  /data/data/com.a.sample.findmydex/files/classes.dex</span></span><br><span class="line"><span class="comment"># name:  /data/data/com.a.sample.findmydex/files/odex/</span></span><br></pre></td></tr></table></figure>
+<ol start="2">
+<li>解密后发现得到了 dex 文件存放的位置，但是继续往下看，找到关键部分<br><img src="/./images/3/dex3.png"><br>用frida hook直接拿到解密后的 dex 文件</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> lib = <span class="title class_">Module</span>.<span class="title function_">load</span>(<span class="string">&quot;libnative.so&quot;</span>);</span><br><span class="line"><span class="keyword">var</span> imports = lib.<span class="title function_">enumerateImports</span>();</span><br><span class="line"><span class="keyword">var</span> removePtr;</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt; imports.<span class="property">length</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">if</span> (imports[i].<span class="property">name</span>.<span class="title function_">indexOf</span>(<span class="string">&quot;remove&quot;</span>) != -<span class="number">1</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(imports[i].<span class="property">name</span>, imports[i].<span class="property">address</span>);</span><br><span class="line">        removePtr = imports[i].<span class="property">address</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(removePtr);</span><br><span class="line"></span><br><span class="line"><span class="title class_">Interceptor</span>.<span class="title function_">replace</span>(removePtr, <span class="keyword">new</span> <span class="title class_">NativeCallback</span>(<span class="keyword">function</span> (<span class="params">arg0</span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;remove called&quot;</span>);</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;arg0: &quot;</span> + arg0);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line">    , <span class="string">&#x27;int&#x27;</span>, [<span class="string">&#x27;pointer&#x27;</span>]));</span><br><span class="line"></span><br><span class="line"><span class="title class_">Interceptor</span>.<span class="title function_">attach</span>(removePtr, &#123;</span><br><span class="line">    <span class="attr">onEnter</span>: <span class="keyword">function</span> (<span class="params">args</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;remove called&quot;</span>);</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;arg0: &quot;</span> + args[<span class="number">0</span>]);</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">onLeave</span>: <span class="keyword">function</span> (<span class="params">retval</span>) &#123;</span><br><span class="line">        <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&quot;remove return value: &quot;</span> + retval);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;)</span><br><span class="line"><span class="keyword">var</span> targetAddr = lib.<span class="property">base</span>.<span class="title function_">add</span>(<span class="number">0x2866</span>);</span><br><span class="line"><span class="title class_">Memory</span>.<span class="title function_">protect</span>(targetAddr, <span class="number">0x10</span>, <span class="string">&#x27;rwx&#x27;</span>);</span><br><span class="line">targetAddr.<span class="title function_">writeByteArray</span>([<span class="number">0x00</span>, <span class="number">0xBF</span>]);</span><br><span class="line"><span class="keyword">var</span> buf = targetAddr.<span class="title function_">readByteArray</span>(<span class="number">100</span>);</span><br><span class="line"><span class="variable language_">console</span>.<span class="title function_">log</span>(buf);</span><br></pre></td></tr></table></figure>
+<p>因为摇晃次数 v10 还直接控制数据解密流程，所以不能像满足的时间条件一样给 nop 掉<br><img src="/./images/3/dex4.png"><br>BGT（Branch if Greater Than） 是关键跳转，决定是否判定超时,NOP 掉 BGT（0x2866）会使程序永远不跳转，从而绕过时间检查<br>3. <img src="/./images/3/dex5.png"><br>有报错但 dex 文件是成功 dump 出来了的<br><img src="/./images/3/dex6.png"><br>但到这里也不能直接拿到因为没有权限，所以可以把它 pull 到普通目录比如 Download 里面后再存到本地，这样就能获取了<br><img src="/./images/3/dex"><br>4. 再原 apk 中添加 dex 文件，加密就已经出来了<br><img src="/./images/3/dex7.png"><br><img src="/./images/3/dex8.png"><br><img src="/./images/3/dex9.png"><br>密钥：I have a male fish and a female fish<br>获取密文：</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> base64</span><br><span class="line">m = [-<span class="number">120</span>, <span class="number">77</span>, -<span class="number">14</span>, -<span class="number">38</span>, <span class="number">17</span>, <span class="number">5</span>, -<span class="number">42</span>, <span class="number">44</span>, -<span class="number">32</span>, <span class="number">109</span>, <span class="number">85</span>, <span class="number">31</span>, <span class="number">24</span>, -<span class="number">91</span>, -<span class="number">112</span>, -<span class="number">83</span>,</span><br><span class="line"><span class="number">64</span>, -<span class="number">83</span>, -<span class="number">128</span>, <span class="number">84</span>, <span class="number">5</span>, -<span class="number">94</span>, -<span class="number">98</span>, -<span class="number">30</span>, <span class="number">18</span>, <span class="number">70</span>, -<span class="number">26</span>, <span class="number">71</span>, <span class="number">5</span>, -<span class="number">99</span>, -<span class="number">62</span>, -<span class="number">58</span>, <span class="number">117</span>, <span class="number">29</span>,</span><br><span class="line">-<span class="number">44</span>, <span class="number">6</span>, <span class="number">112</span>, -<span class="number">4</span>, <span class="number">81</span>, <span class="number">84</span>, <span class="number">9</span>, <span class="number">22</span>, -<span class="number">51</span>, <span class="number">95</span>, -<span class="number">34</span>, <span class="number">12</span>, <span class="number">47</span>, <span class="number">77</span>]</span><br><span class="line">data = []</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> m:</span><br><span class="line">    data.append(i&amp;<span class="number">0xFF</span>)</span><br><span class="line">    <span class="comment">#i&amp;0xFF 操作将有符号整数转换为无符号字</span></span><br><span class="line"><span class="built_in">print</span>(base64.b64encode(<span class="built_in">bytes</span>(data)))</span><br><span class="line"></span><br><span class="line"><span class="comment">#b&#x27;iE3y2hEF1izgbVUfGKWQrUCtgFQFop7iEkbmRwWdwsZ1HdQGcPxRVAkWzV/eDC9N&#x27;</span></span><br></pre></td></tr></table></figure>
+<p>网站在线解密<br><img src="/./images/3/dex10.png"></p>
+<blockquote>
+<p>qwb{TH3y_Io&lt;e_EACh_OTh3r_FOrEUER}</p>
+</blockquote>
+<h3 id="easyjni"><a href="#easyjni" class="headerlink" title="easyjni"></a>easyjni</h3><p><strong>变种base64 算法逆向</strong> </p>
+<ol>
+<li>jadx 打开,看 MainACtivity ,关键方法：<br><code>a(String str)</code>方法</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="type">boolean</span> <span class="title function_">a</span><span class="params">(String str)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> ncheck(<span class="keyword">new</span> <span class="title class_">a</span>().a(str.getBytes()));</span><br><span class="line">    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>new a().a(str.getBytes()) 先对输入进行某种处理<br>然后调用 native 方法 ncheck() 进行验证<br><code>ncheck(String str)</code>方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">native</span> <span class="type">boolean</span> <span class="title function_">ncheck</span><span class="params">(String str)</span>;</span><br></pre></td></tr></table></figure>
+<p>声明了一个本地方法，实现在 libnative.so 中</p>
+<p>查看 a 函数 ,可以分析推测出这是一个变种 base64<br><img src="/./images/3/jni1.png"></p>
+<ol start="2">
+<li>分析 so 文件, ida 打开,找到<code>Java_com_a_easyjni_MainActivity_ncheck</code>,</li>
+</ol>
+<ul>
+<li><code>v5 = (const char *)(*(int (__fastcall **)(int, int, _DWORD))(*(_DWORD *)a1 + 676))(a1, a3, 0);</code><br>这一行的等效代码为 <code>const char *input = (*env)-&gt;GetStringUTFChars(env, jstr, NULL);</code>,<br><code>+ 676</code>是 GetStringUTFChars 的偏移量</li>
+<li>第一个循环 : 把输入字符串的前16位和后16位对调</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( <span class="built_in">strlen</span>(input) == <span class="number">32</span> )</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i != <span class="number">16</span>; ++i )</span><br><span class="line">    &#123;</span><br><span class="line">      v7 = &amp;v12[i];   </span><br><span class="line">      v12[i] = input[i + <span class="number">16</span>];</span><br><span class="line">      v8 = input[i];</span><br><span class="line">      v7[<span class="number">16</span>] = v8;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>第二个循环 ： 把每一对字符前后对调</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">v9 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">do</span></span><br><span class="line">    &#123;</span><br><span class="line">    </span><br><span class="line">      v13 = v12[v9];  <span class="comment">// v13 =v12[0] </span></span><br><span class="line">      v12[v9] = v12[v9 + <span class="number">1</span>];  <span class="comment">//v12[0]=v12[1]</span></span><br><span class="line">      v12[v9 + <span class="number">1</span>] = v13;  <span class="comment">//v12[1]=v13</span></span><br><span class="line">      v9 += <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ol start="3">
+<li>解题脚本</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">decode</span>(<span class="params">base64_str</span>):</span><br><span class="line">    base64_charset = <span class="string">&quot;i5jLW7S0GX6uf1cv3ny4q8es2Q+bdkYgKOIT/tAxUrFlVPzhmow9BHCMDpEaJRZN&quot;</span></span><br><span class="line">    base64_bytes = [<span class="string">&#x27;&#123;:0&gt;6&#125;&#x27;</span>.<span class="built_in">format</span>(<span class="built_in">str</span>(<span class="built_in">bin</span>(base64_charset.index(s))).replace(<span class="string">&#x27;0b&#x27;</span>, <span class="string">&#x27;&#x27;</span>)) <span class="keyword">for</span> s <span class="keyword">in</span> base64_str <span class="keyword">if</span></span><br><span class="line">                    s != <span class="string">&#x27;=&#x27;</span>]</span><br><span class="line">    resp = <span class="built_in">bytearray</span>()</span><br><span class="line">    nums = <span class="built_in">len</span>(base64_bytes) // <span class="number">4</span></span><br><span class="line">    remain = <span class="built_in">len</span>(base64_bytes) % <span class="number">4</span></span><br><span class="line">    integral_part = base64_bytes[<span class="number">0</span>:<span class="number">4</span> * nums]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> integral_part:</span><br><span class="line">        tmp_unit = <span class="string">&#x27;&#x27;</span>.join(integral_part[<span class="number">0</span>:<span class="number">4</span>])</span><br><span class="line">        tmp_unit = [<span class="built_in">int</span>(tmp_unit[x: x + <span class="number">8</span>], <span class="number">2</span>) <span class="keyword">for</span> x <span class="keyword">in</span> [<span class="number">0</span>, <span class="number">8</span>, <span class="number">16</span>]]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> tmp_unit:</span><br><span class="line">            resp.append(i)</span><br><span class="line">        integral_part = integral_part[<span class="number">4</span>:]</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> remain:</span><br><span class="line">        remain_part = <span class="string">&#x27;&#x27;</span>.join(base64_bytes[nums * <span class="number">4</span>:])</span><br><span class="line">        tmp_unit = [<span class="built_in">int</span>(remain_part[i * <span class="number">8</span>:(i + <span class="number">1</span>) * <span class="number">8</span>], <span class="number">2</span>) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(remain - <span class="number">1</span>)]</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> tmp_unit:</span><br><span class="line">            resp.append(i)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> resp</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    flag_1 = <span class="string">&#x27;MbT3sQgX039i3g==AQOoMQFPskB1Bsc7&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;加密后的字符串：&#x27;</span>,flag_1)</span><br><span class="line">    <span class="comment"># 前后16位调换位置</span></span><br><span class="line">    flag_2 = flag_1[<span class="built_in">len</span>(flag_1)//<span class="number">2</span>:] + flag_1[<span class="number">0</span>:<span class="built_in">len</span>(flag_1)//<span class="number">2</span>]</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;前后16位调换位置:&#x27;</span>,flag_2)</span><br><span class="line">    flag_3 = <span class="string">&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(flag_2)//<span class="number">2</span>):</span><br><span class="line">        flag_3 += flag_2[i*<span class="number">2</span>+<span class="number">1</span>] + flag_2[i*<span class="number">2</span>]</span><br><span class="line">      </span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;前后两位调换位置：&#x27;</span>,flag_3)</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;解密后：&#x27;</span>,decode(flag_3))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 加密后的字符串： MbT3sQgX039i3g==AQOoMQFPskB1Bsc7</span></span><br><span class="line"><span class="comment"># 前后16位调换位置: AQOoMQFPskB1Bsc7MbT3sQgX039i3g==</span></span><br><span class="line"><span class="comment"># 前后两位调换位置： QAoOQMPFks1BsB7cbM3TQsXg30i9g3==</span></span><br><span class="line"><span class="comment"># 解密后： bytearray(b&#x27;flag&#123;just_ANot#er_@p3&#125;&#x27;)</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>flag{just_ANot#er_@p3}</p>
+</blockquote>
+<h3 id="easyjava"><a href="#easyjava" class="headerlink" title="easyjava"></a>easyjava</h3><p><strong>算法逆向</strong></p>
+<ol>
+<li><code>jadx</code>打开,分析 MainActivity,主要逻辑大概是先提取中间部分(去除flag{}),然后对传入的每个字符调用a()方法,而a()方法中是先调用b.a(str)，再调用a.a(结果)<br><img src="/./images/3/ezjava1.png"></li>
+<li>看 a 类和 b 类,主逻辑分别是将传入的整数返回对应的映射字符,以及传入的字符返回对应的映射整数</li>
+<li>解密脚本</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">cipherText = &#x27;wigwrkaugala&#x27;</span><br><span class="line"></span><br><span class="line">aArray = [21,4,24,25,20,5,15,9,17,6,13,3,18,12,10,19,0,22,2,11,23,1,8,7,14,16]</span><br><span class="line">aString = &#x27;abcdefghijklmnopqrstuvwxyz&#x27;</span><br><span class="line"></span><br><span class="line">bArray = [17,23,7,22,1,16,6,9,21,0,15,5,10,18,2,24,4,11,3,14,19,12,20,13,8,25]</span><br><span class="line">bString = &#x27;abcdefghijklmnopqrstuvwxyz&#x27;</span><br><span class="line"></span><br><span class="line">def changeBArrayandString():</span><br><span class="line">	global bString</span><br><span class="line">	global bArray</span><br><span class="line">	chArray = bArray[0]</span><br><span class="line">	chString = bString[0:1]</span><br><span class="line">	#切片 [0:1] 保留原始类型（bytes），而索引 [0] 返回的是整数值</span><br><span class="line">	for i in range(len(bArray) - 1):</span><br><span class="line">		bArray[i] = bArray[i + 1]</span><br><span class="line">	bArray[len(bArray) - 1] = chArray</span><br><span class="line">	bString = bString[1:]</span><br><span class="line">	bString += chString</span><br><span class="line">	#分别把bString和bArray中的每一个元素往前移动一位，首位元素放到末尾</span><br><span class="line">	</span><br><span class="line"></span><br><span class="line">def getBchar(ch):</span><br><span class="line">	#根据输入的整数ch获取对应的字符</span><br><span class="line">	v2 = bArray[ch]</span><br><span class="line">	#使用ch作为索引,获取bArray中的对应元素</span><br><span class="line">	arg = bString[v2]</span><br><span class="line">	#使用v2作为索引,获取bString中的对应元素</span><br><span class="line">	changeBArrayandString()</span><br><span class="line">	return arg</span><br><span class="line"></span><br><span class="line">def getAint(ch):</span><br><span class="line">	#根据输入的字符ch获取对应的整数</span><br><span class="line">	global aString</span><br><span class="line">	global aArray</span><br><span class="line">	v1 = aString.index(ch)</span><br><span class="line">	#获取对应字符的索引</span><br><span class="line">	arg5 = aArray[v1]</span><br><span class="line">	return arg5</span><br><span class="line">	</span><br><span class="line">print(&#x27;flag&#123;&#x27;,end=&#x27;&#x27;)</span><br><span class="line">for k in cipherText:</span><br><span class="line">	#先得到密文的索引</span><br><span class="line">	v0 = getAint(k)</span><br><span class="line">	print(getBchar(v0),end=&#x27;&#x27;)</span><br><span class="line">print(&#x27;&#125;&#x27;)</span><br></pre></td></tr></table></figure>
+
+<h3 id="android-2-0"><a href="#android-2-0" class="headerlink" title="android 2.0"></a>android 2.0</h3><p><strong>算法逆向</strong></p>
+<ol>
+<li>将apk文件放入<code>jadx</code>中,源代码里面找到<code>MainActiviy</code>,找到关键部分函数<br><img src="/./images/3/3.png" alt="mainactivity"></li>
+</ol>
+<ul>
+<li>这段代码的功能：</li>
+</ul>
+<p>这段代码实现了一个简单的 Android 应用,它有一个按钮、一个文本框和一个显示结果的文本。<br>用户在文本框(EditText)里输入一个字符串(可能是密码),<br>然后点击按钮时,代码会调用一个名为 JNI.getResult(str) 的本地方法来判断密码是否正确</p>
+<p>如果 JNI.getResult(str) 返回 0,界面会显示 “Wrong”<br>如果 JNI.getResult(str) 返回 1,界面会显示 “Great”</p>
+<p>点进<code>JNI</code><br><img src="/./images/3/4.png" alt="mainactivity2"></p>
+<p>关键部分是 JNI.getResult(str):<br>JNI.getResult(str) 是一个 本地方法，也就是说，它的实现并不在 Java 代码里，而是在 C&#x2F;C++ 代码中，并且通过 JNI(Java Native Interface)被调用。</p>
+<p>这意味着需要分析那个本地的<code>.so文件</code>,找出这个getResult 方法的实现<br>2. 修改后缀,将.apk改成.zip,解压后找到.so文件,把<code>libNative.so</code>用<code>IDA</code>打开,找到几个关键函数<br>   <img src="/./images/3/6.png" alt=".so"><br>3. </p>
+<ul>
+<li>分析<code>First</code>函数<br>   <img src="/./images/3/7.png" alt="First"><br>   还原：先异或0x80，再除以2</li>
+</ul>
+   <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">First</span>():</span><br><span class="line">     enc=<span class="string">&quot;LN^dl&quot;</span></span><br><span class="line">     dec=<span class="string">&quot;&quot;</span></span><br><span class="line">     <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">4</span>):</span><br><span class="line">         dec+=(<span class="built_in">chr</span>(<span class="built_in">int</span>((<span class="built_in">ord</span>(enc[i])^<span class="number">0x80</span>)/<span class="number">2</span>)))</span><br><span class="line">     dec+=<span class="string">&#x27;l&#x27;</span></span><br><span class="line">     <span class="built_in">print</span>(dec)</span><br><span class="line">First()</span><br><span class="line"> <span class="comment">#fgorl</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>分析<code>Second</code>函数<br>  <img src="/./images/3/8.png" alt="second"><br>  直接异或还原</li>
+</ul>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">second</span>():</span><br><span class="line">  a5=[<span class="built_in">ord</span>(<span class="string">&#x27; &#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;5&#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;-&#x27;</span>),<span class="number">0x16</span>,<span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)]</span><br><span class="line">  a1=[<span class="built_in">ord</span>(<span class="string">&#x27;L&#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;N&#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;^&#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;d&#x27;</span>),<span class="built_in">ord</span>(<span class="string">&#x27;l&#x27;</span>)]</span><br><span class="line">  s1=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">4</span>):</span><br><span class="line">      x=a5[i]^a1[i]</span><br><span class="line">      s1+=<span class="built_in">chr</span>(x)</span><br><span class="line">  s1+=<span class="string">&#x27;a&#x27;</span></span><br><span class="line">  <span class="built_in">print</span>(s1)</span><br><span class="line">second()</span><br><span class="line"><span class="comment">#l&#123;sra</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li><code>Third</code>同理<br>  <img src="/./images/3/9.png" alt="third"><br>  如果v6&#x3D;a5就执行异或操作，所以v6&#x3D;a5</li>
+</ul>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="keyword">def</span> <span class="title function_">third</span>():</span><br><span class="line">    a5 = [<span class="built_in">ord</span>(<span class="string">&#x27; &#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;5&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;-&#x27;</span>), <span class="number">0x16</span>, <span class="built_in">ord</span>(<span class="string">&#x27;a&#x27;</span>)]</span><br><span class="line">    dec = [<span class="built_in">ord</span>(<span class="string">&#x27;A&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;F&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;B&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;o&#x27;</span>), <span class="built_in">ord</span>(<span class="string">&#x27;&#125;&#x27;</span>)]</span><br><span class="line">    enc = <span class="string">&quot;&quot;</span>  </span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>, <span class="number">4</span>):</span><br><span class="line">        x = a5[i] ^ dec[i]</span><br><span class="line">        enc += <span class="built_in">chr</span>(x)</span><br><span class="line">    enc += <span class="string">&#x27;&#125;&#x27;</span></span><br><span class="line">    <span class="built_in">print</span>(enc)</span><br><span class="line"></span><br><span class="line">third()</span><br><span class="line"><span class="comment">#asoy&#125;</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>由<code>Init</code>函数还原flag</li>
+<li>Init函数是将输入的长度为15的字符串，每三个为一组，得到三组字符串（即刚刚解出的三组数据）</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">decode</span>():</span><br><span class="line">  s1=<span class="string">&quot;fgorl&quot;</span></span><br><span class="line">  s2=<span class="string">&quot;l&#123;sra&quot;</span></span><br><span class="line">  s3=<span class="string">&quot;asoy&#125;&quot;</span></span><br><span class="line">  flag=<span class="string">&quot;&quot;</span></span><br><span class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">5</span>):</span><br><span class="line">     flag+=s1[i]+s2[i]+s3[i]</span><br><span class="line">  <span class="built_in">print</span>(flag)</span><br><span class="line">decode()</span><br><span class="line"><span class="comment">#flag&#123;sosorryla&#125;</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>flag{sosorryla}</p>
+</blockquote>
+<h3 id="基础android"><a href="#基础android" class="headerlink" title="基础android"></a>基础android</h3><p><strong>用misc方法解题了</strong></p>
+<ol>
+<li>将apk文件放入<code>010editor</code>中，发现文件头是<strong>50 4B 03 04</strong>是zip文件,修改后缀,解压<br><img src="/./images/3/1.png" alt="解压"></li>
+<li>在assets文件夹下发现<code>time_2.zip</code>,放入<code>010editor</code>，文件头是<strong>FF D8 FF</strong>,jpg文件,修改后缀,打开后是一张图片<img src="/./images/3/2.jpg" alt="flag"><blockquote>
+<p>flag{08067-wlecome}</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="APK逆向"><a href="#APK逆向" class="headerlink" title="APK逆向"></a>APK逆向</h3><ol>
+<li>打开apk文件,用<code>jadx</code>打开，找到关键<code>MainActiivty</code>,<br>注意到<code>edit_sn</code>和<code>edit_userName</code>,找到<code>edit_userName = &quot;Tenshine&quot;</code>,</li>
+<li>在<code>CheckSN</code>中看到代码逻辑<br><img src="/./images/3/10.png" alt="checksn"><br>md5加密,转为hex字符,for循环注意<strong>i+&#x3D;2</strong></li>
+<li>解题脚本</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> hashlib</span><br><span class="line"><span class="built_in">str</span>=<span class="string">b&quot;Tenshine&quot;</span></span><br><span class="line">str1=hashlib.md5(<span class="built_in">str</span>).hexdigest()</span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(str1)):</span><br><span class="line">    <span class="keyword">if</span>(i%<span class="number">2</span>==<span class="number">0</span>):</span><br><span class="line">        flag+=str1[i]</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#bc72f242a6af3857a</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>bc72f242a6af3857a</p>
+</blockquote>
+<h3 id="APK逆向-2"><a href="#APK逆向-2" class="headerlink" title="APK逆向-2"></a>APK逆向-2</h3><ol>
+<li>用 jadx 打开后发现<code>AndroidManifest</code>反编译失败,改 apk 后缀为 zip ,解压后把<code>AndroidManifest</code>放进 010editor ,发现有两处错误<br><img src="/./images/3/14.png"><br>第一处 ： Chunk Type : 4 bytes，始终为 0x001c0001<br>第二处 ： Unkown : 4 bytes,固定值，0x00000000</li>
+<li>修改之后<br><img src="/./images/3/13.png"></li>
+<li>把修改后的文件重新压缩,再改后缀 zip 为 apk ,重新放进jadx中打开可以看到<code>AndroidManifest</code>可以被成功反编译了，flag即出<blockquote>
+<p>8d6efd232c63b7d2</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="app1"><a href="#app1" class="headerlink" title="app1"></a>app1</h3><ol>
+<li>用<code>jadx</code>打开，<code>MainAvtivity</code>里面发现有个<code>versionCode</code>和<code>versionName</code>,在<code>BuildConfig</code>里面看到关键信息<br><img src="/./images/3/11.png" alt="buildconfig"></li>
+<li>将apk在模拟器上运行，会发现随便输入会弹出“再接再厉，加油~”，不输入会弹出“”年轻人不要耍小聪明噢”,结合代码梳理出逻辑：</li>
+</ol>
+<p>先检查 inputString 是否满足 versionCode.charAt(i) ^ versionName 规则<br>再检查长度是否相等<br>两者同时满足，显示 “恭喜开启闯关之门！”</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">versionName=<span class="string">&quot;X&lt;cP[?PHNB&lt;P?aj&quot;</span></span><br><span class="line">versionCode=<span class="number">15</span></span><br><span class="line">flag=<span class="string">&quot;&quot;</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(versionName)):</span><br><span class="line">   flag+=<span class="built_in">chr</span>(<span class="built_in">ord</span>(versionName[i])^versionCode)</span><br><span class="line"><span class="built_in">print</span>(flag)</span><br><span class="line"><span class="comment">#W3l_T0_GAM3_0ne</span></span><br></pre></td></tr></table></figure>
+<p>flag为</p>
+<blockquote>
+<p>W3l_T0_GAM3_0ne</p>
+</blockquote>
+<h3 id="app3"><a href="#app3" class="headerlink" title="app3"></a>app3</h3><ol>
+<li>下载附件后是一个 .ab 文件,这是安卓备份格式的文件,它分为加密和未加密两种类型,.ab 文件的前 24 个字节是类似文件头的东西，如果是加密的,在前 24 个字节中会有 AES-256 的标志,如果未加密,则在前 24 个字节中会有 none 的标志;对于没有加密的ab 文件,可以用以下指令解压<br><code>java -jar abp.jar unpack app3.ab app3.jar</code><br>解压后可以看到里面有一个 base.apk,还有两个数据库文件,用DB Browser打开发现是加密的,需要去找密钥</li>
+<li>把app3.jar 直接用 jadx 打开,找到MainActivity,注意到在 OnCreate之后调用了函数a</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">a</span><span class="params">()</span> &#123;</span><br><span class="line">        SQLiteDatabase.loadLibs(<span class="built_in">this</span>); </span><br><span class="line">        <span class="built_in">this</span>.b = <span class="keyword">new</span> <span class="title class_">a</span>(<span class="built_in">this</span>, <span class="string">&quot;Demo.db&quot;</span>, <span class="literal">null</span>, <span class="number">1</span>);</span><br><span class="line">        <span class="type">ContentValues</span> <span class="variable">contentValues</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ContentValues</span>();</span><br><span class="line">        contentValues.put(<span class="string">&quot;name&quot;</span>, <span class="string">&quot;Stranger&quot;</span>);</span><br><span class="line">        contentValues.put(<span class="string">&quot;password&quot;</span>, (Integer) <span class="number">123456</span>);</span><br><span class="line">        com.example.yaphetshan.tencentwelcome.a.<span class="type">a</span> <span class="variable">aVar</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">com</span>.example.yaphetshan.tencentwelcome.a.a();</span><br><span class="line">        <span class="type">String</span> <span class="variable">a</span> <span class="operator">=</span> aVar.a(contentValues.getAsString(<span class="string">&quot;name&quot;</span>), contentValues.getAsString(<span class="string">&quot;password&quot;</span>));</span><br><span class="line">        <span class="built_in">this</span>.a = <span class="built_in">this</span>.b.getWritableDatabase(aVar.a(a + aVar.b(a, contentValues.getAsString(<span class="string">&quot;password&quot;</span>))).substring(<span class="number">0</span>, <span class="number">7</span>));</span><br><span class="line">        <span class="built_in">this</span>.a.insert(<span class="string">&quot;TencentMicrMsg&quot;</span>, <span class="literal">null</span>, contentValues);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>加载SQLite数据库库文件</li>
+<li>创建一个名为a的SQLiteOpenHelper子类实例</li>
+<li>建ContentValues对象,用于存储要插入数据库的键值对,向contentValues添加键值对 name:Stranger,password:123456</li>
+<li>实例化了一个com.example.yaphetshan.tencentwelcome.a.a类 </li>
+<li>调用aVar的a方法,传入name和password,返回一个字符串结果。点进去注意到这一块代码：取传入的两个字符串的前四位作为返回值,即得到”Stra”和”1234”</li>
+<li>先调用aVar.b方法处理 a 和 password,然后与 a 拼接,再用aVar.a方法处理拼接后的字符串,然后取前七个字符作为数据库的密钥<br>获取密钥的脚本如下：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.security.MessageDigest;</span><br><span class="line"><span class="keyword">import</span> java.util.*;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">b</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">b</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span></span><br><span class="line">    &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">varV2</span> <span class="operator">=</span> <span class="string">&quot;Stra1234&quot;</span>;</span><br><span class="line">        <span class="type">String</span> <span class="variable">varV1B</span> <span class="operator">=</span> a(varV2);</span><br><span class="line">        <span class="type">String</span> <span class="variable">varKey</span> <span class="operator">=</span> varV2 + varV1B + <span class="string">&quot;yaphetshan&quot;</span>;</span><br><span class="line">        System.out.print(<span class="string">&quot;KEY = &quot;</span>);</span><br><span class="line">        System.out.print(b(varKey).substring(<span class="number">0</span>,<span class="number">7</span>));</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String <span class="title function_">a</span><span class="params">(String arg9)</span> &#123;</span><br><span class="line">        String v0_2;</span><br><span class="line">        <span class="type">int</span> <span class="variable">v0</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">char</span>[] v2 = <span class="keyword">new</span> <span class="title class_">char</span>[]&#123;<span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;3&#x27;</span>, <span class="string">&#x27;4&#x27;</span>, <span class="string">&#x27;5&#x27;</span>, <span class="string">&#x27;6&#x27;</span>, <span class="string">&#x27;7&#x27;</span>, <span class="string">&#x27;8&#x27;</span>, <span class="string">&#x27;9&#x27;</span>, <span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>, <span class="string">&#x27;c&#x27;</span>, <span class="string">&#x27;d&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;f&#x27;</span>&#125;;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">byte</span>[] v1 = arg9.getBytes();</span><br><span class="line">            <span class="type">MessageDigest</span> <span class="variable">v3</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;MD5&quot;</span>);</span><br><span class="line">            v3.update(v1);</span><br><span class="line">            <span class="type">byte</span>[] v3_1 = v3.digest();</span><br><span class="line">            <span class="type">int</span> <span class="variable">v4</span> <span class="operator">=</span> v3_1.length;</span><br><span class="line">            <span class="type">char</span>[] v5 = <span class="keyword">new</span> <span class="title class_">char</span>[v4 * <span class="number">2</span>];</span><br><span class="line">            <span class="type">int</span> <span class="variable">v1_1</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span>(v0 &lt; v4) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">v6</span> <span class="operator">=</span> v3_1[v0];</span><br><span class="line">                <span class="type">int</span> <span class="variable">v7</span> <span class="operator">=</span> v1_1 + <span class="number">1</span>;</span><br><span class="line">                v5[v1_1] = v2[v6 &gt;&gt;&gt; <span class="number">4</span> &amp; <span class="number">15</span>];</span><br><span class="line">                v1_1 = v7 + <span class="number">1</span>;</span><br><span class="line">                v5[v7] = v2[v6 &amp; <span class="number">15</span>];</span><br><span class="line">                ++v0;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            v0_2 = <span class="keyword">new</span> <span class="title class_">String</span>(v5);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(Exception v0_1) &#123;</span><br><span class="line">            v0_2 = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> v0_2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> String <span class="title function_">b</span><span class="params">(String arg9)</span> &#123;</span><br><span class="line">        String v0_2;</span><br><span class="line">        <span class="type">int</span> <span class="variable">v0</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="type">char</span>[] v2 = <span class="keyword">new</span> <span class="title class_">char</span>[]&#123;<span class="string">&#x27;0&#x27;</span>, <span class="string">&#x27;1&#x27;</span>, <span class="string">&#x27;2&#x27;</span>, <span class="string">&#x27;3&#x27;</span>, <span class="string">&#x27;4&#x27;</span>, <span class="string">&#x27;5&#x27;</span>, <span class="string">&#x27;6&#x27;</span>, <span class="string">&#x27;7&#x27;</span>, <span class="string">&#x27;8&#x27;</span>, <span class="string">&#x27;9&#x27;</span>, <span class="string">&#x27;a&#x27;</span>, <span class="string">&#x27;b&#x27;</span>, <span class="string">&#x27;c&#x27;</span>, <span class="string">&#x27;d&#x27;</span>, <span class="string">&#x27;e&#x27;</span>, <span class="string">&#x27;f&#x27;</span>&#125;;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="type">byte</span>[] v1 = arg9.getBytes();</span><br><span class="line">            <span class="type">MessageDigest</span> <span class="variable">v3</span> <span class="operator">=</span> MessageDigest.getInstance(<span class="string">&quot;SHA-1&quot;</span>);</span><br><span class="line">            v3.update(v1);</span><br><span class="line">            <span class="type">byte</span>[] v3_1 = v3.digest();</span><br><span class="line">            <span class="type">int</span> <span class="variable">v4</span> <span class="operator">=</span> v3_1.length;</span><br><span class="line">            <span class="type">char</span>[] v5 = <span class="keyword">new</span> <span class="title class_">char</span>[v4 * <span class="number">2</span>];</span><br><span class="line">            <span class="type">int</span> <span class="variable">v1_1</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span>(v0 &lt; v4) &#123;</span><br><span class="line">                <span class="type">int</span> <span class="variable">v6</span> <span class="operator">=</span> v3_1[v0];</span><br><span class="line">                <span class="type">int</span> <span class="variable">v7</span> <span class="operator">=</span> v1_1 + <span class="number">1</span>;</span><br><span class="line">                v5[v1_1] = v2[v6 &gt;&gt;&gt; <span class="number">4</span> &amp; <span class="number">15</span>];</span><br><span class="line">                v1_1 = v7 + <span class="number">1</span>;</span><br><span class="line">                v5[v7] = v2[v6 &amp; <span class="number">15</span>];</span><br><span class="line">                ++v0;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            v0_2 = <span class="keyword">new</span> <span class="title class_">String</span>(v5);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span>(Exception v0_1) &#123;</span><br><span class="line">            v0_2 = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> v0_2;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行得出 KEY &#x3D; ae56f99<br>3. 用这个密钥打开 Encryto.db ,浏览数据可以看到<code>GN0ZntIM2xsMF9Eb19ZMHVfTG92M19UZW5jM250IX0=</code>,base64解码,</p>
+<blockquote>
+<p>Tctf{H3ll0_Do_Y0u_Lov3_Tenc3nt!}</p>
+</blockquote>
+
+        
+      </div>
+
+         
+    </div>
+    
+     
+  </div>
+  
+    
+<nav id="article-nav">
+  <a class="article-nav-btn left  disabled "
+     >
+    <i class="fa-solid fa-angle-left"></i>
+    <p class="title-text">
+        
+    </p>
+  </a>
+  <a class="article-nav-btn right "
+    
+      href="/2025/03/27/3/"
+      title="OLLVM"
+     >
+
+    <p class="title-text">
+      
+        OLLVM
+        
+    </p>
+    <i class="fa-solid fa-angle-right"></i>
+  </a>
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+    </div>
+    <div id="footer-wrapper">
+      <footer id="footer">
+  
+  <div id="footer-info" class="inner">
+    
+    &copy; 2025 Eleven.<br>
+    Powered by <a href="https://hexo.io/" target="_blank">Hexo</a> & Theme <a target="_blank" rel="noopener" href="https://github.com/saicaca/hexo-theme-vivia">Vivia</a>
+  </div>
+</footer>
+
+    </div>
+    <div class="back-to-top-wrapper">
+    <button id="back-to-top-btn" class="back-to-top-btn hide" onclick="topFunction()">
+        <i class="fa-solid fa-angle-up"></i>
+    </button>
+</div>
+
+<script>
+    function topFunction() {
+        window.scroll({ top: 0, behavior: 'smooth' });
+    }
+    let btn = document.getElementById('back-to-top-btn');
+    function scrollFunction() {
+        if (document.body.scrollTop > 600 || document.documentElement.scrollTop > 600) {
+            btn.classList.remove('hide')
+        } else {
+            btn.classList.add('hide')
+        }
+    }
+    window.onscroll = function() {
+        scrollFunction();
+    }
+</script>
+
+  </div>
+  <script src="/js/light-dark-switch.js"></script>
+</body>
+</html>
