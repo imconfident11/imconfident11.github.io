@@ -28,7 +28,7 @@
 <meta property="og:description" content="0x00 前言 LLVM是一个优秀的编译器框架,采用经典的三段式设计。前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树AST,然后将分析好的代码转换成LLVM的中间表示IR(intermediate representation);Pass对IR做优化,后端(Backend)负责将优化好的IR解释成对应平台的机器码. 从字面看,OLLVM就是在LLVM的基础上增加了obfuscato">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-03-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-04-11T04:48:54.447Z">
+<meta property="article:modified_time" content="2025-04-11T05:05:36.382Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="-Reverse -混淆 -Android">
 <meta name="twitter:card" content="summary">
@@ -148,13 +148,13 @@
       <h3 class="widget-title">分类</h3>
       <div class="category-box">
             <a class="category-link" href="/categories/CTF/">
-                CTF
-                <div class="category-count">1</div>
+                -CTF
+                <div class="category-count">2</div>
             </a>
         
             <a class="category-link" href="/categories/CTF/">
-                -CTF
-                <div class="category-count">4</div>
+                CTF
+                <div class="category-count">3</div>
             </a>
         </div>
     </div>
@@ -220,11 +220,11 @@
       </header>
       <div class="e-content article-entry" itemprop="articleBody">
         
-          <h3 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h3><ol>
+          <h3><span id="0x00-前言">0x00 前言</span></h3><ol>
 <li><strong>LLVM</strong>是一个优秀的编译器框架,采用经典的三段式设计。前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树AST,然后将分析好的代码转换成LLVM的中间表示IR(intermediate representation);<strong>Pass对IR做优化</strong>,后端(Backend)负责将优化好的IR解释成对应平台的机器码.</li>
 <li>从字面看,OLLVM就是在LLVM的基础上增加了obfuscator（混淆）,LLVM的pass是用来优化分析的,将这些pass的功能改为混淆代码,就是<strong>OLLVM</strong>项目.</li>
 </ol>
-<h3 id="0x01-OLLVM的几种混淆方式"><a href="#0x01-OLLVM的几种混淆方式" class="headerlink" title="0x01 OLLVM的几种混淆方式"></a>0x01 OLLVM的几种混淆方式</h3><p><strong>1.指令替换（Instructions Substitution）</strong><br>用功能等效但更复杂的指令序列替换标准的二进制运算符（如加法、减法或布尔运算符）。当有多个等效指令序列时,随机选择一个。<br>如：</p>
+<h3><span id="0x01-ollvm的几种混淆方式">0x01 OLLVM的几种混淆方式</span></h3><p><strong>1.指令替换（Instructions Substitution）</strong><br>用功能等效但更复杂的指令序列替换标准的二进制运算符（如加法、减法或布尔运算符）。当有多个等效指令序列时,随机选择一个。<br>如：</p>
 <ul>
 <li>加法：<code>a = -(-b + (-c))</code>  ,<code>r = rand (); a = b + r; a = a + c; a = a - r</code></li>
 <li>AND：<code>a = b &amp; c =&gt; a = (b ^ ~c) &amp; b</code></li>

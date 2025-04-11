@@ -148,13 +148,13 @@
       <h3 class="widget-title">分类</h3>
       <div class="category-box">
             <a class="category-link" href="/categories/CTF/">
-                CTF
-                <div class="category-count">1</div>
+                -CTF
+                <div class="category-count">2</div>
             </a>
         
             <a class="category-link" href="/categories/CTF/">
-                -CTF
-                <div class="category-count">4</div>
+                CTF
+                <div class="category-count">3</div>
             </a>
         </div>
     </div>
@@ -220,8 +220,8 @@
       </header>
       <div class="e-content article-entry" itemprop="articleBody">
         
-          <h3 id="题目描述"><a href="#题目描述" class="headerlink" title="题目描述"></a>题目描述</h3><p>没有通常会给的已知文件，只给了一个压缩包，里面是被加密的一张png图片</p>
-<h4 id="了解一下-明文攻击"><a href="#了解一下-明文攻击" class="headerlink" title="了解一下 明文攻击"></a>了解一下 <code>明文攻击</code></h4><ul>
+          <h3><span id="题目描述">题目描述</span></h3><p>没有通常会给的已知文件，只给了一个压缩包，里面是被加密的一张png图片</p>
+<h4><span id="了解一下-明文攻击">了解一下 <code>明文攻击</code></span></h4><ul>
 <li>符合哪些特征可以使用明文攻击<ol>
 <li>Zip文件</li>
 <li>文件均为ZipCrypto加密</li>
@@ -229,7 +229,7 @@
 </ol>
 </li>
 </ul>
-<h3 id="解题思路"><a href="#解题思路" class="headerlink" title="解题思路"></a>解题思路</h3><ol>
+<h3><span id="解题思路">解题思路</span></h3><ol>
 <li>获取png文件头,得到png_hearder文件</li>
 </ol>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 十六进制字符串</span></span><br><span class="line">hex_string = <span class="string">&quot;89504E470D0A1A0A0000000D49484452&quot;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 将十六进制字符串转换为字节数据</span></span><br><span class="line">binary_data = <span class="built_in">bytes</span>.fromhex(hex_string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 将字节数据写入文件</span></span><br><span class="line"><span class="keyword">with</span> <span class="built_in">open</span>(<span class="string">&quot;png_header&quot;</span>, <span class="string">&quot;wb&quot;</span>) <span class="keyword">as</span> f:</span><br><span class="line">    f.write(binary_data)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(<span class="string">&quot;文件 &#x27;png_header&#x27; 已成功创建！&quot;</span>)</span><br></pre></td></tr></table></figure>
