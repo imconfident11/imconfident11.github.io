@@ -19,12 +19,12 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="jn&#x2F;jnz 指令jn是无条件跳转，jnz是有条件跳转ida 打开有飘红的地方看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 U(undefine)一下看到更细的汇编再 nop把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码最后在标签的位置(l">
+    <meta name="description" content="jn&#x2F;jnz 指令1.jn是无条件跳转，jnz是有条件跳转ida 打开有飘红的地方看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 U(undefine)一下看到更细的汇编再 nop把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码最后在标签的位置(">
 <meta property="og:type" content="article">
 <meta property="og:title" content="花指令">
 <meta property="og:url" content="http://example.com/2025/04/28/hua/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="jn&#x2F;jnz 指令jn是无条件跳转，jnz是有条件跳转ida 打开有飘红的地方看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 U(undefine)一下看到更细的汇编再 nop把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码最后在标签的位置(l">
+<meta property="og:description" content="jn&#x2F;jnz 指令1.jn是无条件跳转，jnz是有条件跳转ida 打开有飘红的地方看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 U(undefine)一下看到更细的汇编再 nop把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码最后在标签的位置(">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/images/8/h1.png">
 <meta property="og:image" content="http://example.com/images/8/h2.png">
@@ -33,9 +33,16 @@
 <meta property="og:image" content="http://example.com/images/8/h5.png">
 <meta property="og:image" content="http://example.com/images/8/h6.png">
 <meta property="og:image" content="http://example.com/images/8/h7.png">
+<meta property="og:image" content="http://example.com/images/8/h10.png">
+<meta property="og:image" content="http://example.com/images/8/h11.png">
+<meta property="og:image" content="http://example.com/images/8/h12.png">
+<meta property="og:image" content="http://example.com/images/8/h13.png">
+<meta property="og:image" content="http://example.com/images/8/h14.png">
+<meta property="og:image" content="http://example.com/images/8/h15.png">
 <meta property="og:image" content="http://example.com/images/8/h8.png">
+<meta property="og:image" content="http://example.com/images/8/h1.png">
 <meta property="article:published_time" content="2025-04-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-04-29T06:46:06.567Z">
+<meta property="article:modified_time" content="2025-04-29T09:08:22.209Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta name="twitter:card" content="summary_large_image">
@@ -244,7 +251,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          317 字
+          415 字
         
       </span>
     
@@ -255,7 +262,7 @@
         
         
         
-          3 分钟
+          4 分钟
         
       </span>
     
@@ -297,18 +304,19 @@
             
               <div class="markdown-body">
                 
-                <ol>
-<li><p><strong>jn&#x2F;jnz 指令</strong><br>jn是无条件跳转，jnz是有条件跳转<br>ida 打开有飘红的地方<br><img src="/../images/8/h1.png" srcset="/img/loading.gif" lazyload><br>看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址<br><img src="/../images/8/h2.png" srcset="/img/loading.gif" lazyload><br>下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop<br><img src="/../images/8/h3.png" srcset="/img/loading.gif" lazyload><br>把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码<br><img src="/../images/8/h4.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h5.png" srcset="/img/loading.gif" lazyload><br>最后在标签的位置(loc_413364) <code>U</code>一下，<code>P</code>(变成函数)一下，就修好了<br><img src="/../images/8/h6.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h7.png" srcset="/img/loading.gif" lazyload></p>
-</li>
-<li><p><strong>call-retn 指令</strong><br>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址<br>ret指令的本质：pop eip</p>
-</li>
+                <h3 id="jn-jnz-指令"><a href="#jn-jnz-指令" class="headerlink" title="jn&#x2F;jnz 指令"></a>jn&#x2F;jnz 指令</h3><p>1.<br>jn是无条件跳转，jnz是有条件跳转<br>ida 打开有飘红的地方<br><img src="/../images/8/h1.png" srcset="/img/loading.gif" lazyload><br>看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址<br><img src="/../images/8/h2.png" srcset="/img/loading.gif" lazyload><br>下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop<br><img src="/../images/8/h3.png" srcset="/img/loading.gif" lazyload><br>把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码<br><img src="/../images/8/h4.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h5.png" srcset="/img/loading.gif" lazyload><br>最后在标签的位置(loc_413364) <code>U</code>一下，<code>P</code>(变成函数)一下，就修好了<br><img src="/../images/8/h6.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h7.png" srcset="/img/loading.gif" lazyload></p>
+<ol start="2">
+<li>反编译失败，Tab 切换到汇编<br>在 下一条指令即 mov 处 <code>U</code><br><img src="/../images/8/h10.png" srcset="/img/loading.gif" lazyload><br>在 跳转到的地方即 unk_41213F 处 <code>C</code><br><img src="/../images/8/h11.png" srcset="/img/loading.gif" lazyload><br>又多出来两条新的jz jnz，重复上述步骤<br><img src="/../images/8/h12.png" srcset="/img/loading.gif" lazyload><br>所有 jz jnz 出来之后，把这部分代码块都 nop 掉，再在最开始的标签处 <code>U</code> <code>P</code>，就能修复了<br><img src="/../images/8/h13.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h14.png" srcset="/img/loading.gif" lazyload><br>最后f5 就可以了<br><img src="/../images/8/h15.png" srcset="/img/loading.gif" lazyload></li>
 </ol>
+<h3 id="call-retn-指令"><a href="#call-retn-指令" class="headerlink" title="call-retn 指令"></a>call-retn 指令</h3><p>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址<br>ret指令的本质：pop eip</p>
 <p>函数反编译失败，查看汇编<br><img src="/../images/8/h8.png" srcset="/img/loading.gif" lazyload></p>
 <ul>
 <li>将 call 的下一条指令地址（0x412307）压入堆栈</li>
 <li>反汇编器会尝试从 0x412307 开始解析指令，但此处被插入的 0xE8（call 的操作码）误导，导致后续代码解析错误<br><code>add [esp+0F0h+var_F0], 8</code> </li>
 <li>实际操作：var_F0 是 IDA 生成的变量名，表示偏移 -0xF0，因此 esp+0F0h+var_F0 &#x3D; esp</li>
 <li>等效代码：add [esp], 8，即将栈顶的返回地址（原为 0x412307）加 8，修改为 0x41230F<br>retn 的跳转:弹出修改后的返回地址 0x41230F，跳转到此处继续执行</li>
+<li>把 call 到 0x41230F 的代码都 nop 掉<br><img src="/../images/8/h1.png" srcset="/img/loading.gif" lazyload>  </li>
+<li>最后在 sub_4122B0 处 <code>U</code> <code>P</code> <code>F5</code>，就能修复了</li>
 </ul>
 
                 
