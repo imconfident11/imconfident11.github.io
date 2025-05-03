@@ -19,23 +19,40 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="流密码特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20. RC4特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为异或  加密流程简述">
+    <meta name="description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令1.jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转连续两条jn、jnz指令且跳转到同一个地址构造出无条件跳转，">
 <meta property="og:type" content="article">
-<meta property="og:title" content="RE中的密码学">
-<meta property="og:url" content="http://example.com/2025/04/28/crypto/index.html">
+<meta property="og:title" content="花指令">
+<meta property="og:url" content="http://example.com/2025/04/29/hua/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="流密码特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20. RC4特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为异或  加密流程简述">
+<meta property="og:description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令1.jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转连续两条jn、jnz指令且跳转到同一个地址构造出无条件跳转，">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2025-04-27T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-04-29T06:47:43.688Z">
+<meta property="og:image" content="http://example.com/images/8/h1.png">
+<meta property="og:image" content="http://example.com/images/8/h2.png">
+<meta property="og:image" content="http://example.com/images/8/h3.png">
+<meta property="og:image" content="http://example.com/images/8/h4.png">
+<meta property="og:image" content="http://example.com/images/8/h5.png">
+<meta property="og:image" content="http://example.com/images/8/h6.png">
+<meta property="og:image" content="http://example.com/images/8/h7.png">
+<meta property="og:image" content="http://example.com/images/8/h10.png">
+<meta property="og:image" content="http://example.com/images/8/h11.png">
+<meta property="og:image" content="http://example.com/images/8/h12.png">
+<meta property="og:image" content="http://example.com/images/8/h13.png">
+<meta property="og:image" content="http://example.com/images/8/h14.png">
+<meta property="og:image" content="http://example.com/images/8/h15.png">
+<meta property="og:image" content="http://example.com/images/8/h17.png">
+<meta property="og:image" content="http://example.com/images/8/h18.png">
+<meta property="og:image" content="http://example.com/images/8/h8.png">
+<meta property="og:image" content="http://example.com/images/8/h9.png">
+<meta property="article:published_time" content="2025-04-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-05-03T06:01:30.167Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
-<meta property="article:tag" content="加密">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/8/h1.png">
   
   
   
-  <title>RE中的密码学 - Hexo</title>
+  <title>花指令 - Hexo</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -213,7 +230,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="RE中的密码学"></span>
+            <span id="subtitle" data-typed-text="花指令"></span>
           
         </div>
 
@@ -224,8 +241,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-04-28 00:00" pubdate>
-          2025年4月28日 凌晨
+        <time datetime="2025-04-29 00:00" pubdate>
+          2025年4月29日 凌晨
         </time>
       </span>
     
@@ -236,7 +253,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          573 字
+          659 字
         
       </span>
     
@@ -247,7 +264,7 @@
         
         
         
-          5 分钟
+          6 分钟
         
       </span>
     
@@ -284,27 +301,29 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">RE中的密码学</h1>
+            <h1 id="seo-header">花指令</h1>
             
             
               <div class="markdown-body">
                 
-                <h2 id="流密码"><a href="#流密码" class="headerlink" title="流密码"></a>流密码</h2><p>特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20.</p>
-<h3 id="RC4"><a href="#RC4" class="headerlink" title="RC4"></a>RC4</h3><p><strong>特征识别</strong></p>
+                <p>花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译</p>
+<h3 id="jz-jnz-指令"><a href="#jz-jnz-指令" class="headerlink" title="jz&#x2F;jnz 指令"></a>jz&#x2F;jnz 指令</h3><p>1.<br><code>jz</code>(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转<br><code>jnz</code>(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转<br>连续两条<code>jn、jnz</code>指令且跳转到同一个地址构造出无条件跳转，但 ida 不能正常识别<br>ida 打开有飘红的地方<br><img src="/../images/8/h1.png" srcset="/img/loading.gif" lazyload><br>看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址<br><img src="/../images/8/h2.png" srcset="/img/loading.gif" lazyload><br>下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop<br><img src="/../images/8/h3.png" srcset="/img/loading.gif" lazyload><br>把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码<br><img src="/../images/8/h4.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h5.png" srcset="/img/loading.gif" lazyload><br>最后在标签的位置(loc_413364) <code>U</code>一下，<code>P</code>(变成函数)一下，就修好了<br><img src="/../images/8/h6.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h7.png" srcset="/img/loading.gif" lazyload></p>
+<ol>
+<li>反编译失败，Tab 切换到汇编<br>在 下一条指令即 mov 处 <code>U</code><br><img src="/../images/8/h10.png" srcset="/img/loading.gif" lazyload><br>在 跳转到的地方即 unk_41213F 处 <code>C</code><br><img src="/../images/8/h11.png" srcset="/img/loading.gif" lazyload><br>又多出来两条新的jz jnz，重复上述步骤<br><img src="/../images/8/h12.png" srcset="/img/loading.gif" lazyload><br>所有 jz jnz 出来之后，把这部分代码块都 nop 掉，再在最开始的标签处 <code>U</code> <code>P</code>，就能修复了<br><img src="/../images/8/h13.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h14.png" srcset="/img/loading.gif" lazyload><br>最后f5 就可以了<br><img src="/../images/8/h15.png" srcset="/img/loading.gif" lazyload></li>
+</ol>
+<h3 id="xor-test-jz-jnz-指令"><a href="#xor-test-jz-jnz-指令" class="headerlink" title="xor test jz&#x2F;jnz 指令"></a>xor test jz&#x2F;jnz 指令</h3><p><img src="/../images/8/h17.png" srcset="/img/loading.gif" lazyload><br><code>xor ebx,ebx</code> 将 ebx 清零，设置 ZF&#x3D;1<br><code>test ebx,ebx</code> 测试 ebx 的值，实际执行 ebx AND ebx ，结果为0,保持 ZF &#x3D;1<br><code>jnz short near ptr byte_412AC9</code> 若 ZF&#x3D;0,则跳转到 byte_412AC9，但此时 ZF&#x3D;1，条件不满足，继续执行下一条指令<br><code>jz short loc_412ACA</code>由于 ZF&#x3D;1，跳转到 loc_412ACA<br>所以这种结构的花指令必定会执行 jz 跳转，去花的话就将从 xor 到 jz跳转到的地方 之间的指令都 nop 掉<br><img src="/../images/8/h18.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="call-retn-指令"><a href="#call-retn-指令" class="headerlink" title="call-retn 指令"></a>call-retn 指令</h3><p>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址<br>ret指令的本质：pop eip</p>
+<p>函数反编译失败，查看汇编<br><img src="/../images/8/h8.png" srcset="/img/loading.gif" lazyload></p>
 <ul>
-<li>长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作</li>
-<li>很多取模操作</li>
-<li>有多个次数为 256 的循环</li>
-<li>最后的操作为异或</li>
+<li>将 call 的下一条指令地址（0x412307）压入堆栈</li>
+<li>反汇编器会尝试从 0x412307 开始解析指令，但此处被插入的 0xE8（call 的操作码）误导，导致后续代码解析错误<br><code>add [esp+0F0h+var_F0], 8</code> </li>
+<li>实际操作：var_F0 是 IDA 生成的变量名，表示偏移 -0xF0，因此 esp+0F0h+var_F0 &#x3D; esp</li>
+<li>等效代码：add [esp], 8，即将栈顶的返回地址（原为 0x412307）加 8，修改为 0x41230F<br>retn 的跳转:弹出修改后的返回地址 0x41230F，跳转到此处继续执行</li>
+<li>把 call 到 0x41230F 的代码都 nop 掉<br><img src="/../images/8/h9.png" srcset="/img/loading.gif" lazyload>  </li>
+<li>最后在 sub_4122B0 处 <code>U</code> <code>P</code> <code>F5</code>，就能修复了</li>
 </ul>
-<p><strong>加密流程简述</strong></p>
-<ul>
-<li>先创建一个长度为 256 的 S 盒，初始值为 0~255升序排列，然后根据密钥，用 ksa (密钥调度算法)对 S 盒进行替换,完成后将不再使用密钥</li>
-<li>PRGA （伪随机生成算法）使用两个变量 i 和 j，循环动态变化，在每步中：i 自增 1，j 根据 S[i]变化；交换 S[i] 和 S[j]；从 S[(S[i] + S[j]) % 256] 位置取出一个字节作为密钥流字节 K。最后用这个密钥流字节 K，和明文字节做异或</li>
-</ul>
-<p><strong>完整代码实现</strong></p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;iostream&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;vector&gt;</span></span><br><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string&gt;</span></span><br><span class="hljs-keyword">using</span> <span class="hljs-keyword">namespace</span> std;<br><br><span class="hljs-comment">//初始化 S 盒（0~255）并根据密钥打乱</span><br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">KSA</span><span class="hljs-params">(vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt;&amp; S,<span class="hljs-type">const</span> vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt;&amp; key)</span></span>&#123;<br>    <span class="hljs-type">int</span> key_length=key.<span class="hljs-built_in">size</span>();<br>    <span class="hljs-comment">//初始化 S </span><br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> i=<span class="hljs-number">0</span>;i&lt;<span class="hljs-number">256</span>;++i)&#123;<br>        S[i]=i;<br>    &#125;<br>    <span class="hljs-comment">//根据密钥打乱 S</span><br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> j=<span class="hljs-number">0</span>;j&lt;<span class="hljs-number">256</span>;++j)&#123;<br>        j=(j+S[j]+key[j%key_length])%<span class="hljs-number">256</span>;<br>        <span class="hljs-built_in">swap</span>(S[j],S[j]);<br>    &#125;<br>&#125;<br><br><span class="hljs-comment">//生成密钥流，并加密/解密输入数据</span><br><span class="hljs-function">vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; <span class="hljs-title">RC4</span><span class="hljs-params">(<span class="hljs-type">const</span> vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt;&amp; key,<span class="hljs-type">const</span> vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt;&amp; data)</span></span>&#123;<br>    <span class="hljs-function">vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; <span class="hljs-title">S</span><span class="hljs-params">(<span class="hljs-number">256</span>)</span></span>;<br>    <span class="hljs-built_in">KSA</span>(S,key);<br>    <span class="hljs-type">int</span> i=<span class="hljs-number">0</span>,j=<span class="hljs-number">0</span>;<br>    vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; output;<br>    output.<span class="hljs-built_in">reserve</span>(data.<span class="hljs-built_in">size</span>());<br><br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">size_t</span> k=<span class="hljs-number">0</span>;k&lt;data.<span class="hljs-built_in">size</span>();++k)&#123;<br>        i=(i<span class="hljs-number">+1</span>)%<span class="hljs-number">256</span>;<br>        j=(j+S[i])%<span class="hljs-number">256</span>;<br>        <span class="hljs-built_in">swap</span>(S[i],S[j]);<br>        <span class="hljs-type">int</span> t=(S[i]+S[j])%<span class="hljs-number">256</span>;<br>        <span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> K=S[t];<br>        output.<span class="hljs-built_in">push_back</span>(data[k]^K); <span class="hljs-comment">//明文字节 XOR 密钥流字节</span><br>    &#125;<br>    <span class="hljs-keyword">return</span> output;<br>&#125;<br><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">print_hex</span><span class="hljs-params">(<span class="hljs-type">const</span> vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt;&amp; data)</span></span>&#123;<br>    <span class="hljs-keyword">for</span>(<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> c:data)&#123;<br>        <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;%02X &quot;</span>,c);<br>    &#125;<br>    <span class="hljs-built_in">printf</span>(<span class="hljs-string">&quot;\n&quot;</span>);<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span>&#123;<br>    string key_str=<span class="hljs-string">&quot;OcieanBlue&quot;</span>;<br>    string plaintext_str=<span class="hljs-string">&quot;ISeeYourSecretMessage&quot;</span>; <span class="hljs-comment">//明文</span><br>    <span class="hljs-function">vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; <span class="hljs-title">key</span><span class="hljs-params">(key_str.begin(),key_str.end())</span></span>;<br>    <span class="hljs-function">vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; <span class="hljs-title">plaintext</span><span class="hljs-params">(plaintext_str.begin(),plaintext_str.end())</span></span>;<br>    <span class="hljs-comment">//加密</span><br>    vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; ciphertext=<span class="hljs-built_in">RC4</span>(key,plaintext);<br>    cout&lt;&lt;<span class="hljs-string">&quot;hex:&quot;</span>;<br>    <span class="hljs-built_in">print_hex</span>(ciphertext);<br>    <span class="hljs-comment">//解密</span><br>    vector&lt;<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span>&gt; decryptedtext=<span class="hljs-built_in">RC4</span>(key,ciphertext);<br>    cout &lt;&lt; <span class="hljs-string">&quot;encoded: &quot;</span>;<br>    <span class="hljs-keyword">for</span> (<span class="hljs-type">unsigned</span> <span class="hljs-type">char</span> c : decryptedtext) &#123;<br>        cout &lt;&lt; c;<br>    &#125;<br>    cout &lt;&lt; endl;<br>    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
-
+<p>或者也可以动调看 rip&#x2F;eip 查看执行流程去花</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>
             
@@ -339,8 +358,6 @@
       
         <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
       
-        <a href="/tags/%E5%8A%A0%E5%AF%86/" class="print-no-link">#加密</a>
-      
     </div>
   
 </div>
@@ -351,8 +368,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>RE中的密码学</div>
-      <div>http://example.com/2025/04/28/crypto/</div>
+      <div>花指令</div>
+      <div>http://example.com/2025/04/29/hua/</div>
     </div>
     <div class="license-meta">
       
@@ -364,7 +381,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年4月28日</div>
+          <div>2025年4月29日</div>
         </div>
       
       
@@ -396,12 +413,18 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/2025/05/02/crypto/" title="RE中的密码学">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">RE中的密码学</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/04/28/hua/" title="花指令">
-                        <span class="hidden-mobile">花指令</span>
+                      <a href="/2025/04/27/tgctf/" title="TGCTF Reverse 方向复现">
+                        <span class="hidden-mobile">TGCTF Reverse 方向复现</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

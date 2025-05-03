@@ -239,13 +239,13 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/28/crypto/" target="_self">
+        <a href="/2025/05/02/crypto/" target="_self">
           RE中的密码学
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/28/crypto/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/02/crypto/" target="_self">
         <div>
           流密码特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20. RC4特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为异或  加密流程简述
         </div>
@@ -255,8 +255,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-28 00:00" pubdate>
-              2025-04-28
+            <time datetime="2025-05-02 00:00" pubdate>
+              2025-05-02
             </time>
           </div>
         
@@ -302,15 +302,15 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2025/04/28/hua/" target="_self">
+        <a href="/2025/04/29/hua/" target="_self">
           花指令
         </a>
       </h2>
 
       
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/28/hua/" target="_self">
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/29/hua/" target="_self">
         <div>
-          jn&#x2F;jnz 指令1.jn是无条件跳转，jnz是有条件跳转ida 打开有飘红的地方看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 U(undefine)一下看到更细的汇编再 nop把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码最后在标签的位置(
+          花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令1.jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转连续两条jn、jnz指令且跳转到同一个地址构造出无条件跳转，
         </div>
       </a>
 
@@ -318,8 +318,8 @@
         
           <div class="post-meta mr-3">
             <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-28 00:00" pubdate>
-              2025-04-28
+            <time datetime="2025-04-29 00:00" pubdate>
+              2025-04-29
             </time>
           </div>
         
