@@ -27,7 +27,7 @@
 <meta property="og:description" content="0x00 前言 LLVM是一个优秀的编译器框架,采用经典的三段式设计。前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树AST,然后将分析好的代码转换成LLVM的中间表示IR(intermediate representation);Pass对IR做优化,后端(Backend)负责将优化好的IR解释成对应平台的机器码. 从字面看,OLLVM就是在LLVM的基础上增加了obfuscato">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-03-26T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-04-29T01:17:14.052Z">
+<meta property="article:modified_time" content="2025-05-04T05:57:25.587Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta property="article:tag" content="Android">
@@ -298,11 +298,16 @@
 <ul>
 <li>加法：<code>a = -(-b + (-c))</code>  ,<code>r = rand (); a = b + r; a = a + c; a = a - r</code></li>
 <li>AND：<code>a = b &amp; c =&gt; a = (b ^ ~c) &amp; b</code></li>
-<li>XOR:<code>a = a ^ b =&gt; a = (~a &amp; b) | (a &amp; ~b)</code><br><strong>2.虚假控制流(Bogus Control Flow)</strong><br>BCF模式通过加入包含不透明谓词的条件跳转（即跳转与否在运行之前就已经确定的跳转，但IDA无法分析）和不可达的基本块，来干扰IDA的控制流分析和F5反汇编<br><strong>3.控制流平坦化(Control Flow Flattening)</strong></li>
+<li>XOR: <code>a = a ^ b =&gt; a = (~a &amp; b) | (a &amp; ~b)</code></li>
+</ul>
+<p><strong>2.虚假控制流(Bogus Control Flow)</strong><br>BCF模式通过加入包含不透明谓词的条件跳转（即跳转与否在运行之前就已经确定的跳转，但IDA无法分析）和不可达的基本块，来干扰IDA的控制流分析和F5反汇编</p>
+<p><strong>3.控制流平坦化(Control Flow Flattening)</strong></p>
+<ul>
 <li>通过一个主分发器来控制程序基本块的执行流程</li>
 <li>不改变源代码的功能前提下,将C或C++代码中的if、while、for、do等控制语句转换成switch分支语句</li>
-<li>这种混淆方式增加了很多无用的case分支,但是没有改变原来的函数调用关系,基于这点，可以根据经验筛选出一些重点函数来hook,看看这些函数的参数都是啥,都返回了什么,以此来猜测这些函数的功能<br><strong>4.字符串加密如Armariris字符串混淆</strong></li>
+<li>这种混淆方式增加了很多无用的case分支,但是没有改变原来的函数调用关系,基于这点，可以根据经验筛选出一些重点函数来hook,看看这些函数的参数都是啥,都返回了什么,以此来猜测这些函数的功能</li>
 </ul>
+<p><strong>4.字符串加密如Armariris字符串混淆</strong></p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>
