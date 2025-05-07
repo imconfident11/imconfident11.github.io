@@ -27,7 +27,7 @@
 <meta property="og:description" content="流密码特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20. RC4特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为异或  加密流程简述">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-05-01T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-05-06T00:29:26.556Z">
+<meta property="article:modified_time" content="2025-05-06T07:49:40.861Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta property="article:tag" content="加密">
@@ -370,9 +370,9 @@
 </ul>
 </li>
 </ul>
-<p><strong>EBC 模式 和 CBC 模式</strong></p>
+<p><strong>ECB 模式 和 CBC 模式</strong></p>
 <ul>
-<li>EBC 模式：<ul>
+<li>ECB 模式：<ul>
 <li>将明文分成固定大小的块,每个块独立加密</li>
 <li>相同的明文块加密后生成相同的密文块</li>
 <li>不需要初始化向量（IV）。</li>
