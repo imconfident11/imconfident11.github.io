@@ -19,42 +19,22 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令1.jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转连续两条jn、jnz指令且跳转到同一个地址构造出无条件跳转，">
+    <meta name="description" content="安卓四大组件Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码   静态注册 遵循一定的命名规则，一般是 Java_pa">
 <meta property="og:type" content="article">
-<meta property="og:title" content="花指令">
-<meta property="og:url" content="http://example.com/2025/04/29/hua/index.html">
+<meta property="og:title" content="安卓基础知识笔记">
+<meta property="og:url" content="http://example.com/2025/07/02/android_note/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令1.jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转连续两条jn、jnz指令且跳转到同一个地址构造出无条件跳转，">
+<meta property="og:description" content="安卓四大组件Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码   静态注册 遵循一定的命名规则，一般是 Java_pa">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/images/8/h1.png">
-<meta property="og:image" content="http://example.com/images/8/h2.png">
-<meta property="og:image" content="http://example.com/images/8/h3.png">
-<meta property="og:image" content="http://example.com/images/8/h4.png">
-<meta property="og:image" content="http://example.com/images/8/h5.png">
-<meta property="og:image" content="http://example.com/images/8/h6.png">
-<meta property="og:image" content="http://example.com/images/8/h7.png">
-<meta property="og:image" content="http://example.com/images/8/h10.png">
-<meta property="og:image" content="http://example.com/images/8/h11.png">
-<meta property="og:image" content="http://example.com/images/8/h12.png">
-<meta property="og:image" content="http://example.com/images/8/h13.png">
-<meta property="og:image" content="http://example.com/images/8/h14.png">
-<meta property="og:image" content="http://example.com/images/8/h15.png">
-<meta property="og:image" content="http://example.com/images/8/h17.png">
-<meta property="og:image" content="http://example.com/images/8/h18.png">
-<meta property="og:image" content="http://example.com/images/8/h8.png">
-<meta property="og:image" content="http://example.com/images/8/h9.png">
-<meta property="og:image" content="http://example.com/images/8/h19.png">
-<meta property="og:image" content="http://example.com/images/8/h20.png">
-<meta property="article:published_time" content="2025-04-28T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-06-24T07:55:14.607Z">
+<meta property="article:published_time" content="2025-07-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-07-01T18:25:37.101Z">
 <meta property="article:author" content="Eleven">
-<meta property="article:tag" content="Reverse">
+<meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/images/8/h1.png">
   
   
   
-  <title>花指令 - Hexo</title>
+  <title>安卓基础知识笔记 - Hexo</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -232,7 +212,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="花指令"></span>
+            <span id="subtitle" data-typed-text="安卓基础知识笔记"></span>
           
         </div>
 
@@ -243,8 +223,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2025-04-29 00:00" pubdate>
-          2025年4月29日 凌晨
+        <time datetime="2025-07-02 00:00" pubdate>
+          2025年7月2日 凌晨
         </time>
       </span>
     
@@ -255,7 +235,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          853 字
+          188 字
         
       </span>
     
@@ -266,7 +246,7 @@
         
         
         
-          8 分钟
+          2 分钟
         
       </span>
     
@@ -303,34 +283,18 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">花指令</h1>
+            <h1 id="seo-header">安卓基础知识笔记</h1>
             
             
               <div class="markdown-body">
                 
-                <p>花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译</p>
-<h3 id="jz-jnz-指令"><a href="#jz-jnz-指令" class="headerlink" title="jz&#x2F;jnz 指令"></a>jz&#x2F;jnz 指令</h3><p>1.<br><code>jz</code>(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转<br><code>jnz</code>(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转<br>连续两条<code>jn、jnz</code>指令且跳转到同一个地址构造出无条件跳转，但 ida 不能正常识别<br>ida 打开有飘红的地方<br><img src="/../images/8/h1.png" srcset="/img/loading.gif" lazyload><br>看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址<br><img src="/../images/8/h2.png" srcset="/img/loading.gif" lazyload><br>下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop<br><img src="/../images/8/h3.png" srcset="/img/loading.gif" lazyload><br>把 jn&#x2F;jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码<br><img src="/../images/8/h4.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h5.png" srcset="/img/loading.gif" lazyload><br>最后在标签的位置(loc_413364) <code>U</code>一下，<code>P</code>(变成函数)一下，就修好了<br><img src="/../images/8/h6.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h7.png" srcset="/img/loading.gif" lazyload></p>
-<ol start="2">
-<li>反编译失败，Tab 切换到汇编<br>在 下一条指令即 mov 处 <code>U</code><br><img src="/../images/8/h10.png" srcset="/img/loading.gif" lazyload><br>在 跳转到的地方即 unk_41213F 处 <code>C</code><br><img src="/../images/8/h11.png" srcset="/img/loading.gif" lazyload><br>又多出来两条新的jz jnz，重复上述步骤<br><img src="/../images/8/h12.png" srcset="/img/loading.gif" lazyload><br>所有 jz jnz 出来之后，把这部分代码块都 nop 掉，再在最开始的标签处 <code>U</code> <code>P</code>，就能修复了<br><img src="/../images/8/h13.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h14.png" srcset="/img/loading.gif" lazyload><br>最后f5 就可以了<br><img src="/../images/8/h15.png" srcset="/img/loading.gif" lazyload></li>
-</ol>
-<h3 id="xor-test-jz-jnz-指令"><a href="#xor-test-jz-jnz-指令" class="headerlink" title="xor test jz&#x2F;jnz 指令"></a>xor test jz&#x2F;jnz 指令</h3><p><img src="/../images/8/h17.png" srcset="/img/loading.gif" lazyload><br><code>xor ebx,ebx</code> 将 ebx 清零，设置 ZF&#x3D;1<br><code>test ebx,ebx</code> 测试 ebx 的值，实际执行 ebx AND ebx ，结果为0,保持 ZF &#x3D;1<br><code>jnz short near ptr byte_412AC9</code> 若 ZF&#x3D;0,则跳转到 byte_412AC9，但此时 ZF&#x3D;1，条件不满足，继续执行下一条指令<br><code>jz short loc_412ACA</code>由于 ZF&#x3D;1，跳转到 loc_412ACA<br>所以这种结构的花指令必定会执行 jz 跳转，去花的话就将从 xor 到 jz跳转到的地方 之间的指令都 nop 掉<br><img src="/../images/8/h18.png" srcset="/img/loading.gif" lazyload></p>
-<h3 id="call-retn-指令"><a href="#call-retn-指令" class="headerlink" title="call-retn 指令"></a>call-retn 指令</h3><p>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址<br>ret指令的本质：pop eip</p>
-<p>函数反编译失败，查看汇编<br><img src="/../images/8/h8.png" srcset="/img/loading.gif" lazyload></p>
-<ul>
-<li>将 call 的下一条指令地址（0x412307）压入堆栈</li>
-<li>反汇编器会尝试从 0x412307 开始解析指令，但此处被插入的 0xE8（call 的操作码）误导，导致后续代码解析错误<br><code>add [esp+0F0h+var_F0], 8</code> </li>
-<li>实际操作：var_F0 是 IDA 生成的变量名，表示偏移 -0xF0，因此 esp+0F0h+var_F0 &#x3D; esp</li>
-<li>等效代码：add [esp], 8，即将栈顶的返回地址（原为 0x412307）加 8，修改为 0x41230F<br>retn 的跳转:弹出修改后的返回地址 0x41230F，跳转到此处继续执行</li>
-<li>把 call 到 0x41230F 的代码都 nop 掉<br><img src="/../images/8/h9.png" srcset="/img/loading.gif" lazyload>  </li>
-<li>最后在 sub_4122B0 处 <code>U</code> <code>P</code> <code>F5</code>，就能修复了</li>
-</ul>
-<p>或者也可以动调看 rip&#x2F;eip 查看执行流程去花</p>
-<h3 id="call-5-指令"><a href="#call-5-指令" class="headerlink" title="call $+5 指令"></a>call $+5 指令</h3><ul>
-<li>$ 一般表示当前指令的起始地址</li>
-<li>+5 表示在当前地址增加 5 个字节</li>
-<li>一般一条 call 指令占用 5 个字节（1 字节操作码 0xE8 + 4 字节相对偏移量）</li>
-<li>所以，$+5 指向的正是紧跟在 call $+5 这条指令之后的那条指令，但问题在于： call 指令执行时会把它的下一条指令的地址压入堆栈（作为返回地址），这个被压入堆栈的地址，恰恰也是 $+5 指向的位置，恶意代码编写者会在 call $+5 之后紧接着放置一些无效指令，扰乱反汇编，因此要把这部分指令 nop 掉<br><img src="/../images/8/h19.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/8/h20.png" srcset="/img/loading.gif" lazyload><br>然后把 main 函数全部 U 掉，在函数头的地方 P 一下，f5反编译即可</li>
-</ul>
+                <h3 id="安卓四大组件"><a href="#安卓四大组件" class="headerlink" title="安卓四大组件"></a>安卓四大组件</h3><p>Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者)</p>
+<h3 id="JNI-静态注册和动态注册"><a href="#JNI-静态注册和动态注册" class="headerlink" title="JNI 静态注册和动态注册"></a>JNI 静态注册和动态注册</h3><p>Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码  </p>
+<p><strong>静态注册</strong> 遵循一定的命名规则，一般是 <code>Java_packagename_classname_methodname(JNIEnv *env,jclass/jobject,...)</code></p>
+<p><strong>动态注册</strong> 有几个关键点</p>
+<p>使用结构体 JNINativeMethod 来记录java方法和jni函数的对应关系 </p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name; <span class="hljs-comment">//Java方法名</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* signature; <span class="hljs-comment">//方法的参数和返回值，使用字符串记录，格式形如`()V, (I)I`，括号内表示函数参数，括号右侧表示函数返回值</span><br>    <span class="hljs-type">void</span>*       fnPtr; <span class="hljs-comment">// 指向JNI函数的函数指针</span><br>&#125; JNINativeMethod;<br></code></pre></td></tr></table></figure>
+<p>java 端的 native 方法<br>c&#x2F;c++ 代码实现的JNI_Onload()方法</p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>
@@ -349,7 +313,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
   
   
 
@@ -364,7 +328,7 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+        <a href="/tags/Android/" class="print-no-link">#Android</a>
       
     </div>
   
@@ -376,8 +340,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>花指令</div>
-      <div>http://example.com/2025/04/29/hua/</div>
+      <div>安卓基础知识笔记</div>
+      <div>http://example.com/2025/07/02/android_note/</div>
     </div>
     <div class="license-meta">
       
@@ -389,7 +353,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2025年4月29日</div>
+          <div>2025年7月2日</div>
         </div>
       
       
@@ -421,18 +385,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2025/05/02/crypto/" title="RE中的密码学">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">RE中的密码学</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2025/04/27/tgctf/" title="TGCTF Reverse 方向复现">
-                        <span class="hidden-mobile">TGCTF Reverse 方向复现</span>
+                      <a href="/2025/05/24/vm/" title="向 VM 的步步靠近--部分 vm 赛题复现">
+                        <span class="hidden-mobile">向 VM 的步步靠近--部分 vm 赛题复现</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
