@@ -239,6 +239,191 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/08/01/llvm/" target="_self">
+          llvm 浅探
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/08/01/llvm/" target="_self">
+        <div>
+          LLVM 环境搭建由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https://github.com/llvm/llvm-project.git 里面下载了源码，解压到 wsl 下 更新包列表sudo apt-get update 安装基础编译工具（包含g++, make等）sudo apt-get install build-essential 安
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-08-01 00:00" pubdate>
+              2025-08-01
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/llvm/">#llvm</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/21/cuda/" target="_self">
+          cuda 逆向
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/21/cuda/" target="_self">
+        <div>
+          写在前面CUDA (Compute Unified Device Architecture) 是由 NVIDIA 开发的一种并行计算平台和编程模型；它允许软件开发者和研究人员利用 NVIDIA GPU 的强大并行处理能力来加速通用计算任务，而不仅仅局限于图形渲染cuda 逆向本身不难，一般是使用 cuobjump 来获得 ptx 汇编 ，根据汇编理出加密逻辑最后进行解密即可 PTX 基础知识寄存器
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-21 00:00" pubdate>
+              2025-07-21
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/cuda/">#cuda</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2025/07/20/XYCTF2025/" target="_self">
+          XYCTF2024 Reverse 方向复现
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/07/20/XYCTF2025/" target="_self">
+        <div>
+          CrackMeida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数  123456&gt;VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123;//DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserv
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-07-20 00:00" pubdate>
+              2025-07-20
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/07/15/pyd/" target="_self">
           pyd 逆向
         </a>
@@ -287,6 +472,8 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/Cython/">#Cython</a>
             
           </div>
         
@@ -655,191 +842,6 @@
             <i class="iconfont icon-tags"></i>
             
               <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/04/18/frida/" target="_self">
-          Frida
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/18/frida/" target="_self">
-        <div>
-          pre 已经 root 了的安卓真机 (我的是 Android9.0)frida 版本 16.1.0 frida-server 版本 16.1.0 启动 frida-server  123456adb shellsucd /data/local/tmp./frida-server# 要换端口的话 可以使用 -l 参数./frida-server -l 0.0.0.0:12123 ps : 端口转发
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-18 00:00" pubdate>
-              2025-04-18
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/04/11/androidRE/" target="_self">
-          安卓逆向 刷题笔记(1)
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/04/11/androidRE/" target="_self">
-        <div>
-          攻防世界 Mobileez_dex 这道题在网上看了好多 wp 基本都是手撕加密，但这题的 so 层加密挺不好分析的，而用frida-hook可以直接跳过解密，找到已经解密好的 dex 文件。 用 jadx 打开,在 AndroidManifest.xml 中找到关键信息:android:hasCode=&quot;false&quot;,声明 APK 中不包含 Java&#x2F;Kotlin
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-04-11 00:00" pubdate>
-              2025-04-11
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/03/27/ollvm/" target="_self">
-          OLLVM
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/03/27/ollvm/" target="_self">
-        <div>
-          0x00 前言 LLVM是一个优秀的编译器框架,采用经典的三段式设计。前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树AST,然后将分析好的代码转换成LLVM的中间表示IR(intermediate representation);Pass对IR做优化,后端(Backend)负责将优化好的IR解释成对应平台的机器码. 从字面看,OLLVM就是在LLVM的基础上增加了obfuscato
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-03-27 00:00" pubdate>
-              2025-03-27
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-              <a href="/tags/%E6%B7%B7%E6%B7%86/">#混淆</a>
             
           </div>
         

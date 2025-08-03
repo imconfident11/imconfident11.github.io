@@ -1,0 +1,703 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="CrackMeida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数  123456&gt;VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123;&#x2F;&#x2F;DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserv">
+<meta property="og:type" content="article">
+<meta property="og:title" content="XYCTF2024 Reverse 方向复现">
+<meta property="og:url" content="http://example.com/2025/07/20/XYCTF2025/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="CrackMeida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数  123456&gt;VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123;&#x2F;&#x2F;DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserv">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr2.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr3.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr4.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr5.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr6.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr7.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr8.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr11.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr9.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr10.png">
+<meta property="og:image" content="http://example.com/images/XYCTF2025/cr12.png">
+<meta property="article:published_time" content="2025-07-19T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-02T04:16:22.462Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/XYCTF2025/cr2.png">
+  
+  
+  
+  <title>XYCTF2024 Reverse 方向复现 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="XYCTF2024 Reverse 方向复现"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-07-20 00:00" pubdate>
+          2025年7月20日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">XYCTF2024 Reverse 方向复现</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="CrackMe"><a href="#CrackMe" class="headerlink" title="CrackMe"></a>CrackMe</h3><p>ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数</p>
+<blockquote>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs c">&gt;VOID NTAPI <span class="hljs-title function_">TlsCallback</span><span class="hljs-params">(PVOID DllHandle, DWORD dwReason, PVOID Reserved)</span> &#123;<br><span class="hljs-comment">//DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserved:保留参数，一般用不到</span><br>   <span class="hljs-keyword">if</span> (dwReason == DLL_PROCESS_ATTACH) &#123;<br>       MessageBoxA(<span class="hljs-literal">NULL</span>, <span class="hljs-string">&quot;TlsCallback Triggered!&quot;</span>, <span class="hljs-string">&quot;Info&quot;</span>, <span class="hljs-number">0</span>);<br>   &#125;<br>&gt;&#125;<br></code></pre></td></tr></table></figure></blockquote>
+<!-- dwReason：
+宏常量              值   说明
+DLL_PROCESS_ATTACH	1	当前进程启动时调用
+DLL_THREAD_ATTACH	2	当前进程中新建线程时调用
+DLL_THREAD_DETACH	3	当前进程中的线程退出时调用
+DLL_PROCESS_DETACH	0	当前进程结束时调用 -->
+
+<p>点进 WinMain，有反调试，先打断点运行起来用 ScyllaHide 去一下反调；很多传入了多个参数的 sub 函数点进去看发现没有什么重要信息，找到 sub_xxxAC00(v39),点进去后同样注意到 v6 &#x3D; sub_7FF7AD959470;<br><img src="/../images/XYCTF2025/cr2.png" srcset="/img/loading.gif" lazyload><br>sub_xxx8770 里面像是一个消息处理器，根据不同的参数值分发不同的处理逻辑<br>而 Tlscallback 这边，进入 sub_xxx2370<br><img src="/../images/XYCTF2025/cr3.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/XYCTF2025/cr4.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/XYCTF2025/cr5.png" srcset="/img/loading.gif" lazyload><br>switch 下有五个 case，分别对应不同的参数，case0 里面带点进 sub_xxxF280 挺复杂的，留到后面看，case1、case2、case3 没什么东西，case4 和 case5 有可疑的函数<br><img src="/../images/XYCTF2025/cr6.png" srcset="/img/loading.gif" lazyload><br><strong>case4</strong> 的 sub_xxxD010 里面有个异或<br><img src="/../images/XYCTF2025/cr7.png" srcset="/img/loading.gif" lazyload></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python">data=[<span class="hljs-number">0xDD</span>,<span class="hljs-number">0xD7</span>,<span class="hljs-number">0xDa</span>,<span class="hljs-number">0xDC</span>,<span class="hljs-number">0xC0</span>]<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(data)):<br>    data[i] ^= <span class="hljs-number">0xBB</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-built_in">chr</span>(data[i]), end=<span class="hljs-string">&#x27;&#x27;</span>)<br></code></pre></td></tr></table></figure>
+<p>解出来是 <code>flag&#123;</code>,由此可知此处是校验 flag 的格式<br><strong>case5</strong> 的 sub_xxxC850 里看到了 <strong>CRC 校验</strong><br><img src="/../images/XYCTF2025/cr8.png" srcset="/img/loading.gif" lazyload><br>爆破出输入</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">generate_crc32_table</span>():<br>    table = []<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">256</span>):<br>        x = i<br>        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            <span class="hljs-keyword">if</span> x &amp; <span class="hljs-number">1</span>:<br>                x = (x &gt;&gt; <span class="hljs-number">1</span>) ^ <span class="hljs-number">0xEDB88321</span><br>            <span class="hljs-keyword">else</span>:<br>                x = x &gt;&gt; <span class="hljs-number">1</span><br>        table.append(x)<br>    <span class="hljs-keyword">return</span> table<br><br><br>data = [<br>    <span class="hljs-number">0x46A95BAD</span>, <span class="hljs-number">0x1CAC84B6</span>, <span class="hljs-number">0xA67CB2B2</span>, <br>    <span class="hljs-number">0x32188937</span>, <span class="hljs-number">0x4872D39F</span>, <span class="hljs-number">0xF2A2E59B</span>, <span class="hljs-number">0x011B94D2</span><br>]<br><br>crc_table = generate_crc32_table()<br><br>result_bytes = []<br><span class="hljs-keyword">for</span> val <span class="hljs-keyword">in</span> data:<br>    <br>    target_crc = (~(val ^ <span class="hljs-number">0xB0E0E879</span>)) &amp; <span class="hljs-number">0xFFFFFFFF</span><br>       <br>    found_idx = <span class="hljs-literal">None</span><br>    <span class="hljs-keyword">for</span> idx, crc_val <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(crc_table):<br>        <span class="hljs-keyword">if</span> crc_val == target_crc:<br>            found_idx = idx<br>            <span class="hljs-keyword">break</span><br>    <br>    <span class="hljs-keyword">if</span> found_idx <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:    <br>        input_byte = found_idx ^ <span class="hljs-number">0x79</span><br>        result_bytes.append(input_byte)<br>    <span class="hljs-keyword">else</span>:<br>        result_bytes.append(<span class="hljs-number">0xFF</span>)  <span class="hljs-comment"># 未找到标记</span><br><br>printable_bytes = [b <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> result_bytes <span class="hljs-keyword">if</span> <span class="hljs-number">32</span> &lt;= b &lt;= <span class="hljs-number">126</span>]<br>flag_part = <span class="hljs-string">&#x27;&#x27;</span>.join(<span class="hljs-built_in">chr</span>(b) <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> printable_bytes)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot; <span class="hljs-subst">&#123;flag_part&#125;</span>&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot; <span class="hljs-subst">&#123;result_bytes&#125;</span>&quot;</span>)<br><span class="hljs-comment">#  moshui_</span><br><span class="hljs-comment">#  [109, 111, 115, 104, 117, 105, 95]</span><br></code></pre></td></tr></table></figure>
+<p>所以这里得到部分flag <code>moshui_</code><br><strong>case0</strong> 的 sub_xxxF280<br><img src="/../images/XYCTF2025/cr11.png" srcset="/img/loading.gif" lazyload><br>里面依旧有 crc ，不过这里的 crc 不是进行校验，而是使用输入的前 5 个字节(“flag{“)加上 {} 内部的前 7 个字节(v7 数组里面)生成了两个四字节的密钥(v6[0]和v6[2]),再加上另外连个直接赋值的即可得到完整密钥</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">build_crc32_table</span>():<br>    table = []<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">256</span>):<br>        crc = i<br>        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            <span class="hljs-keyword">if</span> crc &amp; <span class="hljs-number">1</span>:<br>                crc = (crc &gt;&gt; <span class="hljs-number">1</span>) ^ <span class="hljs-number">0xEDB88321</span><br>            <span class="hljs-keyword">else</span>:<br>                crc &gt;&gt;= <span class="hljs-number">1</span><br>        table.append(crc)<br>    <span class="hljs-keyword">return</span> table<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">crc_variant</span>(<span class="hljs-params">data, table</span>):<br>    result = <span class="hljs-number">0xFFFFFFFF</span><br>    <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> data:<br>        result ^= table[(b ^ (result &amp; <span class="hljs-number">0xFF</span>))]<br>        result = ~result &amp; <span class="hljs-number">0xFFFFFFFF</span><br>    <span class="hljs-keyword">return</span> result<br><br>data = <span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x66</span>, <span class="hljs-number">0x6C</span>, <span class="hljs-number">0x61</span>, <span class="hljs-number">0x67</span>, <span class="hljs-number">0x7B</span>, <span class="hljs-number">0x5C</span>, <span class="hljs-number">0x2F</span>, <span class="hljs-number">0xD0</span>, <span class="hljs-number">0xEC</span>, <span class="hljs-number">0x82</span>, <span class="hljs-number">0x0E</span>, <span class="hljs-number">0x67</span>])<br><br>part1 = data[:<span class="hljs-number">5</span>]<br>part2 = data[<span class="hljs-number">5</span>:]<br><br>crc_table = build_crc32_table()<br><br>key0 = crc_variant(part1, crc_table)<br>key1 = <span class="hljs-number">0x12345678</span><br>key2 = crc_variant(part2, crc_table)<br>key3 = <span class="hljs-number">0x89ABCDEF</span><br><br>key = [key0, key1, key2, key3]<br><span class="hljs-built_in">print</span>([<span class="hljs-built_in">hex</span>(k) <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> key])<br><br><span class="hljs-comment"># [&#x27;0x42b2986c&#x27;, &#x27;0x12345678&#x27;, &#x27;0xe40ecf0a&#x27;, &#x27;0x89abcdef&#x27;]</span><br></code></pre></td></tr></table></figure>
+<p><strong>密钥</strong> ：0x42b2986c，0x12345678，0xe40ecf0a，0x89abcdef<br>同时在里面发现sub_xxx1500<br><code>sub_7FF7AD961500(v6, *(_QWORD *)(v5 + 8) + 12LL, 16LL, v8);</code><br>分析后可知 a1 传入的是原始密钥<br><img src="/../images/XYCTF2025/cr9.png" srcset="/img/loading.gif" lazyload><br>sub_xxx1FF0 :将128位原始密钥扩展为52个16位轮密钥（符合IDEA标准）<br><img src="/../images/XYCTF2025/cr10.png" srcset="/img/loading.gif" lazyload><br>sub_xxx1640 :<strong>IDEA 加密</strong></p>
+<blockquote>
+<p>分组长度：64 位<br>密钥长度：128 位<br>共 8 轮 + 1 次输出变换<br>每轮用到了三种不同的运算：<br>模 2¹⁶ 加法（模加）<br>模 2¹⁶ + 1 乘法（模乘）<br>按位异或 XOR</p>
+</blockquote>
+<p>主要特点包括使用模乘（模65537）和模加（模65536）运算，以及大量的异或操作</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><code class="hljs c">__int64 __fastcall <span class="hljs-title function_">sub_7FF7AD961640</span><span class="hljs-params">(</span><br><span class="hljs-params">    <span class="hljs-type">unsigned</span> __int16 *a1,  <span class="hljs-comment">// 输入块（4×16位）</span></span><br><span class="hljs-params">    _WORD *a2,             <span class="hljs-comment">// 输出块（4×16位）</span></span><br><span class="hljs-params">    <span class="hljs-type">unsigned</span> __int16 *a3   <span class="hljs-comment">// 轮密钥数组</span></span><br><span class="hljs-params">)</span> <br> <span class="hljs-comment">// 输入块字节序转换（小端→主机序）</span><br>    v4 = (*a1 &lt;&lt; <span class="hljs-number">8</span>) | (*a1 &gt;&gt; <span class="hljs-number">8</span>);   <span class="hljs-comment">// 字1</span><br>    v7 = (a1[<span class="hljs-number">1</span>] &lt;&lt; <span class="hljs-number">8</span>) | (a1[<span class="hljs-number">1</span>] &gt;&gt; <span class="hljs-number">8</span>); <span class="hljs-comment">// 字2</span><br>    v12 = (a1[<span class="hljs-number">2</span>] &lt;&lt; <span class="hljs-number">8</span>) | (a1[<span class="hljs-number">2</span>] &gt;&gt; <span class="hljs-number">8</span>); <span class="hljs-comment">// 字3</span><br>    v18 = (a1[<span class="hljs-number">3</span>] &lt;&lt; <span class="hljs-number">8</span>) | (a1[<span class="hljs-number">3</span>] &gt;&gt; <span class="hljs-number">8</span>); <span class="hljs-comment">// 字4</span><br><br>    <span class="hljs-comment">// 8轮混淆操作（每轮用6个子密钥）</span><br>    v24 = <span class="hljs-number">8</span>; <span class="hljs-comment">// 轮计数器</span><br>    <span class="hljs-keyword">do</span> &#123;<br>        <span class="hljs-comment">// 模乘操作 (mod 0x10001) + 加法/异或</span><br>        v5 = modmul(*a3++, v4);   <span class="hljs-comment">// 轮密钥与v4模乘</span><br>        v8 = *a3++ + v7;          <span class="hljs-comment">// 轮密钥与v7模加</span><br>        v13 = *a3++ + v12;         <span class="hljs-comment">// 轮密钥与v12模加</span><br>        v19 = modmul(*a3++, v18); <span class="hljs-comment">// 轮密钥与v18模乘</span><br>        v14 = v5 ^ v13;<br>        v15 = modmul(*a3++, v14); <span class="hljs-comment">// 轮密钥与v14模乘</span><br>        v9 = v15 + (v19 ^ v8);<br>        v10 = modmul(*a3++, v9);  <span class="hljs-comment">// 轮密钥与v9模乘</span><br>        v16 = v10 + v15;<br>        <span class="hljs-comment">// 状态更新</span><br>        v4 = v10 ^ v5;<br>        v7 = v13 ^ v10;   <span class="hljs-comment">// 下一轮v7</span><br>        v12 = v8 ^ v16;   <span class="hljs-comment">// 下一轮v12</span><br>        v18 = v16 ^ v19;  <span class="hljs-comment">// 下一轮v18</span><br>    &#125; <span class="hljs-keyword">while</span> (--v24);<br><br>    <span class="hljs-comment">// 最终轮（4个子密钥）</span><br>    v6 = modmul(*a3++, v4);<br>    v17 = *a3++ + v12;<br>    v11 = *a3++ + v7;<br>    v20 = modmul(*a3, v18);<br><br>    <span class="hljs-comment">// 输出字节序转换（主机序→小端）</span><br>    *a2 = (v6 &lt;&lt; <span class="hljs-number">8</span>) | (v6 &gt;&gt; <span class="hljs-number">8</span>);<br>    a2[<span class="hljs-number">1</span>] = (v17 &lt;&lt; <span class="hljs-number">8</span>) | (v17 &gt;&gt; <span class="hljs-number">8</span>);<br>    a2[<span class="hljs-number">2</span>] = (v11 &lt;&lt; <span class="hljs-number">8</span>) | (v11 &gt;&gt; <span class="hljs-number">8</span>);<br>    a2[<span class="hljs-number">3</span>] = (v20 &lt;&lt; <span class="hljs-number">8</span>) | (v20 &gt;&gt; <span class="hljs-number">8</span>);<br></code></pre></td></tr></table></figure>
+<p>密文在 v7 数组中：<br><img src="/../images/XYCTF2025/cr12.png" srcset="/img/loading.gif" lazyload><br>解出第二部分:</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br></pre></td><td class="code"><pre><code class="hljs py">sub_key = [<span class="hljs-number">0</span>] * <span class="hljs-number">52</span><br>inv_sub_key = [<span class="hljs-number">0</span>] * <span class="hljs-number">52</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">plus</span>(<span class="hljs-params">a, b</span>):<br>    <span class="hljs-keyword">return</span> (a + b) &amp; <span class="hljs-number">0xFFFF</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">times</span>(<span class="hljs-params">a, b</span>):<br>    a = a <span class="hljs-keyword">if</span> a != <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0x10000</span><br>    b = b <span class="hljs-keyword">if</span> b != <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0x10000</span><br>    r = (a * b) % <span class="hljs-number">0x10001</span><br>    <span class="hljs-keyword">return</span> r <span class="hljs-keyword">if</span> r != <span class="hljs-number">0x10000</span> <span class="hljs-keyword">else</span> <span class="hljs-number">0</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">xor</span>(<span class="hljs-params">a, b</span>):<br>    <span class="hljs-keyword">return</span> a ^ b<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">inv_plus</span>(<span class="hljs-params">a</span>):<br>    <span class="hljs-keyword">return</span> (-a) &amp; <span class="hljs-number">0xFFFF</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">inv_times</span>(<span class="hljs-params">a</span>):<br>    <span class="hljs-keyword">if</span> a == <span class="hljs-number">0</span>: <span class="hljs-keyword">return</span> <span class="hljs-number">0</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">pow</span>(a, -<span class="hljs-number">1</span>, <span class="hljs-number">0x10001</span>)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">subkeys_get</span>(<span class="hljs-params">keys_input</span>):<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>        sub_key[i] = keys_input[i]<br><br>    main_key = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>        main_key = (main_key &lt;&lt; <span class="hljs-number">16</span>) | keys_input[i]<br><br>    mask128 = (<span class="hljs-number">1</span> &lt;&lt; <span class="hljs-number">128</span>) - <span class="hljs-number">1</span><br>    <br>    key_offset = <span class="hljs-number">8</span> <br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">5</span>):<br>        main_key = ((main_key &lt;&lt; <span class="hljs-number">25</span>) | (main_key &gt;&gt; <span class="hljs-number">103</span>)) &amp; mask128<br>        <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            sub_key[key_offset + j] = (main_key &gt;&gt; (<span class="hljs-number">112</span> - <span class="hljs-number">16</span> * j)) &amp; <span class="hljs-number">0xFFFF</span><br>        key_offset += <span class="hljs-number">8</span><br><br>    main_key = ((main_key &lt;&lt; <span class="hljs-number">25</span>) | (main_key &gt;&gt; <span class="hljs-number">103</span>)) &amp; mask128<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">4</span>):<br>        sub_key[<span class="hljs-number">48</span> + i] = (main_key &gt;&gt; (<span class="hljs-number">112</span> - <span class="hljs-number">16</span> * i)) &amp; <span class="hljs-number">0xFFFF</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">inv_subkeys_get</span>(<span class="hljs-params">sub_key_list</span>):<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">6</span>, <span class="hljs-number">48</span>, <span class="hljs-number">6</span>):<br>        inv_sub_key[i] = inv_times(sub_key_list[<span class="hljs-number">48</span> - i])<br>        inv_sub_key[i + <span class="hljs-number">1</span>] = inv_plus(sub_key_list[<span class="hljs-number">50</span> - i])<br>        inv_sub_key[i + <span class="hljs-number">2</span>] = inv_plus(sub_key_list[<span class="hljs-number">49</span> - i])<br>        inv_sub_key[i + <span class="hljs-number">3</span>] = inv_times(sub_key_list[<span class="hljs-number">51</span> - i])<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-number">48</span>, <span class="hljs-number">6</span>):<br>        inv_sub_key[i + <span class="hljs-number">4</span>] = sub_key_list[<span class="hljs-number">46</span> - i]<br>        inv_sub_key[i + <span class="hljs-number">5</span>] = sub_key_list[<span class="hljs-number">47</span> - i]<br>    inv_sub_key[<span class="hljs-number">0</span>] = inv_times(sub_key_list[<span class="hljs-number">48</span>])<br>    inv_sub_key[<span class="hljs-number">1</span>] = inv_plus(sub_key_list[<span class="hljs-number">49</span>])<br>    inv_sub_key[<span class="hljs-number">2</span>] = inv_plus(sub_key_list[<span class="hljs-number">50</span>])<br>    inv_sub_key[<span class="hljs-number">3</span>] = inv_times(sub_key_list[<span class="hljs-number">51</span>])<br>    inv_sub_key[<span class="hljs-number">48</span>] = inv_times(sub_key_list[<span class="hljs-number">0</span>])<br>    inv_sub_key[<span class="hljs-number">49</span>] = inv_plus(sub_key_list[<span class="hljs-number">1</span>])<br>    inv_sub_key[<span class="hljs-number">50</span>] = inv_plus(sub_key_list[<span class="hljs-number">2</span>])<br>    inv_sub_key[<span class="hljs-number">51</span>] = inv_times(sub_key_list[<span class="hljs-number">3</span>])<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">dencrypt_final</span>(<span class="hljs-params">cipher_block</span>):<br>    i1, i2, i3, i4 = (cipher_block &gt;&gt; <span class="hljs-number">48</span>)&amp;<span class="hljs-number">0xFFFF</span>, (cipher_block &gt;&gt; <span class="hljs-number">32</span>)&amp;<span class="hljs-number">0xFFFF</span>, (cipher_block &gt;&gt; <span class="hljs-number">16</span>)&amp;<span class="hljs-number">0xFFFF</span>, cipher_block&amp;<span class="hljs-number">0xFFFF</span><br>    <br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-number">48</span>, <span class="hljs-number">6</span>):<br>        t1, t2, t3, t4 = times(i1, inv_sub_key[i]), plus(i2, inv_sub_key[i+<span class="hljs-number">1</span>]), plus(i3, inv_sub_key[i+<span class="hljs-number">2</span>]), times(i4, inv_sub_key[i+<span class="hljs-number">3</span>])<br>        t5, t6 = xor(t1, t3), xor(t2, t4)<br>        t7 = times(t5, inv_sub_key[i+<span class="hljs-number">4</span>])<br>        t8 = plus(t6, t7)<br>        t9 = times(t8, inv_sub_key[i+<span class="hljs-number">5</span>])<br>        t10 = plus(t7, t9)        <br>        <br>        i1 = xor(t1, t9)<br>        i2 = xor(t3, t9)   <br>        i3 = xor(t2, t10)  <br>        i4 = xor(t4, t10)    <br>    <br>    y1 = times(i1, inv_sub_key[<span class="hljs-number">48</span>])<br>    y2 = plus(i3, inv_sub_key[<span class="hljs-number">49</span>])  <span class="hljs-comment"># 注意：这里I3和I2是交换使用的，这是非标准部分</span><br>    y3 = plus(i2, inv_sub_key[<span class="hljs-number">50</span>])  <span class="hljs-comment"># 注意：这里I3和I2是交换使用的，这是非标准部分</span><br>    y4 = times(i4, inv_sub_key[<span class="hljs-number">51</span>])<br>    <br>    <span class="hljs-keyword">return</span> (y1 &lt;&lt; <span class="hljs-number">48</span>) | (y2 &lt;&lt; <span class="hljs-number">32</span>) | (y3 &lt;&lt; <span class="hljs-number">16</span>) | y4<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    part2 = <span class="hljs-built_in">bytes</span>([<span class="hljs-number">0x5C</span>, <span class="hljs-number">0x2F</span>, <span class="hljs-number">0xD0</span>, <span class="hljs-number">0xEC</span>, <span class="hljs-number">0x82</span>, <span class="hljs-number">0x0E</span>, <span class="hljs-number">0x67</span>, <span class="hljs-number">0x57</span>, <span class="hljs-number">0x6A</span>, <span class="hljs-number">0x9F</span>, <span class="hljs-number">0x91</span>, <span class="hljs-number">0xF6</span>, <span class="hljs-number">0x95</span>, <span class="hljs-number">0xA4</span>, <span class="hljs-number">0xAC</span>, <span class="hljs-number">0x90</span>])<br>    key_data = [<span class="hljs-number">0x6C98B242</span>, <span class="hljs-number">0x78563412</span>, <span class="hljs-number">0x3E6A6D0D</span>, <span class="hljs-number">0xEFCDAB89</span>] <span class="hljs-comment"># 端序转换</span><br>    keys_input = [val <span class="hljs-keyword">for</span> k <span class="hljs-keyword">in</span> key_data <span class="hljs-keyword">for</span> val <span class="hljs-keyword">in</span> [(k &gt;&gt; <span class="hljs-number">16</span>) &amp; <span class="hljs-number">0xFFFF</span>, k &amp; <span class="hljs-number">0xFFFF</span>]]<br>    <br>    cipher1 = <span class="hljs-built_in">int</span>.from_bytes(part2[<span class="hljs-number">0</span>:<span class="hljs-number">8</span>], <span class="hljs-string">&#x27;big&#x27;</span>)<br>    cipher2 = <span class="hljs-built_in">int</span>.from_bytes(part2[<span class="hljs-number">8</span>:<span class="hljs-number">16</span>], <span class="hljs-string">&#x27;big&#x27;</span>)<br>    <br>    subkeys_get(keys_input)<br>    inv_subkeys_get(sub_key)<br>    <br>    plain1 = dencrypt_final(cipher1)<br>    plain2 = dencrypt_final(cipher2)<br>    <br>    p1_bytes, p2_bytes = plain1.to_bytes(<span class="hljs-number">8</span>, <span class="hljs-string">&#x27;big&#x27;</span>), plain2.to_bytes(<span class="hljs-number">8</span>, <span class="hljs-string">&#x27;big&#x27;</span>)<br>    <br>    result_bytes = p1_bytes + p2_bytes<br>    <br>    hex_output = <span class="hljs-string">&#x27; &#x27;</span>.join(<span class="hljs-string">f&#x27;<span class="hljs-subst">&#123;b:02X&#125;</span>&#x27;</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> result_bytes)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Decrypted bytes (hex): <span class="hljs-subst">&#123;hex_output&#125;</span>&quot;</span>)<br>    <span class="hljs-keyword">try</span>:<br>        str_output = result_bytes.decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Decrypted string       : <span class="hljs-subst">&#123;str_output&#125;</span>&quot;</span>)<br>    <span class="hljs-keyword">except</span> UnicodeDecodeError:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Decrypted string (raw) : <span class="hljs-subst">&#123;result_bytes!r&#125;</span>&quot;</span>)<br><br><span class="hljs-comment"># Decrypted bytes (hex): 62 75 69 6C 64 5F 74 68 69 73 5F 62 6C 6F 63 6B </span><br><span class="hljs-comment"># Decrypted string      : build_this_block</span><br></code></pre></td></tr></table></figure>
+<p>所以第一部分的 moshui_ 和第二部分的 build_this_block 拼接起来就是完整的 <code>flag&#123;moshui_build_this_block&#125;</code></p>
+<h3 id="Dragon"><a href="#Dragon" class="headerlink" title="Dragon"></a>Dragon</h3><p>附件是一个 .bc 文件，用 <code>file Dragon.bc</code> 查看文件类型<br>得到<code>Dragon.bc: LLVM IR bitcode</code><br>继续往下编译 <code>clang Dragon.bc -o Dragon</code><br>然后 ida 打开编译好的 Dragon 文件,main 函数<br>读取输入后进入一个加密函数(CRC 64)，最后又字符串比较,动调提取出密文</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python">data=[ <span class="hljs-number">0x47</span>, <span class="hljs-number">0x7B</span>, <span class="hljs-number">0x9F</span>, <span class="hljs-number">0x41</span>, <span class="hljs-number">0x4E</span>, <span class="hljs-number">0xE3</span>, <span class="hljs-number">0x63</span>, <span class="hljs-number">0xDC</span>, <span class="hljs-number">0xC6</span>, <span class="hljs-number">0xBF</span>, <br>  <span class="hljs-number">0xB2</span>, <span class="hljs-number">0xE7</span>, <span class="hljs-number">0xD4</span>, <span class="hljs-number">0xF8</span>, <span class="hljs-number">0x1E</span>, <span class="hljs-number">0x03</span>, <span class="hljs-number">0x9E</span>, <span class="hljs-number">0xD8</span>, <span class="hljs-number">0x5F</span>, <span class="hljs-number">0x62</span>, <br>  <span class="hljs-number">0xBC</span>, <span class="hljs-number">0x2F</span>, <span class="hljs-number">0xD6</span>, <span class="hljs-number">0x12</span>, <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x55</span>, <span class="hljs-number">0x57</span>, <span class="hljs-number">0xCC</span>, <span class="hljs-number">0xE1</span>, <span class="hljs-number">0xB6</span>, <br>  <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x83</span>, <span class="hljs-number">0xCC</span>, <span class="hljs-number">0x65</span>, <span class="hljs-number">0xB6</span>, <span class="hljs-number">0x2A</span>, <span class="hljs-number">0xEB</span>, <span class="hljs-number">0xB1</span>, <span class="hljs-number">0x7B</span>, <span class="hljs-number">0xFC</span>, <br>  <span class="hljs-number">0x6B</span>, <span class="hljs-number">0xD9</span>, <span class="hljs-number">0x62</span>, <span class="hljs-number">0x2A</span>, <span class="hljs-number">0x1B</span>, <span class="hljs-number">0xCA</span>, <span class="hljs-number">0x82</span>, <span class="hljs-number">0x93</span>, <span class="hljs-number">0x87</span>, <span class="hljs-number">0xC3</span>, <br>  <span class="hljs-number">0x73</span>, <span class="hljs-number">0x76</span>, <span class="hljs-number">0xA0</span>, <span class="hljs-number">0xF8</span>, <span class="hljs-number">0xFF</span>, <span class="hljs-number">0xB1</span>, <span class="hljs-number">0xE1</span>, <span class="hljs-number">0x05</span>, <span class="hljs-number">0x8E</span>, <span class="hljs-number">0x38</span>, <br>  <span class="hljs-number">0x27</span>, <span class="hljs-number">0x16</span>, <span class="hljs-number">0xA8</span>, <span class="hljs-number">0x0D</span>, <span class="hljs-number">0xB7</span>, <span class="hljs-number">0xAA</span>, <span class="hljs-number">0xD0</span>, <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x1A</span>, <span class="hljs-number">0xE6</span>, <br>  <span class="hljs-number">0xF1</span>, <span class="hljs-number">0x9E</span>, <span class="hljs-number">0x45</span>, <span class="hljs-number">0x61</span>, <span class="hljs-number">0xF2</span>, <span class="hljs-number">0xE7</span>, <span class="hljs-number">0xD2</span>, <span class="hljs-number">0x3F</span>, <span class="hljs-number">0x78</span>, <span class="hljs-number">0x92</span>, <br>  <span class="hljs-number">0x0B</span>, <span class="hljs-number">0xE6</span>, <span class="hljs-number">0x6F</span>, <span class="hljs-number">0xF5</span>, <span class="hljs-number">0xA1</span>, <span class="hljs-number">0x7C</span>, <span class="hljs-number">0xC9</span>, <span class="hljs-number">0x63</span>, <span class="hljs-number">0xAB</span>, <span class="hljs-number">0x3A</span>, <br>  <span class="hljs-number">0xB7</span>, <span class="hljs-number">0x43</span>, <span class="hljs-number">0xB0</span>, <span class="hljs-number">0xA8</span>, <span class="hljs-number">0xD3</span>, <span class="hljs-number">0x9B</span>]<br></code></pre></td></tr></table></figure>
+<p>密文有 96 字节 -&gt; 12 个 64 位整数，每两个字符为一组，生成一个 64 位的 CRC 值，与密文对比<br>因此可以得出输入是 24 个字符，需要爆破 12 组的 2 字符组合<br>加密函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs c">__int64 __fastcall <span class="hljs-title function_">sub_7FF6EA4B1000</span><span class="hljs-params">(<span class="hljs-type">char</span> *a1, <span class="hljs-type">unsigned</span> __int64 n2)</span><br>&#123;<br>  <span class="hljs-type">unsigned</span> __int64 n8; <span class="hljs-comment">// [rsp+0h] [rbp-28h]</span><br>  <span class="hljs-type">unsigned</span> __int64 n2_1; <span class="hljs-comment">// [rsp+8h] [rbp-20h]</span><br>  __int64 v5; <span class="hljs-comment">// [rsp+10h] [rbp-18h]</span><br><br>  v5 = <span class="hljs-number">-1</span>;  <span class="hljs-comment">//0xFFFFFFFFFFFFFFFF</span><br>  <span class="hljs-keyword">for</span> ( n2_1 = <span class="hljs-number">0</span>; n2_1 &lt; n2; ++n2_1 )           <span class="hljs-comment">// n2=2</span><br>  &#123;<br>    v5 ^= (<span class="hljs-type">unsigned</span> __int64)(<span class="hljs-type">unsigned</span> __int8)a1[n2_1] &lt;&lt; <span class="hljs-number">56</span>;<br>    <span class="hljs-keyword">for</span> ( n8 = <span class="hljs-number">0</span>; n8 &lt; <span class="hljs-number">8</span>; ++n8 )  <span class="hljs-comment">//每个字节处理 8 位</span><br>    &#123;<br>      <span class="hljs-keyword">if</span> ( v5 &gt;= <span class="hljs-number">0</span> ) <span class="hljs-comment">//相当于 v5 &amp; (1 &lt;&lt; 63) == 0</span><br>        v5 *= <span class="hljs-number">2</span>;<br>      <span class="hljs-keyword">else</span><br>        v5 = (<span class="hljs-number">2</span> * v5) ^ <span class="hljs-number">0x42F0E1EBA9EA3693L</span>L;<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">return</span> ~v5;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>解密脚本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><code class="hljs python">data=[ <span class="hljs-number">0x47</span>, <span class="hljs-number">0x7B</span>, <span class="hljs-number">0x9F</span>, <span class="hljs-number">0x41</span>, <span class="hljs-number">0x4E</span>, <span class="hljs-number">0xE3</span>, <span class="hljs-number">0x63</span>, <span class="hljs-number">0xDC</span>, <span class="hljs-number">0xC6</span>, <span class="hljs-number">0xBF</span>, <br>  <span class="hljs-number">0xB2</span>, <span class="hljs-number">0xE7</span>, <span class="hljs-number">0xD4</span>, <span class="hljs-number">0xF8</span>, <span class="hljs-number">0x1E</span>, <span class="hljs-number">0x03</span>, <span class="hljs-number">0x9E</span>, <span class="hljs-number">0xD8</span>, <span class="hljs-number">0x5F</span>, <span class="hljs-number">0x62</span>, <br>  <span class="hljs-number">0xBC</span>, <span class="hljs-number">0x2F</span>, <span class="hljs-number">0xD6</span>, <span class="hljs-number">0x12</span>, <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x55</span>, <span class="hljs-number">0x57</span>, <span class="hljs-number">0xCC</span>, <span class="hljs-number">0xE1</span>, <span class="hljs-number">0xB6</span>, <br>  <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x83</span>, <span class="hljs-number">0xCC</span>, <span class="hljs-number">0x65</span>, <span class="hljs-number">0xB6</span>, <span class="hljs-number">0x2A</span>, <span class="hljs-number">0xEB</span>, <span class="hljs-number">0xB1</span>, <span class="hljs-number">0x7B</span>, <span class="hljs-number">0xFC</span>, <br>  <span class="hljs-number">0x6B</span>, <span class="hljs-number">0xD9</span>, <span class="hljs-number">0x62</span>, <span class="hljs-number">0x2A</span>, <span class="hljs-number">0x1B</span>, <span class="hljs-number">0xCA</span>, <span class="hljs-number">0x82</span>, <span class="hljs-number">0x93</span>, <span class="hljs-number">0x87</span>, <span class="hljs-number">0xC3</span>, <br>  <span class="hljs-number">0x73</span>, <span class="hljs-number">0x76</span>, <span class="hljs-number">0xA0</span>, <span class="hljs-number">0xF8</span>, <span class="hljs-number">0xFF</span>, <span class="hljs-number">0xB1</span>, <span class="hljs-number">0xE1</span>, <span class="hljs-number">0x05</span>, <span class="hljs-number">0x8E</span>, <span class="hljs-number">0x38</span>, <br>  <span class="hljs-number">0x27</span>, <span class="hljs-number">0x16</span>, <span class="hljs-number">0xA8</span>, <span class="hljs-number">0x0D</span>, <span class="hljs-number">0xB7</span>, <span class="hljs-number">0xAA</span>, <span class="hljs-number">0xD0</span>, <span class="hljs-number">0xE8</span>, <span class="hljs-number">0x1A</span>, <span class="hljs-number">0xE6</span>, <br>  <span class="hljs-number">0xF1</span>, <span class="hljs-number">0x9E</span>, <span class="hljs-number">0x45</span>, <span class="hljs-number">0x61</span>, <span class="hljs-number">0xF2</span>, <span class="hljs-number">0xE7</span>, <span class="hljs-number">0xD2</span>, <span class="hljs-number">0x3F</span>, <span class="hljs-number">0x78</span>, <span class="hljs-number">0x92</span>, <br>  <span class="hljs-number">0x0B</span>, <span class="hljs-number">0xE6</span>, <span class="hljs-number">0x6F</span>, <span class="hljs-number">0xF5</span>, <span class="hljs-number">0xA1</span>, <span class="hljs-number">0x7C</span>, <span class="hljs-number">0xC9</span>, <span class="hljs-number">0x63</span>, <span class="hljs-number">0xAB</span>, <span class="hljs-number">0x3A</span>, <br>  <span class="hljs-number">0xB7</span>, <span class="hljs-number">0x43</span>, <span class="hljs-number">0xB0</span>, <span class="hljs-number">0xA8</span>, <span class="hljs-number">0xD3</span>, <span class="hljs-number">0x9B</span>]<br><span class="hljs-comment"># print(len(data)) # 96</span><br>target =[<br>    <span class="hljs-built_in">int</span>.from_bytes(<span class="hljs-built_in">bytes</span>(data[i:i+<span class="hljs-number">8</span>]),<span class="hljs-string">&#x27;little&#x27;</span>,)<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>,<span class="hljs-number">96</span>,<span class="hljs-number">8</span>)<br>]<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">crc64</span>(<span class="hljs-params">enc</span>):<br>    crc=<span class="hljs-number">0xFFFFFFFFFFFFFFFF</span><br>    <span class="hljs-keyword">for</span> byte <span class="hljs-keyword">in</span> enc:<br>        crc ^= (byte &lt;&lt; <span class="hljs-number">56</span>)<br>        crc &amp;= <span class="hljs-number">0xFFFFFFFFFFFFFFFF</span><br>        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            <span class="hljs-keyword">if</span> crc &amp;(<span class="hljs-number">1</span> &lt;&lt; <span class="hljs-number">63</span>): <br>                crc = (crc &lt;&lt; <span class="hljs-number">1</span>) ^ <span class="hljs-number">0x42F0E1EBA9EA3693</span><br>            <span class="hljs-keyword">else</span>:<br>                crc &lt;&lt;= <span class="hljs-number">1</span><br>        crc &amp;= <span class="hljs-number">0xFFFFFFFFFFFFFFFF</span><br>    <span class="hljs-keyword">return</span> crc ^ <span class="hljs-number">0xFFFFFFFFFFFFFFFF</span> <span class="hljs-comment">#取反</span><br><span class="hljs-comment">#爆破</span><br>flag=[]<br><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> target:<br>    found =<span class="hljs-literal">False</span><br>    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0x10000</span>):<br>        byte0 = j &amp; <span class="hljs-number">0xFF</span>  <span class="hljs-comment">#低字节</span><br>        byte1 = (j &gt;&gt; <span class="hljs-number">8</span>) &amp; <span class="hljs-number">0xFF</span> <span class="hljs-comment">#高字节</span><br>        temp = <span class="hljs-built_in">bytes</span>([byte0,byte1])<br>        <br>        crc_val = crc64(temp)<br>        <span class="hljs-keyword">if</span> crc_val == i:<br>            flag.append(temp)<br>            found = <span class="hljs-literal">True</span><br>            <span class="hljs-keyword">break</span><br><br>final =<span class="hljs-string">b&#x27;&#x27;</span>.join(flag).decode(<span class="hljs-string">&#x27;ascii&#x27;</span>)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Flag is : <span class="hljs-subst">&#123;final&#125;</span>&quot;</span>)<br>    <br></code></pre></td></tr></table></figure>
+<p>flag 为<code>flag&#123;LLVM_1s_Fun_Ri9h7?&#125;</code></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>XYCTF2024 Reverse 方向复现</div>
+      <div>http://example.com/2025/07/20/XYCTF2025/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年7月20日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/07/21/cuda/" title="cuda 逆向">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">cuda 逆向</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/07/15/pyd/" title="pyd 逆向">
+                        <span class="hidden-mobile">pyd 逆向</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
