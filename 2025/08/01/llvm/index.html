@@ -27,7 +27,7 @@
 <meta property="og:description" content="写在前面这篇文章的前半部分包括写的环境搭建都是基于 LLVM 源码的构建方式，重点在于帮助了解 llvm 的结构，如果目的只是编写 Pass 的话，直接跳到 自己编写 LLVM Pass 部分即可 LLVM 环境搭建由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https:&#x2F;&#x2F;github.com&#x2F;llvm&#x2F;llvm-project.git 里面下载">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-07-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-08-04T03:29:21.036Z">
+<meta property="article:modified_time" content="2025-08-04T04:20:02.149Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="llvm">
 <meta name="twitter:card" content="summary_large_image">
@@ -246,7 +246,7 @@
         
         
         
-          27 分钟
+          28 分钟
         
       </span>
     
@@ -343,11 +343,18 @@
 <blockquote>
 <p>在典型的编译流程中，源代码首先被编译成 LLVM IR，然后 opt 会介入，对这个 IR 进行一系列的分析和转换,优化代码<br><code>opt --help</code> 获取 LLVM 中可用程序转换列表</p>
 </blockquote>
-<h3 id="LLVM-Pass"><a href="#LLVM-Pass" class="headerlink" title="LLVM Pass"></a>LLVM Pass</h3><p>LLVM Pass 框架是 LLVM 系统的一个重要组成部分，Pass 执行构成编译器的各种转换和优化<br>Pass 的核心特征：</p>
+<h3 id="LLVM-Pass"><a href="#LLVM-Pass" class="headerlink" title="LLVM Pass"></a>LLVM Pass</h3><p>LLVM Pass 框架是 LLVM 系统的一个重要组成部分，Pass 执行构成编译器的各种转换和优化</p>
+<p>Pass 的核心特征：</p>
 <ul>
 <li>模块化：每个 Pass 都被设计成一个独立的、自包含的单元，它只专注于完成一个特定的任务</li>
 <li>可组合：LLVM 允许通过 Pass 管理器将多个 Pass 串联起来，形成一个完整的优化管道，开发者可以根据需求自由组合不同的 Pass</li>
 <li>统一接口：与旧版 Pass 管理器中通过继承定义 Pass 接口不同，新版 Pass 管理器中的 Pass 都遵循一个基于概念的多态接口</li>
+</ul>
+<p>Pass 的分类</p>
+<ul>
+<li>FunctionPass：在函数上运行，这是最常见的 Pass 类型，通常用于函数内部的优化或分析。</li>
+<li>ModulePass：在整个模块（通常是一个源文件）上运行，它适用于需要在函数间进行分析或优化的场景</li>
+<li>LoopPass：在每个循环上运行</li>
 </ul>
 <p>根据官方文档具体了解 pass<br><a target="_blank" rel="noopener" href="https://llvm.org/docs/WritingAnLLVMNewPMPass.html">https://llvm.org/docs/WritingAnLLVMNewPMPass.html</a></p>
 <h3 id="基于源码的-LLVM-Pass"><a href="#基于源码的-LLVM-Pass" class="headerlink" title="基于源码的 LLVM Pass"></a>基于源码的 LLVM Pass</h3><p>上文已经为新 pass 构建好了环境<br>以 llvm-project 目录下创建好了的这个为例 <code>llvm/lib/Transforms/Utils/HelloWorld.cpp</code> </p>
