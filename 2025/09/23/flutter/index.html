@@ -1,0 +1,718 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="[NewStar 2024 Week5] Ohn_flutter!!!java 层看到密文 使用 blutter 恢复 libapp.so 的符号先克隆 blutter 项目 1git clone https:&#x2F;&#x2F;github.com&#x2F;worawit&#x2F;blutter --depth&#x3D;1  12D:\aaa\flutter\blutter&gt;python -m pip install pyelf">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Flutter 逆向">
+<meta property="og:url" content="http://example.com/2025/09/23/flutter/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[NewStar 2024 Week5] Ohn_flutter!!!java 层看到密文 使用 blutter 恢复 libapp.so 的符号先克隆 blutter 项目 1git clone https:&#x2F;&#x2F;github.com&#x2F;worawit&#x2F;blutter --depth&#x3D;1  12D:\aaa\flutter\blutter&gt;python -m pip install pyelf">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/flutter/cipher.png">
+<meta property="og:image" content="http://example.com/images/flutter/ns2.png">
+<meta property="og:image" content="http://example.com/images/flutter/ns1.png">
+<meta property="og:image" content="http://example.com/images/flutter/ns3.png">
+<meta property="og:image" content="http://example.com/images/flutter/xxtea1.png">
+<meta property="og:image" content="http://example.com/images/flutter/xxtea3.png">
+<meta property="og:image" content="http://example.com/images/flutter/xxtea2.png">
+<meta property="article:published_time" content="2025-09-22T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-10-08T08:08:47.302Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/flutter/cipher.png">
+  
+  
+  
+  <title>Flutter 逆向 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Flutter 逆向"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-09-23 00:00" pubdate>
+          2025年9月23日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Flutter 逆向</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="NewStar-2024-Week5-Ohn-flutter"><a href="#NewStar-2024-Week5-Ohn-flutter" class="headerlink" title="[NewStar 2024 Week5] Ohn_flutter!!!"></a>[NewStar 2024 Week5] Ohn_flutter!!!</h3><p>java 层看到密文<br><img src="/../images/flutter/cipher.png" srcset="/img/loading.gif" lazyload></p>
+<p>使用 blutter 恢复 libapp.so 的符号<br>先克隆 blutter 项目</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/worawit/blutter --depth=1<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">D:\aaa\flutter\blutter&gt;python -m pip install pyelftools<br>D:\aaa\flutter\blutter&gt;python blutter.py ..\ns24\ .\output<br></code></pre></td></tr></table></figure>
+
+<p>ns24 目录中存放着已经提取出来的 so 文件，在 blutter 目录下找到刚刚新生成的 output 文件夹<br>找到里面的 <code>ida_script\addNames.py</code>,在 ida 8.3 中(ida 9.0 的 api 改变了，使用这个脚本会有报错，不能完全恢复)用这个脚本恢复 so 文件的符号，由于我 8.3 的 ida 没法反编译 arm，所以把把这个保存成 i64，然后选择 bn 中的 Analysis -&gt; Import Debug Info from External File 导入 i64 文件，即可在 bn 中看到还原了函数名的 so 文件</p>
+<p>搜索 <code>ohn_flutter</code> 查找关键函数</p>
+<p><img src="/../images/flutter/ns2.png" srcset="/img/loading.gif" lazyload></p>
+<p>用 blutter 里面的 blutter_frida.js 脚本 hook 函数的参数</p>
+<p><img src="/../images/flutter/ns1.png" srcset="/img/loading.gif" lazyload></p>
+<p><code>ohn_flutter$drink_drink::_fixkey_2fea14</code></p>
+<p>得到 key <code>111,104,110,95,102,108,117,116,116,101,114,107,107,107,107,107</code></p>
+<p>hook  <code>ohn_flutter$doi_::jumppp_2fe3c8</code>的参数也能得到 key 为 <code>ohn_flutterkkkkk</code></p>
+<p><img src="/../images/flutter/ns3.png" srcset="/img/loading.gif" lazyload></p>
+<p>点进 <code>ohn_flutter$doi_::jumppp_2fe3c8 -&gt; ohn_flutter$drink_drink::ens_2fe410 -&gt; ohn_flutter$drink_drink::encrypt_2fe460 </code></p>
+<p>里面有不少有用的函数如最开始 hook 过的 <code>ohn_flutter$drink_drink::_fixkey_2fea14</code></p>
+<p>hook <code>ohn_flutter$drink_drink::_encryptUint32List_2fe5ec</code></p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs dns">_Uint32List@<span class="hljs-number">730017d</span>e19 = [<br>  <span class="hljs-number">1601071215</span>,<br>  <span class="hljs-number">1953852518</span>,<br>  <span class="hljs-number">1802659188</span>,<br>  <span class="hljs-number">1802201963</span><br>]<br></code></pre></td></tr></table></figure>
+<p>仔细看这个函数，发现了很多 <strong>xxtea</strong> 的特征<br>DELTA &#x3D; 0x9E3779B9</p>
+<p><img src="/../images/flutter/xxtea1.png" srcset="/img/loading.gif" lazyload></p>
+<p>rounds &#x3D; 6 + 52 &#x2F; n </p>
+<p>函数的开头可以看到定义 x2 &#x3D; 0x34(52)</p>
+<p><img src="/../images/flutter/xxtea3.png" srcset="/img/loading.gif" lazyload></p>
+<p>MX &#x3D; ((z &gt;&gt; 5 ^ y &lt;&lt; 2) + (y &gt;&gt; 3 ^ z &lt;&lt; 4)) ^ ((sum ^ y) + (key[(p &amp; 3) ^ e] ^ z))</p>
+<p><img src="/../images/flutter/xxtea2.png" srcset="/img/loading.gif" lazyload></p>
+<p>然后往前交叉引用<br>hook <code>dart_convert_Codec::encode_2d5178</code></p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs dns">_Uint8List@<span class="hljs-number">7300131939</span> = [<span class="hljs-number">0,44,116,172</span>,<span class="hljs-number">168,123,57,249</span>]<br>_Uint8List@<span class="hljs-number">730013</span>b8e9 = [<span class="hljs-number">115,125,141,220</span>,<span class="hljs-number">54,187,239,62</span>,<span class="hljs-number">180,24,73,101</span>,<span class="hljs-number">254,58,44,214</span>]<br></code></pre></td></tr></table></figure>
+
+<p>点进这个函数，看到有个 base64 <code>dart_convert_Base64Encoder::convert_409c50</code> </p>
+<p>到这里这条线的函数差不多就看完了<br>再回到开始的地方</p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elixir">ohn_flutter<span class="hljs-variable">$EditView_MyEditTextState</span>::_anon_closure_2d4f08 -&gt; encrypt<span class="hljs-variable">$encrypt_Encrypted</span>::ctor_fromUtf8_2fe1c4 -&gt; dart_convert_Utf8Encoder::convert_40b1a8<br></code></pre></td></tr></table></figure>
+<p>hook <code>dart_convert_Utf8Encoder::convert_40b1a8</code></p>
+<figure class="highlight wren"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs wren"><span class="hljs-title class_">String</span>@<span class="hljs-number">730078e5</span>b9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setClient<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:[1,&#123;<span class="hljs-char escape_">\&quot;</span>inputType<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>name<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInputType.text<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>signed<span class="hljs-char escape_">\&quot;</span>:null,<span class="hljs-char escape_">\&quot;</span>decimal<span class="hljs-char escape_">\&quot;</span>:null&#125;,<span class="hljs-char escape_">\&quot;</span>readOnly<span class="hljs-char escape_">\&quot;</span>:false,<span class="hljs-char escape_">\&quot;</span>obscureText<span class="hljs-char escape_">\&quot;</span>:false,<span class="hljs-char escape_">\&quot;</span>autocorrect<span class="hljs-char escape_">\&quot;</span>:true,<span class="hljs-char escape_">\&quot;</span>smartDashesType<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>1<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>smartQuotesType<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>1<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>enableSuggestions<span class="hljs-char escape_">\&quot;</span>:true,<span class="hljs-char escape_">\&quot;</span>enableInteractiveSelection<span class="hljs-char escape_">\&quot;</span>:true,<span class="hljs-char escape_">\&quot;</span>actionLabel<span class="hljs-char escape_">\&quot;</span>:null,<span class="hljs-char escape_">\&quot;</span>inputAction<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInputAction.done<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>textCapitalization<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextCapitalization.none<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>keyboardAppearance<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>Brightness.light<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>enableIMEPersonalizedLearning<span class="hljs-char escape_">\&quot;</span>:true,<span class="hljs-char escape_">\&quot;</span>contentCommitMimeTypes<span class="hljs-char escape_">\&quot;</span>:[],<span class="hljs-char escape_">\&quot;</span>autofill<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>uniqueIdentifier<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>EditableText-28050040<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>hints<span class="hljs-char escape_">\&quot;</span>:[],<span class="hljs-char escape_">\&quot;</span>editingValue<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>text<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span><span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>selectionBase<span class="hljs-char escape_">\&quot;</span>:0,<span class="hljs-char escape_">\&quot;</span>selectionExtent<span class="hljs-char escape_">\&quot;</span>:0,<span class="hljs-char escape_">\&quot;</span>selectionAffinity<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextAffinity.downstream<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>selectionIsDirectional<span class="hljs-char escape_">\&quot;</span>:false,<span class="hljs-char escape_">\&quot;</span>composingBase<span class="hljs-char escape_">\&quot;</span>:-1,<span class="hljs-char escape_">\&quot;</span>composingExtent<span class="hljs-char escape_">\&quot;</span>:-1&#125;,<span class="hljs-char escape_">\&quot;</span>hintText<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>Fill flag here and Press enter...<span class="hljs-char escape_">\&quot;</span>&#125;,<span class="hljs-char escape_">\&quot;</span>enableDeltaModel<span class="hljs-char escape_">\&quot;</span>:false&#125;]&#125;&quot;</span>        <br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300790499</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setEditableSizeAndTransform<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>width<span class="hljs-char escape_">\&quot;</span>:372.72727272727275,<span class="hljs-char escape_">\&quot;</span>height<span class="hljs-char escape_">\&quot;</span>:24.0,<span class="hljs-char escape_">\&quot;</span>transform<span class="hljs-char escape_">\&quot;</span>:[1.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,1.0,0.0,10.0,105.63636363636364,0.0,1.0]&#125;&#125;&quot;</span>  <br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300791709</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setMarkedTextRect<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>width<span class="hljs-char escape_">\&quot;</span>:2.0,<span class="hljs-char escape_">\&quot;</span>height<span class="hljs-char escape_">\&quot;</span>:24.0,<span class="hljs-char escape_">\&quot;</span>x<span class="hljs-char escape_">\&quot;</span>:0.18181818181818166,<span class="hljs-char escape_">\&quot;</span>y<span class="hljs-char escape_">\&quot;</span>:0.18181818181818699&#125;&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300792309</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setStyle<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>fontFamily<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>Roboto<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>fontSize<span class="hljs-char escape_">\&quot;</span>:16.0,<span class="hljs-char escape_">\&quot;</span>fontWeightIndex<span class="hljs-char escape_">\&quot;</span>:3,<span class="hljs-char escape_">\&quot;</span>textAlignIndex<span class="hljs-char escape_">\&quot;</span>:4,<span class="hljs-char escape_">\&quot;</span>textDirectionIndex<span class="hljs-char escape_">\&quot;</span>:1&#125;&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300792</span>f59 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setEditingState<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>text<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span><span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>selectionBase<span class="hljs-char escape_">\&quot;</span>:0,<span class="hljs-char escape_">\&quot;</span>selectionExtent<span class="hljs-char escape_">\&quot;</span>:0,<span class="hljs-char escape_">\&quot;</span>selectionAffinity<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextAffinity.downstream<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>selectionIsDirectional<span class="hljs-char escape_">\&quot;</span>:false,<span class="hljs-char escape_">\&quot;</span>composingBase<span class="hljs-char escape_">\&quot;</span>:-1,<span class="hljs-char escape_">\&quot;</span>composingExtent<span class="hljs-char escape_">\&quot;</span>:-1&#125;&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007939</span>c9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.show<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:null&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007942</span>a9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.requestAutofill<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:null&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007</span>a9c69 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setCaretRect<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>width<span class="hljs-char escape_">\&quot;</span>:2.0,<span class="hljs-char escape_">\&quot;</span>height<span class="hljs-char escape_">\&quot;</span>:24.0,<span class="hljs-char escape_">\&quot;</span>x<span class="hljs-char escape_">\&quot;</span>:0.18181818181818166,<span class="hljs-char escape_">\&quot;</span>y<span class="hljs-char escape_">\&quot;</span>:0.18181818181818699&#125;&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007</span>f7c19 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.show<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:null&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007</span>f8fd9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;[null]&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73001063e9</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.setCaretRect<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:&#123;<span class="hljs-char escape_">\&quot;</span>width<span class="hljs-char escape_">\&quot;</span>:2.0,<span class="hljs-char escape_">\&quot;</span>height<span class="hljs-char escape_">\&quot;</span>:24.0,<span class="hljs-char escape_">\&quot;</span>x<span class="hljs-char escape_">\&quot;</span>:36.909090909090914,<span class="hljs-char escape_">\&quot;</span>y<span class="hljs-char escape_">\&quot;</span>:0.18181818181818699&#125;&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300110</span>ab9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.clearClient<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:null&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300111619</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;[null]&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300111</span>b89 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;&#123;<span class="hljs-char escape_">\&quot;</span>method<span class="hljs-char escape_">\&quot;</span>:<span class="hljs-char escape_">\&quot;</span>TextInput.hide<span class="hljs-char escape_">\&quot;</span>,<span class="hljs-char escape_">\&quot;</span>args<span class="hljs-char escape_">\&quot;</span>:null&#125;&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73007</span>f70a9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;aaaa&quot;</span> <br><span class="hljs-title class_">String</span>@<span class="hljs-number">73001124</span>c9 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;ohn_flutterkkkkk&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">73000</span>fd5d1 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;12345678901234561234567890123456&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300113</span>d99 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;1234567890123456&quot;</span><br><span class="hljs-title class_">String</span>@<span class="hljs-number">7300113</span>c49 <span class="hljs-operator">=</span> <span class="hljs-string">&quot;mpxRIDtEnuE=&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>发现一个 <strong>AES</strong></p>
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elixir">ohn_flutter<span class="hljs-variable">$EditView_MyEditTextState</span>::_anon_closure_2d4f08 -&gt; encrypt<span class="hljs-variable">$encrypt_AES</span>::ctor_2d5474<br></code></pre></td></tr></table></figure>
+<p>hook <code>encrypt$encrypt_AES::ctor_2d5474</code></p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs perl">Key<span class="hljs-variable">@73001121a9</span> = &#123;<br>  <span class="hljs-string">&quot;parent!Encrypted&quot;</span>: &#123;<br>    <span class="hljs-string">&quot;off_8!_Uint8List<span class="hljs-variable">@7300112299</span>&quot;</span>: [<span class="hljs-number">49</span>, <span class="hljs-number">50</span>, <span class="hljs-number">51</span>, <span class="hljs-number">52</span>, <span class="hljs-number">53</span>, <span class="hljs-number">54</span>, <span class="hljs-number">55</span>, <span class="hljs-number">56</span>, <span class="hljs-number">57</span>, <span class="hljs-number">48</span>, <span class="hljs-number">49</span>, <span class="hljs-number">50</span>, <span class="hljs-number">51</span>, <span class="hljs-number">52</span>, <span class="hljs-number">53</span>, <span class="hljs-number">54</span>, <span class="hljs-number">49</span>, <span class="hljs-number">50</span>, <span class="hljs-number">51</span>, <span class="hljs-number">52</span>, <span class="hljs-number">53</span>, <span class="hljs-number">54</span>, <span class="hljs-number">55</span>, <span class="hljs-number">56</span>, <span class="hljs-number">57</span>, <span class="hljs-number">48</span>, <span class="hljs-number">49</span>, <span class="hljs-number">50</span>, <span class="hljs-number">51</span>, <span class="hljs-number">52</span>, <span class="hljs-number">53</span>, <span class="hljs-number">54</span>]<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight elixir"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs elixir">ohn_flutter<span class="hljs-variable">$EditView_MyEditTextState</span>::_anon_closure_2d4f08 -&gt; encrypt<span class="hljs-variable">$encrypt_Encrypter</span>::encrypt_2d51f0<br></code></pre></td></tr></table></figure>
+
+<p>hook <code>encrypt$encrypt_Encrypter::encrypt_2d51f0</code></p>
+<figure class="highlight dns"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs dns">IV@<span class="hljs-number">73001146b9</span> = &#123;<br>  &quot;parent!Encrypted&quot;: &#123;<br>    &quot;off_8!_Uint8List@<span class="hljs-number">7300114769</span>&quot;: [<br>      <span class="hljs-number">49,50,51,52</span>,<span class="hljs-number">53,54,55,56</span>,<span class="hljs-number">57,48,49,50</span>,<span class="hljs-number">51,52,53,54</span><br>    ]<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>hook <code>ohn_flutter$EditView_MyEditTextState::check_2d50c0</code></p>
+<figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs autoit"><span class="hljs-built_in">String</span><span class="hljs-symbol">@730011edd9</span> = <span class="hljs-string">&quot;c32N3Da77z60GEll/jos1g==&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>exp:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> base64<br><span class="hljs-keyword">from</span> Crypto.Cipher <span class="hljs-keyword">import</span> AES<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">d2b</span>(<span class="hljs-params">dword</span>):<br>    <span class="hljs-keyword">return</span> <span class="hljs-string">b&#x27;&#x27;</span>.join(i.to_bytes(<span class="hljs-number">4</span>,<span class="hljs-string">&#x27;little&#x27;</span>) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> dword)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">b2d</span>(<span class="hljs-params">byte_array</span>):<br>    <span class="hljs-keyword">return</span> [<span class="hljs-built_in">int</span>.from_bytes(byte_array[i:i+<span class="hljs-number">4</span>], <span class="hljs-string">&#x27;little&#x27;</span>,signed=<span class="hljs-literal">False</span>) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>,<span class="hljs-built_in">len</span>(byte_array),<span class="hljs-number">4</span>)]<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">xxtea_enc</span>(<span class="hljs-params">v,key</span>):<br>    n = <span class="hljs-built_in">len</span>(v)<br>    <span class="hljs-keyword">if</span> n &lt; <span class="hljs-number">1</span>:<br>        <span class="hljs-keyword">return</span> v<br><br>    delta = <span class="hljs-number">0x9E3779B9</span><br>    rounds = <span class="hljs-number">6</span> + <span class="hljs-number">52</span> // n<br>    <span class="hljs-built_in">sum</span> = <span class="hljs-number">0</span><br>    z = v[n - <span class="hljs-number">1</span>]<br><br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(rounds):<br>        <span class="hljs-built_in">sum</span> = (<span class="hljs-built_in">sum</span> + delta) &amp; <span class="hljs-number">0xFFFFFFFF</span><br>        e = (<span class="hljs-built_in">sum</span> &gt;&gt; <span class="hljs-number">2</span>) &amp; <span class="hljs-number">3</span><br><br>        <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n):<br>            y = v[(p + <span class="hljs-number">1</span>) % n]<br>            v[p] = (v[p] + (((z &gt;&gt; <span class="hljs-number">5</span> ^ y &lt;&lt; <span class="hljs-number">2</span>) + (y &gt;&gt; <span class="hljs-number">3</span> ^ z &lt;&lt; <span class="hljs-number">4</span>)) ^ ((<span class="hljs-built_in">sum</span> ^ y) + (key[(p &amp; <span class="hljs-number">3</span>) ^ e] ^ z)))) &amp; <span class="hljs-number">0xFFFFFFFF</span><br>            z = v[p]<br>    <span class="hljs-keyword">return</span> v<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">xxtea_dec</span>(<span class="hljs-params">v,key</span>):<br>    n = <span class="hljs-built_in">len</span>(v)<br>    <span class="hljs-keyword">if</span> n &lt; <span class="hljs-number">1</span> :<br>        <span class="hljs-keyword">return</span> v<br>    <br>    delta = <span class="hljs-number">0x9E3779B9</span><br>    rounds = <span class="hljs-number">6</span> + <span class="hljs-number">52</span> // n<br>    <span class="hljs-built_in">sum</span> = (rounds * delta) &amp; <span class="hljs-number">0xFFFFFFFF</span><br>    y = v[<span class="hljs-number">0</span>]<br><br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(rounds):<br>        e = (<span class="hljs-built_in">sum</span> &gt;&gt; <span class="hljs-number">2</span>) &amp; <span class="hljs-number">3</span><br><br>        <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n - <span class="hljs-number">1</span>, -<span class="hljs-number">1</span>, -<span class="hljs-number">1</span>):<br>            z = v[p-<span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> p &gt; <span class="hljs-number">0</span> <span class="hljs-keyword">else</span> v[n-<span class="hljs-number">1</span>]<br>            v[p] = (v[p] - (((z &gt;&gt; <span class="hljs-number">5</span> ^ y &lt;&lt; <span class="hljs-number">2</span>) + (y &gt;&gt; <span class="hljs-number">3</span> ^ z &lt;&lt; <span class="hljs-number">4</span>)) ^ ((<span class="hljs-built_in">sum</span> ^ y) + (key[(p &amp; <span class="hljs-number">3</span>) ^ e] ^ z)))) &amp; <span class="hljs-number">0xFFFFFFFF</span><br>            y = v[p]<br>        <span class="hljs-built_in">sum</span> = (<span class="hljs-built_in">sum</span> - delta) &amp; <span class="hljs-number">0xFFFFFFFF</span><br><br>    <span class="hljs-keyword">return</span> v<br><br><span class="hljs-keyword">def</span>  <span class="hljs-title function_">pkcs7_unpad</span>(<span class="hljs-params">data</span>):<br>    <span class="hljs-keyword">return</span> data[:-data[-<span class="hljs-number">1</span>]]    <br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    cipher = <span class="hljs-string">b&quot;/oIHOyDg6s6yqVd26AnYJ6u2YjPcMhawTe93+AJPAUiwGZM4KWvXjsib1tcnZHSnglaaVpbcOaTtNoMCr5od2A==&quot;</span><br>    data = base64.b64decode(cipher)<br><br>    <span class="hljs-comment"># if len(data) % 4 != 0:</span><br>    <span class="hljs-comment">#         padding = 4 - (len(data) % 4)</span><br>    <span class="hljs-comment">#         data += b&#x27;\x00&#x27; * padding</span><br><br>    aes_key = <span class="hljs-string">b&quot;12345678901234561234567890123456&quot;</span><br>    aes_iv = <span class="hljs-string">b&quot;1234567890123456&quot;</span><br><br>    aes = AES.new(aes_key,AES.MODE_CBC,aes_iv)<br>    aes_plain = pkcs7_unpad(aes.decrypt(data))<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;aes_plain: <span class="hljs-subst">&#123;aes_plain&#125;</span>&quot;</span>)<br><br><br>    xxtea_key = <span class="hljs-string">&quot;ohn_flutterkkkkk&quot;</span><br>    xxtea_cipher = base64.b64decode(aes_plain)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;xxtea_cipher: <span class="hljs-subst">&#123;xxtea_cipher&#125;</span>&quot;</span>)<br>    v = b2d(xxtea_cipher)<br>    key = b2d(xxtea_key.encode())<br><br>    dec = xxtea_dec(v,key)<br>    result = d2b(dec)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;decrypt: <span class="hljs-subst">&#123;(result)&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>flag 为 <code>flag&#123;U_@r4_F1u774r_r4_m@ster&#125;</code></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Flutter 逆向</div>
+      <div>http://example.com/2025/09/23/flutter/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年9月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/02/angr/" title="Angr 符号执行 模拟执行">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Angr 符号执行 模拟执行</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/09/21/SekaiCTF2025/" title="SeKaiCTF 2025 Reverse 方向复现">
+                        <span class="hidden-mobile">SeKaiCTF 2025 Reverse 方向复现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
