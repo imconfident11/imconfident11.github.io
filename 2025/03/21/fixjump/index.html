@@ -34,7 +34,7 @@
 <meta property="og:image" content="http://example.com/images/4/3.png">
 <meta property="og:image" content="http://example.com/images/4/7.png">
 <meta property="article:published_time" content="2025-03-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-04-29T01:30:04.634Z">
+<meta property="article:modified_time" content="2025-12-08T07:19:04.393Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta property="article:tag" content="Android">
@@ -245,7 +245,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          397 字
+          394 字
         
       </span>
     
@@ -298,9 +298,14 @@
             
               <div class="markdown-body">
                 
-                <h3 id="题目-ez-re-N1-Junior-2025-Reverse"><a href="#题目-ez-re-N1-Junior-2025-Reverse" class="headerlink" title="题目 ez_re (N1 Junior 2025 Reverse)"></a>题目 ez_re (N1 Junior 2025 Reverse)</h3><h4 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h4><p><strong>将文件直接用<code>Binary Ninja</code>打开之后会发现有很多分析不出来的<code>br跳转</code>,需要修一修</strong><br><img src="/../images/4/1.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/4/2.png" srcset="/img/loading.gif" lazyload></p>
-<h4 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h4><p><strong>找一个函数<code>my_strlen</code>,可以看到<code>mov     w11, #0  mov     w12, #0x1</code>初始化寄存器的值，下面的<code>cmp     w10, #0 csel    w10, w11, w12, ne  &#123;0x0&#125;  &#123;0x1&#125;</code>是关键，先将w10的值跟0x0比较，如果不等于0，则将w10的值设置为w11，否则设置为w12，这一步就导致了后面两种不同的情况的跳转，也就是我们需要手修的地方</strong><br><img src="/../images/4/4.png" srcset="/img/loading.gif" lazyload><br><strong>看注释就行</strong><br><strong>note：</strong><br><strong>1.[5230]和[5238]在{data_5230}里面可以找到</strong><br><img src="/../images/4/5.png" srcset="/img/loading.gif" lazyload><br><strong>2.w11存的值需要往上找对应的sp，先看到w8,然后再往上看需要找[x0]，因为在ARM架构中前 8 个参数通过寄存器 x0-x7 传递，即去找传入函数的第一个参数</strong><br><img src="/../images/4/6.png" srcset="/img/loading.gif" lazyload><br><strong>这里用伪C看就能很清晰地看到<code>&amp;var_28</code>传入<code>my_strlen</code>,所以<code>w8=[x0]=0xd0deba7d</code></strong><br><img src="/../images/4/3.png" srcset="/img/loading.gif" lazyload><br><strong>3.计算出来可以知道x8&#x3D;23C8 or 23D8,而23C8就是br x8指令下面一条地址，也正是以为这个跳转有两种情况所以bn分析不出来，需要手动修改</strong></p>
-<h4 id="0x03"><a href="#0x03" class="headerlink" title="0x03"></a>0x03</h4><p><strong>修改<code>br x8</code>,右键-&gt;<code>Patch</code>-&gt;<code>Assemble</code>,这里需要追前面比较的地方<code>csel</code>后面是<code>ne</code>-&gt;not equel,所以改成<code>bne </code>,这里跳转的地址是相对地址，要用需要跳转的地址减去现在的地址即用23D8-23C4得到0x14，最终<code>bne 0x14</code>,最后<code>Reanalyze</code>一下就修好了</strong><br><img src="/../images/4/7.png" srcset="/img/loading.gif" lazyload><br><strong>其他需要修的跳转基本上都是这个模式，先比较，有两种跳转情况，分析之后再去手修跳转</strong></p>
+                <h3 id="题目-ez-re-N1-Junior-2025-Reverse"><a href="#题目-ez-re-N1-Junior-2025-Reverse" class="headerlink" title="题目 ez_re (N1 Junior 2025 Reverse)"></a>题目 ez_re (N1 Junior 2025 Reverse)</h3><h4 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h4><p>将文件直接用<code>Binary Ninja</code>打开之后会发现有很多分析不出来的<code>br跳转</code>,需要修一修<br><img src="/../images/4/1.png" srcset="/img/loading.gif" lazyload><br><img src="/../images/4/2.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h4><p>找一个函数<code>my_strlen</code>,可以看到<code>mov     w11, #0  mov     w12, #0x1</code>初始化寄存器的值，下面的<code>cmp     w10, #0 csel    w10, w11, w12, ne  &#123;0x0&#125;  &#123;0x1&#125;</code>是关键，先将w10的值跟0x0比较，如果不等于0，则将w10的值设置为w11，否则设置为w12，这一步就导致了后面两种不同的情况的跳转，也就是我们需要手修的地方<br><img src="/../images/4/4.png" srcset="/img/loading.gif" lazyload><br><strong>看注释就行</strong><br><strong>note：</strong></p>
+<ol>
+<li>[5230]和[5238]在{data_5230}里面可以找到<br><img src="/../images/4/5.png" srcset="/img/loading.gif" lazyload></li>
+<li>w11存的值需要往上找对应的sp，先看到w8,然后再往上看需要找[x0]，因为在ARM架构中前 8 个参数通过寄存器 x0-x7 传递，即去找传入函数的第一个参数<br><img src="/../images/4/6.png" srcset="/img/loading.gif" lazyload><br>这里用伪C看就能很清晰地看到<code>&amp;var_28</code>传入<code>my_strlen</code>,所以<code>w8=[x0]=0xd0deba7d</code><br><img src="/../images/4/3.png" srcset="/img/loading.gif" lazyload></li>
+<li>计算出来可以知道x8&#x3D;23C8 or 23D8,而23C8就是br x8指令下面一条地址，也正是以为这个跳转有两种情况所以bn分析不出来，需要手动修改</li>
+</ol>
+<h4 id="0x03"><a href="#0x03" class="headerlink" title="0x03"></a>0x03</h4><p>修改<code>br x8</code>,右键-&gt;<code>Patch</code>-&gt;<code>Assemble</code>,这里需要追前面比较的地方<code>csel</code>后面是<code>ne</code>-&gt;not equel,所以改成<code>bne </code>,这里跳转的地址是相对地址，要用需要跳转的地址减去现在的地址即用23D8-23C4得到0x14，最终<code>bne 0x14</code>,最后<code>Reanalyze</code>一下就修好了<br><img src="/../images/4/7.png" srcset="/img/loading.gif" lazyload><br>其他需要修的跳转基本上都是这个模式，先比较，有两种跳转情况，分析之后再去手修跳转</p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>
