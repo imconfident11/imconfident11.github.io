@@ -1,0 +1,806 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="逆向三道题出了两道，另一道纯恶心人来的 发现晚上出 flag 概率比白天高 &#x3D;w&#x3D; pixelflow 初步分析 找到 global-metadata.dat 和 GameAssembly.dll 用 il2cppdumper 解包 但是在 Assembly-CSharp.dll 没看到什么东西 于是开始分析 GameAssembly.dll,参考 普通PC端IL2Cpp Unity游戏逆向方法体">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里 CTF 2026 逆向部分 WP">
+<meta property="og:url" content="http://example.com/2026/02/02/alictf2026/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="逆向三道题出了两道，另一道纯恶心人来的 发现晚上出 flag 概率比白天高 &#x3D;w&#x3D; pixelflow 初步分析 找到 global-metadata.dat 和 GameAssembly.dll 用 il2cppdumper 解包 但是在 Assembly-CSharp.dll 没看到什么东西 于是开始分析 GameAssembly.dll,参考 普通PC端IL2Cpp Unity游戏逆向方法体">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2026/02/02/images/alictf2026/tcp.png">
+<meta property="og:image" content="http://example.com/2026/02/02/images/alictf2026/tcp1.png">
+<meta property="og:image" content="http://example.com/2026/02/02/images/alictf2026/combined.jpg">
+<meta property="article:published_time" content="2026-02-01T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-02-05T09:14:02.807Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2026/02/02/images/alictf2026/tcp.png">
+  
+  
+  
+  <title>阿里 CTF 2026 逆向部分 WP - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="阿里 CTF 2026 逆向部分 WP"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-02-02 00:00" pubdate>
+          2026年2月2日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          53 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">阿里 CTF 2026 逆向部分 WP</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>逆向三道题出了两道，另一道纯恶心人来的<br>
+发现晚上出 flag 概率比白天高 =w=</p>
+<h2 id="pixelflow">pixelflow</h2>
+<h3 id="初步分析">初步分析</h3>
+<p>找到 <code>global-metadata.dat</code> 和 <code>GameAssembly.dll</code> 用 <code>il2cppdumper</code> 解包<br>
+但是在 <code>Assembly-CSharp.dll</code> 没看到什么东西<br>
+于是开始分析 <code>GameAssembly.dll</code>,参考 <a target="_blank" rel="noopener" href="https://www.bilibili.com/opus/1061213421597360147">普通PC端IL2Cpp Unity游戏逆向方法体代码记录</a></p>
+<h3 id="反编译结果分析：">反编译结果分析：</h3>
+<p><strong><code>Controller___Check_b__18_0_d__MoveNext</code></strong> 是输入校验和提取字节，仅当输入文本 以长度为 7 的固定前缀开头，并 以长度为 1 的固定后缀结尾 才继续，截取中间部分：<code>Substring(7, len-8)</code>，要求长度恰好 16</p>
+<p><strong><code>Controller___Check_b__18_1_d__MoveNext</code></strong> 新建 <code>Texture2D(16,1, format=63)</code>，用 <code>Color32</code> 写入：<code>R=byte[i], G=0, B=0, A=255</code>，<code>SetPixels32 + Apply</code>，然后 <code>Graphics.CopyTexture</code> 到 <code>TexF</code>，说明 K0 输出的 16 字节正是 <code>TexF</code> 的 <code>R</code> 通道</p>
+<p><strong><code>Controller___Check_b__18_2_d__MoveNext</code></strong> 新建 <code>ComputeBuffer(16,4)</code>，命名 <code>Buffer0</code>，绑定到 <code>Shader0</code> 的 <code>Buffer0</code>，绑定 <code>TexF</code> 到 <code>Shader0</code> 的 <code>TexF</code>，设置 <code>K2</code> 常量（4 个 float），调用 <code>Dispatch(Shader0, K0, 1,1,1)</code>，说明 K0 是加密的线程组数</p>
+<p><strong><code>Controller___Check_b__18_3_d__MoveNext</code></strong> 清空 <code>Buffer0</code>，<code>Dispatch(Shader0, K1, 1,1,1)</code>，若输入无效（bytes 为空），直接把 <code>Buffer0[0]=1</code>（失败标志）</p>
+<p><strong><code>Controller__Check_d__18__MoveNext</code></strong> 取输入并转 16 字节上传到 <code>TexF</code>，连续运行 3 次 <code>runEncryptAsyn</code>，运行 <code>runCheckAsync</code>，若输入无效：直接置 <code>Buffer0[0]=1</code></p>
+<h3 id="纹理数据">纹理数据</h3>
+<p>用 <code>AssetRipper</code> 找纹理数据，在 <code>sharedassets0.assets</code> 里有个 <code>ComputeShader</code> 类的 <code>Shader</code>，Yaml 中找到 <code>K0</code> <code>K1</code> <code>K2</code> 的 <code>code</code>，先存成 <code>.bxdc</code> 文件然后用  <code>HLSLDecompiler</code> 反编译成 <code>hlsl</code> 文件</p>
+<h4 id="K0-hlsl">K0.hlsl</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br></pre></td><td class="code"><pre><code class="hljs hlsl">// ---- Created with 3Dmigoto v1.2.45 on Sun Feb  1 01:10:35 2026<br>Texture2D&lt;float4&gt; t0 : register(t0);<br><br><br><br><br>// 3Dmigoto declarations<br>#define cmp -<br>Texture1D&lt;float4&gt; IniParams : register(t120);<br>Texture2D&lt;float4&gt; StereoParams : register(t125);<br><br><br>void main()<br>&#123;<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_uav_typed_texture2d (float,float,float,float) u0<br>  float4 r0,r1,r2,r3,r4;<br>  uint4 bitmask, uiDest;<br>  float4 fDest;<br><br>  float4 x0[16];<br>  float4 x1[32];<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_thread_group 1, 1, 1<br>  x1[0].x = 0;<br>  x1[1].x = 0;<br>  x1[2].x = 0;<br>  x1[3].x = 0;<br>  x1[4].x = 0;<br>  x1[5].x = 0;<br>  x1[6].x = 0;<br>  x1[7].x = 0;<br>  x1[8].x = 0;<br>  x1[9].x = 0;<br>  x1[10].x = 0;<br>  x1[11].x = 0;<br>  x1[12].x = 0;<br>  x1[13].x = 0;<br>  x1[14].x = 0;<br>  x1[15].x = 0;<br>  x1[16].x = 0;<br>  x1[17].x = 0;<br>  x1[18].x = 0;<br>  x1[19].x = 0;<br>  x1[20].x = 0;<br>  x1[21].x = 0;<br>  x1[22].x = 0;<br>  x1[23].x = 0;<br>  x1[24].x = 0;<br>  x1[25].x = 0;<br>  x1[26].x = 0;<br>  x1[27].x = 0;<br>  x1[28].x = 0;<br>  x1[29].x = 0;<br>  x1[30].x = 0;<br>  x1[31].x = 0;<br>  x0[0].x = 0;<br>  x0[1].x = 0;<br>  x0[2].x = 0;<br>  x0[3].x = 0;<br>  x0[4].x = 0;<br>  x0[5].x = 0;<br>  x0[6].x = 0;<br>  x0[7].x = 0;<br>  x0[8].x = 0;<br>  x0[9].x = 0;<br>  x0[10].x = 0;<br>  x0[11].x = 0;<br>  x0[12].x = 0;<br>  x0[13].x = 0;<br>  x0[14].x = 0;<br>  x0[15].x = 0;<br>  t0.GetDimensions(0, uiDest.x, uiDest.y, uiDest.z);<br>  r0.x = uiDest.x;<br>  r1.yzw = float3(0,0,0);<br>  r2.yz = float2(0,-nan);<br>  r3.xz = float2(0,0);<br>  r0.yz = float2(0,0);<br>  while (true) &#123;<br>    r0.w = cmp((uint)r0.z &gt;= 1024);<br>    if (r0.w != 0) break;<br>    r0.w = cmp((uint)r3.x &gt;= (uint)r0.x);<br>    r0.w = (int)r0.w | (int)r3.z;<br>    if (r0.w != 0) &#123;<br>      break;<br>    &#125;<br>    r2.x = r3.x;<br>    r4.xyzw = t0.Load(r2.xyy).xyzw;<br>    r4.xyzw = float4(255,255,255,255) * r4.xyzw;<br>    r4.xyzw = (uint4)r4.xyzw;<br>    switch (r4.x) &#123;<br>      case 0 :      x1[r4.y+0].x = r4.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 1 :      r0.w = x1[r4.z+0].x;<br>      r1.x = (int)r0.w &amp; 15;<br>    // No code for instruction (needs manual fix):<br>        ld_uav_typed_indexable(texture2d)(float,float,float,float) r0.w, r1.xyzw, u0.yzwx<br>      r0.w = 255 * r0.w;<br>      r0.w = round(r0.w);<br>      r0.w = (uint)r0.w;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 2 :      r0.w = x1[r4.y+0].x;<br>      r1.x = x1[r4.z+0].x;<br>      r0.w = (int)r0.w ^ (int)r1.x;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 3 :      r0.w = x1[r4.y+0].x;<br>      r1.x = x1[r4.z+0].x;<br>      r1.x = (int)r1.x &amp; 7;<br>      r2.w = (int)r0.w &amp; 255;<br>      bitmask.w = ((~(-1 &lt;&lt; 8)) &lt;&lt; r1.x) &amp; 0xffffffff;  r0.w = (((uint)r0.w &lt;&lt; r1.x) &amp; bitmask.w) | ((uint)0 &amp; ~bitmask.w);<br>      r1.x = (int)-r1.x + 8;<br>      r1.x = (uint)r2.w &gt;&gt; (uint)r1.x;<br>      r0.w = (int)r0.w | (int)r1.x;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 4 :      r0.w = x1[r4.z+0].x;<br>      r1.x = (int)r4.w &amp; 255;<br>      r0.w = (int)r0.w * (int)r1.x;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 5 :      r0.w = x1[r4.z+0].x;<br>      r1.x = (int)r4.w &amp; 255;<br>      r0.w = (int)r0.w + (int)r1.x;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 6 :      r0.w = x1[r4.y+0].x;<br>      r1.x = x1[r4.z+0].x;<br>      r0.w = (int)r0.w + (int)r1.x;<br>      r0.w = (int)r0.w &amp; 255;<br>      x1[r4.y+0].x = r0.w;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 7 :      r0.w = x1[r4.y+0].x;<br>      r0.w = (int)r0.w &amp; 15;<br>      r1.x = x1[r4.z+0].x;<br>      r1.x = (int)r1.x &amp; 255;<br>      x0[r0.w+0].x = r1.x;<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 8 :      r0.w = x1[r4.y+0].x;<br>      r1.x = (int)r4.w &amp; 255;<br>      r0.y = cmp((uint)r0.w &lt; (uint)r1.x);<br>      r3.x = (int)r3.x + 1;<br>      break;<br>      case 9 :      r0.w = (int)r4.w &amp; 128;<br>      r1.x = (int)r4.w + -256;<br>      r0.w = r0.w ? r1.x : r4.w;<br>      r3.y = (int)r0.w + (int)r3.x;<br>      r0.w = cmp((int)r3.y &lt; 0);<br>      r1.x = cmp((int)r3.y &gt;= (int)r0.x);<br>      r0.w = (int)r0.w | (int)r1.x;<br>      r2.xw = r0.ww ? r2.xz : r3.yz;<br>      r3.x = (int)r3.x + 1;<br>      r3.xz = r0.yy ? r2.xw : r3.xz;<br>      break;<br>      default :<br>      r3.z = -1;<br>      break;<br>    &#125;<br>    r0.z = (int)r0.z + 1;<br>  &#125;<br>  r0.x = x0[0].x;<br>  r0.y = x0[1].x;<br>  r0.z = x0[2].x;<br>  r0.w = x0[3].x;<br>  r1.x = x0[4].x;<br>  r1.y = x0[5].x;<br>  r1.z = x0[6].x;<br>  r1.w = x0[7].x;<br>  r2.x = x0[8].x;<br>  r2.y = x0[9].x;<br>  r2.z = x0[10].x;<br>  r2.w = x0[11].x;<br>  r3.x = x0[12].x;<br>  r3.y = x0[13].x;<br>  r3.z = x0[14].x;<br>  r3.w = x0[15].x;<br>  r0.x = (uint)r0.x;<br>  r4.x = 0.00392156886 * r0.x;<br>  r4.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(0,0,0,0), r4.xyzw<br>  r0.x = (uint)r0.y;<br>  r4.x = 0.00392156886 * r0.x;<br>  r4.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(1,0,0,0), r4.xyzw<br>  r0.x = (uint)r0.z;<br>  r4.x = 0.00392156886 * r0.x;<br>  r4.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(2,0,0,0), r4.xyzw<br>  r0.x = (uint)r0.w;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(3,0,0,0), r0.xyzw<br>  r0.x = (uint)r1.x;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(4,0,0,0), r0.xyzw<br>  r0.x = (uint)r1.y;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(5,0,0,0), r0.xyzw<br>  r0.x = (uint)r1.z;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(6,0,0,0), r0.xyzw<br>  r0.x = (uint)r1.w;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(7,0,0,0), r0.xyzw<br>  r0.x = (uint)r2.x;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(8,0,0,0), r0.xyzw<br>  r0.x = (uint)r2.y;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(9,0,0,0), r0.xyzw<br>  r0.x = (uint)r2.z;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(10,0,0,0), r0.xyzw<br>  r0.x = (uint)r2.w;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(11,0,0,0), r0.xyzw<br>  r0.x = (uint)r3.x;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(12,0,0,0), r0.xyzw<br>  r0.x = (uint)r3.y;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(13,0,0,0), r0.xyzw<br>  r0.x = (uint)r3.z;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(14,0,0,0), r0.xyzw<br>  r0.x = (uint)r3.w;<br>  r0.x = 0.00392156886 * r0.x;<br>  r0.yzw = float3(0,0,1);<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, l(15,0,0,0), r0.xyzw<br>  return;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="K1-hlsl">K1.hlsl</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><code class="hljs hlsl">// ---- Created with 3Dmigoto v1.2.45 on Sun Feb  1 01:10:41 2026<br>Texture2D&lt;float4&gt; t0 : register(t0);<br><br><br><br><br>// 3Dmigoto declarations<br>#define cmp -<br>Texture1D&lt;float4&gt; IniParams : register(t120);<br>Texture2D&lt;float4&gt; StereoParams : register(t125);<br><br><br>void main()<br>&#123;<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_uav_typed_texture2d (float,float,float,float) u0<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_uav_structured u1, 4<br>  float4 r0,r1;<br>  uint4 bitmask, uiDest;<br>  float4 fDest;<br><br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_thread_group 16, 1, 1<br>  r0.x = vThreadID.x;<br>  r0.yzw = float3(0,0,0);<br>// No code for instruction (needs manual fix):<br>ld_uav_typed_indexable(texture2d)(float,float,float,float) r1.x, r0.xwww, u0.xyzw<br>  r1.x = 255 * r1.x;<br>  r1.x = round(r1.x);<br>  r1.x = (uint)r1.x;<br>  r1.x = (int)r1.x &amp; 255;<br>  r1.x = (int)r1.x + (int)vThreadID.x;<br>  r1.x = (int)r1.x &amp; 255;<br>  r0.x = t0.Load(r0.xyz).x;<br>  r0.x = 255 * r0.x;<br>  r0.x = round(r0.x);<br>  r0.x = (uint)r0.x;<br>  r0.x = (int)r0.x &amp; 255;<br>  r0.x = cmp((int)r0.x != (int)r1.x);<br>  if (r0.x != 0) &#123;<br>    t0[0].0 = u1.x;<br>  &#125;<br>  return;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h4 id="K2-hlsl">K2.hlsl</h4>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><code class="hljs hlsl">// ---- Created with 3Dmigoto v1.2.45 on Sun Feb  1 01:10:44 2026<br>Texture2D&lt;float4&gt; t1 : register(t1);<br><br>Texture2D&lt;float4&gt; t0 : register(t0);<br><br>SamplerState s0_s : register(s0);<br><br>cbuffer cb0 : register(b0)<br>&#123;<br>  float4 cb0[2];<br>&#125;<br><br><br><br><br>// 3Dmigoto declarations<br>#define cmp -<br>Texture1D&lt;float4&gt; IniParams : register(t120);<br>Texture2D&lt;float4&gt; StereoParams : register(t125);<br><br><br>void main()<br>&#123;<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_uav_typed_texture2d (float,float,float,float) u0<br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_uav_structured u1, 4<br>  float4 r0,r1,r2,r3;<br>  uint4 bitmask, uiDest;<br>  float4 fDest;<br><br>// Needs manual fix for instruction: <br>// unknown dcl_: dcl_thread_group 8, 8, 1<br>  u0.GetDimensions(0, uiDest.x, uiDest.y, uiDest.z);<br>  r0.xy = uiDest.xy;<br>  r0.zw = cmp((uint2)vThreadID.xy &gt;= (uint2)r0.xy);<br>  r0.z = (int)r0.w | (int)r0.z;<br>  if (r0.z != 0) &#123;<br>    return;<br>  &#125;<br>  r0.zw = (uint2)vThreadID.yx;<br>  r0.xy = (uint2)r0.yx;<br>  r0.xy = r0.zw / r0.xy;<br>  r0.xy = r0.xy * cb0[0].wz + float2(-0.5,-0.5);<br>  t0.GetDimensions(0, uiDest.x, uiDest.y, uiDest.z);<br>  r0.zw = uiDest.xy;<br>  r0.zw = (uint2)r0.wz;<br>  r0.z = r0.z / r0.w;<br>  sincos(cb0[1].x, r1.x, r2.x);<br>  r1.xy = r1.xx * r0.xy;<br>  r3.x = r0.y * r2.x + -r1.x;<br>  r0.y = r0.x * r2.x + r1.y;<br>  r3.y = r0.y / r0.z;<br>  r0.yz = float2(0.5,0.5) + r3.xy;<br>// Missing reflection info for shader. No names possible.<br>// Known bad code for instruction (needs manual fix):<br>ld_structured_indexable(structured_buffer, stride=4)(mixed,mixed,mixed,mixed) r0.w, l(0), l(0), u1.xxxx<br>r0.w = no_StructuredBufferName[no_srcAddressRegister].no_srcByteOffsetName.swiz;<br>  r1.x = cmp((int)r0.w == 1);<br>  if (r0.w == 0) &#123;<br>    r1.yz = cb0[0].xy * cb0[1].yy + r0.yz;<br>    r2.xyzw = t0.SampleLevel(s0_s, r1.yz, 0).xyzw;<br>  &#125; else &#123;<br>    r2.xyzw = float4(0,0,0,1);<br>  &#125;<br>  if (r1.x != 0) &#123;<br>    r0.yz = -cb0[0].xy * cb0[1].yy + r0.yz;<br>    r2.xyzw = t1.SampleLevel(s0_s, r0.yz, 0).xyzw;<br>  &#125;<br>  r1.xyzw = float4(0,0,0,1) + -r2.xyzw;<br>  r0.xyzw = r0.xxxx * r1.xyzw + r2.xyzw;<br>// No code for instruction (needs manual fix):<br>store_uav_typed u0.xyzw, vThreadID.xyyy, r0.xyzw<br>  return;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h3 id="主要逻辑">主要逻辑</h3>
+<p><strong>K1 的核心逻辑</strong>：</p>
+<ol>
+<li>读取 u0[x]（来自 K0 输出纹理）</li>
+<li>计算 u0[x] + x（按 8-bit 截断）</li>
+<li>读取 t0[x]（来自 ciTex 纹理）</li>
+<li>若不相等则失败</li>
+</ol>
+<p>因此有：</p>
+<p>$$t0[x] = (u0[x] + x) ; mod; 256$$</p>
+<p>从而目标字节为：</p>
+<p>$$target[x] = (t0[x] - x) ; mod; 256$$</p>
+<p><code>K0</code> 的 <code>VM</code> 指令序列（来自 coTex.png）等价于对 16 字节循环一次的变换，关键点：初始化寄存器：x1[1]=42, x1[2]=0；<br>
+对每个索引 i（0…15）：</p>
+<ol>
+<li>x = u0[i]</li>
+<li>x = x ^ a（a 为累加器，初始 42）</li>
+<li>x = ROL8(x, i &amp; 7)</li>
+<li>x = (x * 7) mod 256</li>
+<li>x = (x + i) mod 256</li>
+<li>out[i] = x</li>
+<li>a = (a + x) mod 256</li>
+</ol>
+<p>正向模拟 <code>K0 VM</code></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">solve_vm</span>():<br>    ci_hex = <span class="hljs-string">&quot;e98e8a8ab7e7c9e0b897b74b3b21d37cbc8acfd5a8812ea8a3d2946bba809d&quot;</span><br>    u0_initial = [<span class="hljs-built_in">int</span>(ci_hex[i:i+<span class="hljs-number">2</span>], <span class="hljs-number">16</span>) <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>, <span class="hljs-number">2</span>)]<br><br>    co_hex = <span class="hljs-string">&quot;0001002a00020000010002000200010003000200040000070600020007020000060100000502020108020010090000f70a00000000020012020001000400000607020000060202050900009001010109050100030801014a05010003&quot;</span><br>    bytecode = []<br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-built_in">len</span>(co_hex), <span class="hljs-number">8</span>):<br>        pix = co_hex[i:i+<span class="hljs-number">8</span>]<br>        <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(pix) == <span class="hljs-number">8</span>:<br>            bytecode.append([<span class="hljs-built_in">int</span>(pix[j:j+<span class="hljs-number">2</span>], <span class="hljs-number">16</span>) <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">0</span>, <span class="hljs-number">8</span>, <span class="hljs-number">2</span>)])<br><br>    x1 = [<span class="hljs-number">0</span>] * <span class="hljs-number">32</span><br>    x0 = [<span class="hljs-number">0</span>] * <span class="hljs-number">16</span><br>    pc = <span class="hljs-number">0</span><br>    cond = <span class="hljs-number">0</span><br>    <br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1024</span>):<br>        <span class="hljs-keyword">if</span> pc &gt;= <span class="hljs-built_in">len</span>(bytecode):<br>            <span class="hljs-keyword">break</span><br>            <br>        instr = bytecode[pc]<br>        op = instr[<span class="hljs-number">0</span>]<br>        y = instr[<span class="hljs-number">1</span>]<br>        z = instr[<span class="hljs-number">2</span>]<br>        w = instr[<span class="hljs-number">3</span>]<br>        <br>        next_pc = pc + <span class="hljs-number">1</span><br>        <br>        <span class="hljs-keyword">if</span> op == <span class="hljs-number">0</span>:<br>            x1[y] = w<br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">1</span>:<br>            idx = x1[z] &amp; <span class="hljs-number">15</span><br>            x1[y] = u0_initial[idx]<br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">2</span>:<br>            x1[y] = (x1[y] ^ x1[z]) &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">3</span>:<br>            shift = x1[z] &amp; <span class="hljs-number">7</span><br>            val = x1[y] &amp; <span class="hljs-number">0xFF</span><br>            x1[y] = ((val &lt;&lt; shift) | (val &gt;&gt; (<span class="hljs-number">8</span> - shift))) &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">4</span>:<br>            x1[y] = (x1[z] * w) &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">5</span>:<br>            x1[y] = (x1[z] + w) &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">6</span>:<br>            x1[y] = (x1[y] + x1[z]) &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">7</span>:<br>            x0[x1[y] &amp; <span class="hljs-number">15</span>] = x1[z] &amp; <span class="hljs-number">0xFF</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">8</span>:<br>            cond = <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> x1[y] &lt; w <span class="hljs-keyword">else</span> <span class="hljs-number">0</span><br>        <span class="hljs-keyword">elif</span> op == <span class="hljs-number">9</span>:<br>            signed_w = w <span class="hljs-keyword">if</span> w &lt; <span class="hljs-number">128</span> <span class="hljs-keyword">else</span> w - <span class="hljs-number">256</span><br>            <span class="hljs-keyword">if</span> cond:<br>                next_pc = pc + signed_w + <span class="hljs-number">1</span><br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">break</span><br>            <br>        pc = next_pc<br><br>    <span class="hljs-keyword">return</span> x0<br><br>key = solve_vm()<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;key: <span class="hljs-subst">&#123;key&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<p>主流程里 <code>runEncryptAsync</code> 连续执行 3 次，所以最终供 <code>K1</code> 校验的 <code>u0</code> 是 <code>u0 = K0(K0(K0(input)))</code><br>
+因此需要对 <code>target</code> 反向执行 <code>K0</code> 的逆变换三次，得到原始输入字节</p>
+<ol>
+<li>x = (out[i] - i) mod 256</li>
+<li>x = x * 7^{-1} mod 256，其中 $7^{-1} \equiv 183 \ mod\ 256$</li>
+<li>x = ROR8(x, i &amp; 7)</li>
+<li>x = x ^ a</li>
+<li>a = (a + out[i]) mod 256</li>
+</ol>
+<p>将这个逆过程对 <code>target</code> 重复 3 次</p>
+<h3 id="EXP">EXP</h3>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">inv_round</span>(<span class="hljs-params">out_bytes</span>):<br>    a = <span class="hljs-number">42</span><br>    inv7 = <span class="hljs-number">183</span>  <span class="hljs-comment"># 7 * 183 % 256 == 1</span><br>    inp = [<span class="hljs-number">0</span>] * <span class="hljs-number">16</span><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">16</span>):<br>        x = out_bytes[i]<br>        x = (x - i) &amp; <span class="hljs-number">0xFF</span><br>        x = (x * inv7) &amp; <span class="hljs-number">0xFF</span><br>        s = i &amp; <span class="hljs-number">7</span><br>        x = ((x &gt;&gt; s) | ((x &lt;&lt; (<span class="hljs-number">8</span> - s)) &amp; <span class="hljs-number">0xFF</span>)) &amp; <span class="hljs-number">0xFF</span>  <span class="hljs-comment"># ROR8</span><br>        x = x ^ a<br>        inp[i] = x<br>        a = (a + out_bytes[i]) &amp; <span class="hljs-number">0xFF</span><br>    <span class="hljs-keyword">return</span> inp<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():<br>    ci = Image.<span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;ciTex.png&quot;</span>).convert(<span class="hljs-string">&quot;RGBA&quot;</span>)<br>    row = [ci.getpixel((x, <span class="hljs-number">0</span>))[<span class="hljs-number">0</span>] <span class="hljs-keyword">for</span> x <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">16</span>)]<br><br>    <span class="hljs-comment"># target = (t0[x] - x) mod 256</span><br>    target = [(row[i] - i) &amp; <span class="hljs-number">0xFF</span> <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">16</span>)]<br><br>    <span class="hljs-comment"># invert 3 rounds</span><br>    v = target<br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">3</span>):<br>        v = inv_round(v)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;target&quot;</span>, target)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;input&quot;</span>, v)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;hex&quot;</span>, <span class="hljs-string">&quot;&quot;</span>.join(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;b:02x&#125;</span>&quot;</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> v))<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;ascii&quot;</span>, <span class="hljs-string">&quot;&quot;</span>.join(<span class="hljs-built_in">chr</span>(b) <span class="hljs-keyword">if</span> <span class="hljs-number">32</span> &lt;= b &lt;= <span class="hljs-number">126</span> <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;.&quot;</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> v))<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<p>flag 为 <code>alictf&#123;5haderVM_Rep3at!&#125;</code></p>
+<h2 id="Thief">Thief</h2>
+<h3 id="流量包分析">流量包分析</h3>
+<p>分析流量包，里面有三个数据流，从 Wireshark 导出那 3 个 TCP 流的<strong>原始数据</strong></p>
+<p><img src="../images/alictf2026/tcp.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<p><img src="../images/alictf2026/tcp1.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<p>用 010 看会发现每条消息的开头都是 <code>0x89 &quot;ali&quot;</code>，结构为 <code>magic(4) + partIdx(4) + rsaLen(4) + rsaBlob(rsaLen) + fileCount(4) + [nameLen + nameXor + offset]* + payload</code>，其中 <code>nameXor</code> 每字节异或 <code>233</code> 可以得到真实文件名,<code>offset</code> 指向 <code>payload</code> 内各 <code>LZRR</code> 块起始位置</p>
+<p>三条流内容：</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nix"><span class="hljs-params">part1:</span><br>AbstractPatternMachine.java<br>flagImage<span class="hljs-symbol">/Image1Part3.java</span><br>flagImage<span class="hljs-symbol">/Image1Part1.java</span><br><br><span class="hljs-params">part2:</span><br>ParticlePhysicsSimulator.java<br>flagImage<span class="hljs-symbol">/Image1Part4.java</span><br>flagImage<span class="hljs-symbol">/Image1Part2.java</span><br><br><span class="hljs-params">part3:</span><br>GeneticAlgorithmEngine.java<br>flagImage<span class="hljs-symbol">/Image1Part5.java</span><br>flagImage<span class="hljs-operator">/</span>Image1Part6.java<br></code></pre></td></tr></table></figure>
+<h3 id="webp-文件分析">webp 文件分析</h3>
+<p>Thief\unknown\app\src\main\res\mipmap-hdpi 这个目录下有很多 <code>.webp</code> 文件,并且其中有的名字还带有混淆，应该属于是比较关键的内容<br>
+发现 <code>.webp</code> 开头是 <code>CA FE BA BE</code>,实际上是 <code>Java class</code>，对其进行反编译：</p>
+<p><code>i.l.L</code> 负责扫描 <code>user.dir</code> 上级目录并批量打包，每 3 个文件一组<br>
+<code>i.l.l1I</code> 内嵌 base64 数据段，解码得到两份算法表（记为 algo2/algo3）<br>
+<code>i.l.l1I</code> 负责打包：文件内容先经 <code>i.l.Il1</code> 压缩为 LZRR 格式；文件名 UTF‑8 后与 233 异或；offset 为每个文件压缩块的拼接偏移<br>
+<code>i.l.Il1</code> 产生的头部是大端 <code>&quot;LZRR&quot; + ver(0x0201) + flag + in_len + crc</code></p>
+<ul>
+<li>flag=13：直接 LZ 比特流；flag=15：先 RLE（0xFF 作为转义与游程标记），再进入 LZ 比特流。</li>
+<li>LZ 采用 1bit 标志区分字面量/匹配，offset 8/16 位可变，length 为 3+编码值</li>
+</ul>
+<p>i.l.l1I 内含 RSA 公钥模数（2048 位）与 exponent 65537；对 8 字节随机 seed 做 modPow 得到 rsaBlob</p>
+<p>从 <code>l1I</code> 的 base64 常量解出两段二进制表,其中一段用于 <code>Runner.encrypt</code> 的 algo2，另一段用于 algo3,通过 <code>TryDecrypt.java</code> 调用 <code>Runner.encrypt</code> 可验证哪一个表对应哪种行为</p>
+<p><strong>TryDecrypt.java</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">import</span> java.nio.ByteBuffer;<br><span class="hljs-keyword">import</span> java.nio.ByteOrder;<br><span class="hljs-keyword">import</span> java.nio.file.Files;<br><span class="hljs-keyword">import</span> java.nio.file.Path;<br><span class="hljs-keyword">import</span> java.security.MessageDigest;<br><span class="hljs-keyword">import</span> java.util.Arrays;<br><span class="hljs-keyword">import</span> java.util.List;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TryDecrypt</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">byte</span>[] MAGIC = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[] &#123;(<span class="hljs-type">byte</span>)<span class="hljs-number">0x89</span>, <span class="hljs-number">0x61</span>, <span class="hljs-number">0x6c</span>, <span class="hljs-number">0x69</span>&#125;;<br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">byte</span>[] LZRR = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[] &#123;<span class="hljs-number">0x4c</span>, <span class="hljs-number">0x5a</span>, <span class="hljs-number">0x52</span>, <span class="hljs-number">0x52</span>&#125;;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">u32le</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] b, <span class="hljs-type">int</span> off)</span> &#123;<br>        <span class="hljs-keyword">return</span> ByteBuffer.wrap(b, off, <span class="hljs-number">4</span>)<br>                .order(ByteOrder.LITTLE_ENDIAN)<br>                .getInt();<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">indexOf</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] data, <span class="hljs-type">byte</span>[] needle)</span> &#123;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt;= data.length - needle.length; i++) &#123;<br>            <span class="hljs-type">boolean</span> <span class="hljs-variable">ok</span> <span class="hljs-operator">=</span> <span class="hljs-literal">true</span>;<br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">j</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; j &lt; needle.length; j++) &#123;<br>                <span class="hljs-keyword">if</span> (data[i + j] != needle[j]) &#123;<br>                    ok = <span class="hljs-literal">false</span>;<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">if</span> (ok) <span class="hljs-keyword">return</span> i;<br>        &#125;<br>        <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Msg</span> &#123;<br>        <span class="hljs-type">int</span> partIdx;<br>        <span class="hljs-type">int</span> rsaLen;<br>        <span class="hljs-type">byte</span>[] rsa;<br>        <span class="hljs-type">int</span> fileCount;<br>        String[] files;<br>        <span class="hljs-type">int</span>[] offsets;<br>        <span class="hljs-type">byte</span>[] payload;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Msg <span class="hljs-title function_">parseMessage</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] data)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        <span class="hljs-type">int</span> <span class="hljs-variable">start</span> <span class="hljs-operator">=</span> indexOf(data, MAGIC);<br>        <span class="hljs-keyword">if</span> (start &lt; <span class="hljs-number">0</span>) <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;magic not found&quot;</span>);<br><br>        <span class="hljs-type">int</span> <span class="hljs-variable">partIdx</span> <span class="hljs-operator">=</span> u32le(data, start + <span class="hljs-number">4</span>);<br>        <span class="hljs-type">int</span> <span class="hljs-variable">rsaLen</span> <span class="hljs-operator">=</span> u32le(data, start + <span class="hljs-number">8</span>);<br>        <span class="hljs-type">int</span> <span class="hljs-variable">pos</span> <span class="hljs-operator">=</span> start + <span class="hljs-number">12</span>;<br><br>        <span class="hljs-keyword">if</span> (pos + rsaLen + <span class="hljs-number">4</span> &gt; data.length)<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">&quot;bad rsa len&quot;</span>);<br><br>        <span class="hljs-type">byte</span>[] rsa = Arrays.copyOfRange(data, pos, pos + rsaLen);<br>        pos += rsaLen;<br><br>        <span class="hljs-type">int</span> <span class="hljs-variable">fileCount</span> <span class="hljs-operator">=</span> u32le(data, pos);<br>        pos += <span class="hljs-number">4</span>;<br><br>        String[] files = <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>[fileCount];<br>        <span class="hljs-type">int</span>[] offsets = <span class="hljs-keyword">new</span> <span class="hljs-title class_">int</span>[fileCount];<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; fileCount; i++) &#123;<br>            <span class="hljs-type">int</span> <span class="hljs-variable">nameLen</span> <span class="hljs-operator">=</span> u32le(data, pos);<br>            pos += <span class="hljs-number">4</span>;<br><br>            <span class="hljs-type">byte</span>[] nameX = Arrays.copyOfRange(data, pos, pos + nameLen);<br>            pos += nameLen;<br><br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">j</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; j &lt; nameX.length; j++) &#123;<br>                nameX[j] ^= (<span class="hljs-type">byte</span>) <span class="hljs-number">233</span>;<br>            &#125;<br>            files[i] = <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(nameX, <span class="hljs-string">&quot;UTF-8&quot;</span>);<br><br>            offsets[i] = u32le(data, pos);<br>            pos += <span class="hljs-number">4</span>;<br>        &#125;<br><br>        <span class="hljs-type">byte</span>[] payload = Arrays.copyOfRange(data, pos, data.length);<br><br>        <span class="hljs-type">Msg</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Msg</span>();<br>        m.partIdx = partIdx;<br>        m.rsaLen = rsaLen;<br>        m.rsa = rsa;<br>        m.fileCount = fileCount;<br>        m.files = files;<br>        m.offsets = offsets;<br>        m.payload = payload;<br>        <span class="hljs-keyword">return</span> m;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">trySeed</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] algo, <span class="hljs-type">byte</span>[] payload, <span class="hljs-type">byte</span>[] seed, String tag)</span> &#123;<br>        <span class="hljs-keyword">try</span> &#123;<br>            <span class="hljs-type">byte</span>[] out = i.l.Runner.encrypt(algo, payload, seed);<br>            <span class="hljs-type">int</span> <span class="hljs-variable">pos</span> <span class="hljs-operator">=</span> indexOf(out, LZRR);<br>            System.out.println(<span class="hljs-string">&quot;  &quot;</span> + tag + <span class="hljs-string">&quot; -&gt; outlen=&quot;</span> + out.length + <span class="hljs-string">&quot; LZRR@&quot;</span> + pos);<br><br>            <span class="hljs-keyword">if</span> (pos &gt;= <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-type">Path</span> <span class="hljs-variable">outPath</span> <span class="hljs-operator">=</span> Path.of(<span class="hljs-string">&quot;dec_&quot;</span> + tag + <span class="hljs-string">&quot;.bin&quot;</span>);<br>                Files.write(outPath, out);<br>                System.out.println(<span class="hljs-string">&quot;    wrote &quot;</span> + outPath.toAbsolutePath());<br>            &#125;<br>        &#125; <span class="hljs-keyword">catch</span> (Throwable t) &#123;<br>            System.out.println(<span class="hljs-string">&quot;  &quot;</span> + tag + <span class="hljs-string">&quot; -&gt; failed: &quot;</span><br>                    + t.getClass().getSimpleName() + <span class="hljs-string">&quot;: &quot;</span> + t.getMessage());<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">probeSeedSensitivity</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] algo, <span class="hljs-type">byte</span>[] payload)</span> &#123;<br>        <span class="hljs-type">byte</span>[] baseSeed = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8</span>];<br>        <span class="hljs-type">byte</span>[] baseOut = i.l.Runner.encrypt(algo, payload, baseSeed);<br>        <span class="hljs-type">byte</span>[] basePrefix = Arrays.copyOf(baseOut, <span class="hljs-number">8</span>);<br><br>        System.out.println(<span class="hljs-string">&quot;seed sensitivity: basePrefix=&quot;</span> + bytesToHex(basePrefix));<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">idx</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; idx &lt; <span class="hljs-number">8</span>; idx++) &#123;<br>            <span class="hljs-type">byte</span>[] seed = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8</span>];<br>            seed[idx] = <span class="hljs-number">1</span>;<br>            <span class="hljs-type">byte</span>[] out = i.l.Runner.encrypt(algo, payload, seed);<br>            <span class="hljs-type">byte</span>[] pref = Arrays.copyOf(out, <span class="hljs-number">8</span>);<br>            <span class="hljs-type">boolean</span> <span class="hljs-variable">same</span> <span class="hljs-operator">=</span> Arrays.equals(basePrefix, pref);<br>            System.out.println(<span class="hljs-string">&quot;  seed[&quot;</span> + idx + <span class="hljs-string">&quot;] samePrefix=&quot;</span> + same<br>                    + <span class="hljs-string">&quot; prefix=&quot;</span> + bytesToHex(pref));<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">bytesToHex</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] b)</span> &#123;<br>        <span class="hljs-type">StringBuilder</span> <span class="hljs-variable">sb</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StringBuilder</span>();<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">byte</span> v : b) sb.append(String.format(<span class="hljs-string">&quot;%02x&quot;</span>, v));<br>        <span class="hljs-keyword">return</span> sb.toString();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception &#123;<br>        System.out.println(<span class="hljs-string">&quot;Working directory = &quot;</span> +<br>                Path.of(<span class="hljs-string">&quot;.&quot;</span>).toAbsolutePath().normalize());<br>        <span class="hljs-type">byte</span>[] algo2 = Files.readAllBytes(Path.of(<span class="hljs-string">&quot;b64_0.bin&quot;</span>));<br>        <span class="hljs-type">byte</span>[] algo3 = Files.readAllBytes(Path.of(<span class="hljs-string">&quot;b64_1.bin&quot;</span>));<br><br>        <span class="hljs-type">byte</span>[] a10 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">10</span>];<br>        <span class="hljs-type">byte</span>[] b20 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">20</span>];<br>        System.out.println(<span class="hljs-string">&quot;len test: out1=&quot;</span><br>                + i.l.Runner.encrypt(algo2, a10, b20).length<br>                + <span class="hljs-string">&quot; out2=&quot;</span><br>                + i.l.Runner.encrypt(algo2, b20, a10).length);<br><br>        List&lt;String&gt; streams = List.of(<br>                <span class="hljs-string">&quot;streams_py/127.0.0.1_61111-127.0.0.1_8889.bin&quot;</span>,<br>                <span class="hljs-string">&quot;streams_py/127.0.0.1_57692-127.0.0.1_8889.bin&quot;</span>,<br>                <span class="hljs-string">&quot;streams_py/127.0.0.1_52024-127.0.0.1_8889.bin&quot;</span><br>        );<br><br>        <span class="hljs-keyword">for</span> (String p : streams) &#123;<br>            <span class="hljs-type">byte</span>[] data = Files.readAllBytes(Path.of(p));<br>            <span class="hljs-type">Msg</span> <span class="hljs-variable">m</span> <span class="hljs-operator">=</span> parseMessage(data);<br><br>            System.out.println(<span class="hljs-string">&quot;stream=&quot;</span> + p<br>                    + <span class="hljs-string">&quot; part=&quot;</span> + m.partIdx<br>                    + <span class="hljs-string">&quot; files=&quot;</span> + m.fileCount<br>                    + <span class="hljs-string">&quot; payload=&quot;</span> + m.payload.length);<br><br>            <span class="hljs-type">byte</span>[] rsa = m.rsa;<br>            <span class="hljs-type">byte</span>[] rsaFirst8 = Arrays.copyOf(rsa, Math.min(<span class="hljs-number">8</span>, rsa.length));<br>            <span class="hljs-type">byte</span>[] rsaLast8 = Arrays.copyOfRange(rsa,<br>                    Math.max(<span class="hljs-number">0</span>, rsa.length - <span class="hljs-number">8</span>), rsa.length);<br>            <span class="hljs-type">byte</span>[] zeros8 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8</span>];<br><br>            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">a</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; a &lt; <span class="hljs-number">2</span>; a++) &#123;<br>                <span class="hljs-type">byte</span>[] algo = (a == <span class="hljs-number">0</span>) ? algo2 : algo3;<br>                <span class="hljs-type">String</span> <span class="hljs-variable">algoTag</span> <span class="hljs-operator">=</span> (a == <span class="hljs-number">0</span>) ? <span class="hljs-string">&quot;algo2&quot;</span> : <span class="hljs-string">&quot;algo3&quot;</span>;<br><br>                trySeed(algo, m.payload, rsa,<br>                        <span class="hljs-string">&quot;part&quot;</span> + m.partIdx + <span class="hljs-string">&quot;_&quot;</span> + algoTag + <span class="hljs-string">&quot;_rsa&quot;</span>);<br>                trySeed(algo, m.payload, rsaFirst8,<br>                        <span class="hljs-string">&quot;part&quot;</span> + m.partIdx + <span class="hljs-string">&quot;_&quot;</span> + algoTag + <span class="hljs-string">&quot;_rsaFirst8&quot;</span>);<br>                trySeed(algo, m.payload, rsaLast8,<br>                        <span class="hljs-string">&quot;part&quot;</span> + m.partIdx + <span class="hljs-string">&quot;_&quot;</span> + algoTag + <span class="hljs-string">&quot;_rsaLast8&quot;</span>);<br>                trySeed(algo, m.payload, zeros8,<br>                        <span class="hljs-string">&quot;part&quot;</span> + m.partIdx + <span class="hljs-string">&quot;_&quot;</span> + algoTag + <span class="hljs-string">&quot;_zeros8&quot;</span>);<br>            &#125;<br><br>            <span class="hljs-keyword">if</span> (m.partIdx == <span class="hljs-number">2</span>) &#123;<br>                Files.write(<br>                        Path.of(<span class="hljs-string">&quot;dec_part2_algo2_zeros.bin&quot;</span>),<br>                        i.l.Runner.encrypt(algo2, m.payload, zeros8)<br>                );<br>                Files.write(<br>                        Path.of(<span class="hljs-string">&quot;dec_part2_algo3_zeros.bin&quot;</span>),<br>                        i.l.Runner.encrypt(algo3, m.payload, zeros8)<br>                );<br><br>                <span class="hljs-type">byte</span>[] seedFirst8 = Arrays.copyOf(rsa, <span class="hljs-number">8</span>);<br>                <span class="hljs-type">byte</span>[] seedLast8 = Arrays.copyOfRange(rsa, rsa.length - <span class="hljs-number">8</span>, rsa.length);<br>                <span class="hljs-type">byte</span>[] seedXor = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8</span>];<br>                <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">8</span>; i++)<br>                    seedXor[i] = (<span class="hljs-type">byte</span>)(seedFirst8[i] ^ seedLast8[i]);<br><br>                trySeed(algo2, m.payload, seedFirst8, <span class="hljs-string">&quot;part2_algo2_rsaFirst8&quot;</span>);<br>                trySeed(algo2, m.payload, seedLast8,  <span class="hljs-string">&quot;part2_algo2_rsaLast8&quot;</span>);<br>                trySeed(algo2, m.payload, seedXor,    <span class="hljs-string">&quot;part2_algo2_rsaXor&quot;</span>);<br>                trySeed(algo2, m.payload,<br>                        MessageDigest.getInstance(<span class="hljs-string">&quot;MD5&quot;</span>).digest(rsa),<br>                        <span class="hljs-string">&quot;part2_algo2_md5&quot;</span>);<br>                trySeed(algo2, m.payload,<br>                        MessageDigest.getInstance(<span class="hljs-string">&quot;SHA-1&quot;</span>).digest(rsa),<br>                        <span class="hljs-string">&quot;part2_algo2_sha1&quot;</span>);<br>                trySeed(algo2, m.payload,<br>                        MessageDigest.getInstance(<span class="hljs-string">&quot;SHA-256&quot;</span>).digest(rsa),<br>                        <span class="hljs-string">&quot;part2_algo2_sha256&quot;</span>);<br><br>                <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">si</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; si &lt; <span class="hljs-number">8</span>; si++) &#123;<br>                    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">bit</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; bit &lt; <span class="hljs-number">8</span>; bit++) &#123;<br>                        <span class="hljs-type">byte</span>[] seed = <span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[<span class="hljs-number">8</span>];<br>                        seed[si] = (<span class="hljs-type">byte</span>)(<span class="hljs-number">1</span> &lt;&lt; bit);<br>                        Files.write(<br>                                Path.of(<span class="hljs-string">&quot;dec_part2_algo2_seedb_&quot;</span> + si + <span class="hljs-string">&quot;_&quot;</span> + bit + <span class="hljs-string">&quot;.bin&quot;</span>),<br>                                i.l.Runner.encrypt(algo2, m.payload, seed)<br>                        );<br>                    &#125;<br>                &#125;<br><br>                probeSeedSensitivity(algo2, m.payload);<br>            &#125;<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>试验发现 algo3 与 seed 无关，任意 seed 输出一致，因此可视为对 payload 的固定变换；algo2 对 seed 的影响是线性 XOR，seed 64bit 每一位对应一个可叠加的差分输出<br>
+对于 part1 和 part3，用 algo3 解密对应 payload 即 <code>Runner.encrypt(algo3, payload, seed)</code> 直接得到 LZRR 压缩流， 依据 offsets 或按 LZRR 魔数切块逐一解压来还原 <code>.java</code> 与 <code>Image1Part*.java</code></p>
+<h3 id="LZRR-RLE-解压">LZRR + RLE 解压</h3>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">from</span> typing <span class="hljs-keyword">import</span> <span class="hljs-type">Tuple</span><br><span class="hljs-keyword">import</span> struct<br><br><br>MAGIC = <span class="hljs-string">b&quot;LZRR&quot;</span><br>VERSION = <span class="hljs-number">0x0201</span><br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">parse_header</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-type">Tuple</span>[<span class="hljs-built_in">int</span>, <span class="hljs-built_in">int</span>, <span class="hljs-built_in">int</span>, <span class="hljs-built_in">int</span>, <span class="hljs-built_in">bytes</span>]:<br>    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(data) &lt; <span class="hljs-number">16</span>:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;data too short&quot;</span>)<br>    <span class="hljs-keyword">if</span> data[:<span class="hljs-number">4</span>] != MAGIC:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;bad magic&quot;</span>)<br>    ver = struct.unpack(<span class="hljs-string">&quot;&gt;H&quot;</span>, data[<span class="hljs-number">4</span>:<span class="hljs-number">6</span>])[<span class="hljs-number">0</span>]<br>    <span class="hljs-keyword">if</span> ver != VERSION:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">f&quot;bad version: <span class="hljs-subst">&#123;ver&#125;</span>&quot;</span>)<br>    flag = struct.unpack(<span class="hljs-string">&quot;&gt;H&quot;</span>, data[<span class="hljs-number">6</span>:<span class="hljs-number">8</span>])[<span class="hljs-number">0</span>]<br>    in_len = struct.unpack(<span class="hljs-string">&quot;&gt;I&quot;</span>, data[<span class="hljs-number">8</span>:<span class="hljs-number">12</span>])[<span class="hljs-number">0</span>]<br>    crc = struct.unpack(<span class="hljs-string">&quot;&gt;I&quot;</span>, data[<span class="hljs-number">12</span>:<span class="hljs-number">16</span>])[<span class="hljs-number">0</span>]<br>    body = data[<span class="hljs-number">16</span>:]<br>    <span class="hljs-keyword">return</span> flag, in_len, crc, ver, body<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">rle_decode</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-built_in">bytes</span>:<br>    out = <span class="hljs-built_in">bytearray</span>()<br>    i = <span class="hljs-number">0</span><br>    n = <span class="hljs-built_in">len</span>(data)<br>    <span class="hljs-keyword">while</span> i &lt; n:<br>        b = data[i]<br>        i += <span class="hljs-number">1</span><br>        <span class="hljs-keyword">if</span> b != <span class="hljs-number">0xFF</span>:<br>            out.append(b)<br>            <span class="hljs-keyword">continue</span><br>        <span class="hljs-keyword">if</span> i &gt;= n:<br>            <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;truncated RLE&quot;</span>)<br>        cnt = data[i]<br>        i += <span class="hljs-number">1</span><br>        <span class="hljs-keyword">if</span> cnt == <span class="hljs-number">0xFF</span>:<br>            out.append(<span class="hljs-number">0xFF</span>)<br>            <span class="hljs-keyword">continue</span><br>        <span class="hljs-keyword">if</span> i &gt;= n:<br>            <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;truncated RLE value&quot;</span>)<br>        val = data[i]<br>        i += <span class="hljs-number">1</span><br>        out.extend([val] * (cnt + <span class="hljs-number">4</span>))<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">bytes</span>(out)<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">BitReader</span>:<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, data: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-literal">None</span>:<br>        <span class="hljs-variable language_">self</span>.data = data<br>        <span class="hljs-variable language_">self</span>.pos = <span class="hljs-number">0</span><br>        <span class="hljs-variable language_">self</span>.bit = <span class="hljs-number">0</span><br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">read_bit</span>(<span class="hljs-params">self</span>) -&gt; <span class="hljs-built_in">int</span>:<br>        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.pos &gt;= <span class="hljs-built_in">len</span>(<span class="hljs-variable language_">self</span>.data):<br>            <span class="hljs-keyword">raise</span> EOFError(<span class="hljs-string">&quot;bitstream exhausted&quot;</span>)<br>        b = <span class="hljs-variable language_">self</span>.data[<span class="hljs-variable language_">self</span>.pos]<br>        v = (b &gt;&gt; (<span class="hljs-number">7</span> - <span class="hljs-variable language_">self</span>.bit)) &amp; <span class="hljs-number">1</span><br>        <span class="hljs-variable language_">self</span>.bit += <span class="hljs-number">1</span><br>        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.bit == <span class="hljs-number">8</span>:<br>            <span class="hljs-variable language_">self</span>.bit = <span class="hljs-number">0</span><br>            <span class="hljs-variable language_">self</span>.pos += <span class="hljs-number">1</span><br>        <span class="hljs-keyword">return</span> v<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">read_bits</span>(<span class="hljs-params">self, n: <span class="hljs-built_in">int</span></span>) -&gt; <span class="hljs-built_in">int</span>:<br>        v = <span class="hljs-number">0</span><br>        <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n):<br>            v = (v &lt;&lt; <span class="hljs-number">1</span>) | <span class="hljs-variable language_">self</span>.read_bit()<br>        <span class="hljs-keyword">return</span> v<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">lzrr_decompress</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-built_in">bytes</span>:<br>    flag, in_len, _crc, _ver, body = parse_header(data)<br>    <span class="hljs-keyword">if</span> flag == <span class="hljs-number">15</span>:<br>        body = rle_decode(body)<br>    <span class="hljs-keyword">elif</span> flag != <span class="hljs-number">13</span>:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">f&quot;unsupported flag: <span class="hljs-subst">&#123;flag&#125;</span>&quot;</span>)<br><br>    br = BitReader(body)<br>    out = <span class="hljs-built_in">bytearray</span>()<br>    <span class="hljs-keyword">while</span> <span class="hljs-built_in">len</span>(out) &lt; in_len:<br>        tag = br.read_bit()<br>        <span class="hljs-keyword">if</span> tag == <span class="hljs-number">0</span>:<br>            out.append(br.read_bits(<span class="hljs-number">8</span>))<br>            <span class="hljs-keyword">continue</span><br>        <span class="hljs-keyword">if</span> br.read_bit() == <span class="hljs-number">0</span>:<br>            offset = br.read_bits(<span class="hljs-number">8</span>)<br>        <span class="hljs-keyword">else</span>:<br>            offset = br.read_bits(<span class="hljs-number">16</span>)<br>        <span class="hljs-keyword">if</span> br.read_bit() == <span class="hljs-number">0</span>:<br>            l = br.read_bits(<span class="hljs-number">3</span>)<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-keyword">if</span> br.read_bit() == <span class="hljs-number">0</span>:<br>                l = br.read_bits(<span class="hljs-number">6</span>) + <span class="hljs-number">8</span><br>            <span class="hljs-keyword">else</span>:<br>                l = br.read_bits(<span class="hljs-number">8</span>)<br>        length = l + <span class="hljs-number">3</span><br>        <span class="hljs-keyword">if</span> offset &lt;= <span class="hljs-number">0</span>:<br>            <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;invalid offset&quot;</span>)<br>        start = <span class="hljs-built_in">len</span>(out) - offset<br>        <span class="hljs-keyword">if</span> start &lt; <span class="hljs-number">0</span>:<br>            <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;offset out of range&quot;</span>)<br>        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(length):<br>            out.append(out[start + i])<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">bytes</span>(out)<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>() -&gt; <span class="hljs-literal">None</span>:<br>    inputs = [<br>        Path(<span class="hljs-string">&quot;dec_part1_algo3_rsa.bin&quot;</span>),<br>        Path(<span class="hljs-string">&quot;dec_part3_algo3_rsa.bin&quot;</span>),<br>    ]<br>    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> inputs:<br>        data = p.read_bytes()<br>        out = lzrr_decompress(data)<br>        out_path = p.with_suffix(p.suffix + <span class="hljs-string">&quot;.out&quot;</span>)<br>        out_path.write_bytes(out)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">&#123;p.name&#125;</span> -&gt; <span class="hljs-subst">&#123;out_path.name&#125;</span> (<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(out)&#125;</span> bytes)&quot;</span>)<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<h3 id="恢复-part1-part3-的-java-与图片段：">恢复 part1/part3 的 .java 与图片段：</h3>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">import</span> struct<br><span class="hljs-keyword">import</span> re<br><span class="hljs-keyword">import</span> lzrr_decompress <span class="hljs-keyword">as</span> lz<br><br>MAGIC = <span class="hljs-string">b&quot;\x89ali&quot;</span><br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">parse_message</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>):<br>    start = data.find(MAGIC)<br>    <span class="hljs-keyword">if</span> start &lt; <span class="hljs-number">0</span>:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;magic not found&quot;</span>)<br>    part_idx = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, start + <span class="hljs-number">4</span>)[<span class="hljs-number">0</span>]<br>    rsa_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, start + <span class="hljs-number">8</span>)[<span class="hljs-number">0</span>]<br>    pos = start + <span class="hljs-number">12</span> + rsa_len<br>    file_count = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>    pos += <span class="hljs-number">4</span><br>    files = []<br>    offsets = []<br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(file_count):<br>        name_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        name_x = data[pos:pos + name_len]<br>        pos += name_len<br>        name = <span class="hljs-built_in">bytes</span>(b ^ <span class="hljs-number">233</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> name_x).decode(<span class="hljs-string">&quot;utf-8&quot;</span>, errors=<span class="hljs-string">&quot;replace&quot;</span>)<br>        off = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        files.append(name)<br>        offsets.append(off)<br>    <span class="hljs-keyword">return</span> part_idx, files, offsets<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">split_lzrr_blocks</span>(<span class="hljs-params">payload: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-built_in">list</span>[<span class="hljs-built_in">bytes</span>]:<br>    magic = <span class="hljs-string">b&quot;LZRR&quot;</span><br>    positions = [i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(payload) - <span class="hljs-number">3</span>) <span class="hljs-keyword">if</span> payload[i:i + <span class="hljs-number">4</span>] == magic]<br>    blocks = []<br>    <span class="hljs-keyword">for</span> i, start <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(positions):<br>        end = positions[i + <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> i + <span class="hljs-number">1</span> &lt; <span class="hljs-built_in">len</span>(positions) <span class="hljs-keyword">else</span> <span class="hljs-built_in">len</span>(payload)<br>        blocks.append(payload[start:end])<br>    <span class="hljs-keyword">return</span> blocks<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">recover</span>(<span class="hljs-params">part_stream: Path, dec_payload: Path, out_dir: Path</span>) -&gt; <span class="hljs-literal">None</span>:<br>    data = part_stream.read_bytes()<br>    part_idx, files, _offsets = parse_message(data)<br>    payload = dec_payload.read_bytes()<br><br>    blocks = split_lzrr_blocks(payload)<br>    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(blocks) != <span class="hljs-built_in">len</span>(files):<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;part<span class="hljs-subst">&#123;part_idx&#125;</span>: block count <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(blocks)&#125;</span> != file count <span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(files)&#125;</span>&quot;</span>)<br><br>    out_dir.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br><br>    <span class="hljs-keyword">for</span> idx, block <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(blocks):<br>        out = lz.lzrr_decompress(block)<br>        name = files[idx] <span class="hljs-keyword">if</span> idx &lt; <span class="hljs-built_in">len</span>(files) <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;file_<span class="hljs-subst">&#123;idx&#125;</span>.bin&quot;</span><br>        dest = out_dir / name<br>        dest.parent.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>        dest.write_bytes(out)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;part<span class="hljs-subst">&#123;part_idx&#125;</span>: wrote <span class="hljs-subst">&#123;dest&#125;</span> (<span class="hljs-subst">&#123;<span class="hljs-built_in">len</span>(out)&#125;</span> bytes)&quot;</span>)<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">search_flag</span>(<span class="hljs-params">root: Path</span>) -&gt; <span class="hljs-literal">None</span>:<br>    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> root.rglob(<span class="hljs-string">&quot;*&quot;</span>):<br>        <span class="hljs-keyword">if</span> p.is_file():<br>            b = p.read_bytes()<br>            m = re.search(<span class="hljs-string">rb&quot;alictf\&#123;[^&#125;]&#123;0,200&#125;\&#125;&quot;</span>, b)<br>            <span class="hljs-keyword">if</span> m:<br>                <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;flag&quot;</span>, m.group(<span class="hljs-number">0</span>).decode(<span class="hljs-string">&quot;ascii&quot;</span>, errors=<span class="hljs-string">&quot;ignore&quot;</span>), <span class="hljs-string">&quot;in&quot;</span>, p)<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>() -&gt; <span class="hljs-literal">None</span>:<br>    base = Path(<span class="hljs-string">&quot;.&quot;</span>)<br><br>    recover(<br>        base / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_61111-127.0.0.1_8889.bin&quot;</span>,<br>        base / <span class="hljs-string">&quot;dec_part1_algo3_rsa.bin&quot;</span>,<br>        base / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part1&quot;</span>,<br>    )<br>    recover(<br>        base / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_52024-127.0.0.1_8889.bin&quot;</span>,<br>        base / <span class="hljs-string">&quot;dec_part3_algo3_rsa.bin&quot;</span>,<br>        base / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part3&quot;</span>,<br>    )<br>    search_flag(base / <span class="hljs-string">&quot;recovered&quot;</span>)<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<h3 id="恢复-part2-的-java-与图片段">恢复 part2 的 .java 与图片段</h3>
+<p>对于 part2，先用 <code>seed=0</code> 得到 <code>dec_part2_algo2_zeros.bin</code>,再对 <code>seed</code> 64 位逐位置 1，生成 64 个基向量输出 <code>dec_part2_algo2_seedb_&#123;si&#125;_&#123;bit&#125;.bin</code>,利用 <code>LZRR</code> 头 8 字节已知模式 <code>LZRR 0201 flag</code> 建立 GF(2) 线性方程组</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">import</span> struct<br><span class="hljs-keyword">import</span> re<br><span class="hljs-keyword">import</span> lzrr_decompress <span class="hljs-keyword">as</span> lz<br><br>MAGIC = <span class="hljs-string">b&quot;\x89ali&quot;</span><br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">parse_message</span>(<span class="hljs-params">path: Path</span>):<br>    data = path.read_bytes()<br>    start = data.find(MAGIC)<br>    <span class="hljs-keyword">if</span> start &lt; <span class="hljs-number">0</span>:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;magic not found&quot;</span>)<br>    rsa_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, start + <span class="hljs-number">8</span>)[<span class="hljs-number">0</span>]<br>    pos = start + <span class="hljs-number">12</span> + rsa_len<br>    file_count = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>    pos += <span class="hljs-number">4</span><br>    files = []<br>    offsets = []<br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(file_count):<br>        name_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        name_x = data[pos:pos + name_len]<br>        pos += name_len<br>        name = <span class="hljs-built_in">bytes</span>(b ^ <span class="hljs-number">233</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> name_x).decode(<span class="hljs-string">&quot;utf-8&quot;</span>, errors=<span class="hljs-string">&quot;replace&quot;</span>)<br>        off = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        files.append(name)<br>        offsets.append(off)<br>    <span class="hljs-keyword">return</span> files, offsets<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">build_equations</span>(<span class="hljs-params">base: <span class="hljs-built_in">bytes</span>, deltas: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">bytes</span>], offsets: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">int</span>], flags: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">int</span>]</span>):<br>    eq_masks = []<br>    eq_rhs = []<br>    <span class="hljs-keyword">for</span> off, flag <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(offsets, flags):<br>        header = <span class="hljs-string">b&quot;LZRR&quot;</span> + <span class="hljs-string">b&quot;\x02\x01&quot;</span> + struct.pack(<span class="hljs-string">&quot;&gt;H&quot;</span>, flag)<br>        <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            target = header[i] ^ base[off + i]<br>            <span class="hljs-keyword">for</span> bit <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>                rhs = (target &gt;&gt; bit) &amp; <span class="hljs-number">1</span><br>                mask = <span class="hljs-number">0</span><br>                <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">64</span>):<br>                    <span class="hljs-keyword">if</span> ((deltas[j][off + i] &gt;&gt; bit) &amp; <span class="hljs-number">1</span>) != <span class="hljs-number">0</span>:<br>                        mask |= (<span class="hljs-number">1</span> &lt;&lt; j)<br>                eq_masks.append(mask)<br>                eq_rhs.append(rhs)<br>    <span class="hljs-keyword">return</span> eq_masks, eq_rhs<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">solve_linear</span>(<span class="hljs-params">eq_masks: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">int</span>], eq_rhs: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">int</span>]</span>) -&gt; <span class="hljs-built_in">int</span> | <span class="hljs-literal">None</span>:<br>    rows = <span class="hljs-built_in">list</span>(<span class="hljs-built_in">zip</span>(eq_masks, eq_rhs))<br>    pivots = &#123;&#125;<br><br>    <span class="hljs-keyword">for</span> mask, rhs <span class="hljs-keyword">in</span> rows:<br>        m = mask<br>        r = rhs<br>        <span class="hljs-keyword">while</span> m != <span class="hljs-number">0</span>:<br>            p = (m &amp; -m)<br>            bit = (p.bit_length() - <span class="hljs-number">1</span>)<br>            <span class="hljs-keyword">if</span> bit <span class="hljs-keyword">in</span> pivots:<br>                m ^= pivots[bit][<span class="hljs-number">0</span>]<br>                r ^= pivots[bit][<span class="hljs-number">1</span>]<br>            <span class="hljs-keyword">else</span>:<br>                pivots[bit] = (m, r)<br>                <span class="hljs-keyword">break</span><br>        <span class="hljs-keyword">if</span> m == <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> r == <span class="hljs-number">1</span>:<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br><br>    sol = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">for</span> bit <span class="hljs-keyword">in</span> <span class="hljs-built_in">sorted</span>(pivots.keys(), reverse=<span class="hljs-literal">True</span>):<br>        m, r = pivots[bit]<br>        known = sol &amp; m<br>        parity = <span class="hljs-built_in">bin</span>(known).count(<span class="hljs-string">&quot;1&quot;</span>) &amp; <span class="hljs-number">1</span><br>        val = r ^ parity<br>        <span class="hljs-keyword">if</span> val:<br>            sol |= (<span class="hljs-number">1</span> &lt;&lt; bit)<br>    <span class="hljs-keyword">return</span> sol<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">apply_seed</span>(<span class="hljs-params">base: <span class="hljs-built_in">bytes</span>, deltas: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">bytes</span>], seed_bits: <span class="hljs-built_in">int</span></span>) -&gt; <span class="hljs-built_in">bytes</span>:<br>    out = <span class="hljs-built_in">bytearray</span>(base)<br>    <span class="hljs-keyword">for</span> j <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">64</span>):<br>        <span class="hljs-keyword">if</span> (seed_bits &gt;&gt; j) &amp; <span class="hljs-number">1</span>:<br>            dj = deltas[j]<br>            out = <span class="hljs-built_in">bytearray</span>(b ^ d <span class="hljs-keyword">for</span> b, d <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(out, dj))<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">bytes</span>(out)<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>() -&gt; <span class="hljs-literal">None</span>:<br>    root = Path(__file__).resolve().parent<br>    stream = root / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_57692-127.0.0.1_8889.bin&quot;</span><br>    base_path = root / <span class="hljs-string">&quot;dec_part2_algo2_zeros.bin&quot;</span><br><br>    files, offsets = parse_message(stream)<br>    base = base_path.read_bytes()<br><br>    deltas: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">bytes</span>] = []<br>    <span class="hljs-keyword">for</span> si <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>        <span class="hljs-keyword">for</span> bit <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">8</span>):<br>            p = root / <span class="hljs-string">f&quot;dec_part2_algo2_seedb_<span class="hljs-subst">&#123;si&#125;</span>_<span class="hljs-subst">&#123;bit&#125;</span>.bin&quot;</span><br>            data = p.read_bytes()<br>            delta = <span class="hljs-built_in">bytes</span>(b ^ s <span class="hljs-keyword">for</span> b, s <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(base, data))<br>            deltas.append(delta)<br><br>    flags_list = [<span class="hljs-number">13</span>, <span class="hljs-number">15</span>]<br>    found = <span class="hljs-literal">None</span><br>    <span class="hljs-keyword">for</span> f0 <span class="hljs-keyword">in</span> flags_list:<br>        <span class="hljs-keyword">for</span> f1 <span class="hljs-keyword">in</span> flags_list:<br>            <span class="hljs-keyword">for</span> f2 <span class="hljs-keyword">in</span> flags_list:<br>                flags = [f0, f1, f2]<br>                eq_masks, eq_rhs = build_equations(base, deltas, offsets, flags)<br>                seed_bits = solve_linear(eq_masks, eq_rhs)<br>                <span class="hljs-keyword">if</span> seed_bits <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>                    <span class="hljs-keyword">continue</span><br>                out = apply_seed(base, deltas, seed_bits)<br>                ok = <span class="hljs-literal">True</span><br>                <span class="hljs-keyword">for</span> off, flag <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(offsets, flags):<br>                    header = out[off:off + <span class="hljs-number">8</span>]<br>                    <span class="hljs-keyword">if</span> header != (<span class="hljs-string">b&quot;LZRR&quot;</span> + <span class="hljs-string">b&quot;\x02\x01&quot;</span> + struct.pack(<span class="hljs-string">&quot;&gt;H&quot;</span>, flag)):<br>                        ok = <span class="hljs-literal">False</span><br>                        <span class="hljs-keyword">break</span><br>                <span class="hljs-keyword">if</span> ok:<br>                    found = (seed_bits, flags, out)<br>                    <span class="hljs-keyword">break</span><br>            <span class="hljs-keyword">if</span> found:<br>                <span class="hljs-keyword">break</span><br>        <span class="hljs-keyword">if</span> found:<br>            <span class="hljs-keyword">break</span><br><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> found:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;no seed found&quot;</span>)<br>        <span class="hljs-keyword">return</span><br><br>    seed_bits, flags, out = found<br>    seed_bytes = seed_bits.to_bytes(<span class="hljs-number">8</span>, <span class="hljs-string">&quot;little&quot;</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;seed&quot;</span>, seed_bytes.<span class="hljs-built_in">hex</span>(), <span class="hljs-string">&quot;flags&quot;</span>, flags)<br><br>    out_path = root / <span class="hljs-string">&quot;dec_part2_algo2_seed.bin&quot;</span><br>    out_path.write_bytes(out)<br><br>    out_dir = root / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part2&quot;</span><br>    out_dir.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>    <span class="hljs-keyword">for</span> idx, off <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(offsets):<br>        end = offsets[idx + <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> idx + <span class="hljs-number">1</span> &lt; <span class="hljs-built_in">len</span>(offsets) <span class="hljs-keyword">else</span> <span class="hljs-built_in">len</span>(out)<br>        block = out[off:end]<br>        data = lz.lzrr_decompress(block)<br>        dest = out_dir / files[idx]<br>        dest.parent.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>        dest.write_bytes(data)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;wrote&quot;</span>, dest)<br><br>    <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> out_dir.rglob(<span class="hljs-string">&quot;*.java&quot;</span>):<br>        m = re.search(<span class="hljs-string">rb&quot;alictf\&#123;[^&#125;]&#123;0,200&#125;\&#125;&quot;</span>, p.read_bytes())<br>        <span class="hljs-keyword">if</span> m:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;flag&quot;</span>, m.group(<span class="hljs-number">0</span>).decode(<span class="hljs-string">&quot;ascii&quot;</span>, errors=<span class="hljs-string">&quot;ignore&quot;</span>), <span class="hljs-string">&quot;in&quot;</span>, p)<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<p>解得 <code>seed</code> 为 <code>a91b1bb4e8978bda</code>,然后合成真实 payload 并解压得到 <code>.java</code> 与 <code>Image1Part*.java</code></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">import</span> re<br><span class="hljs-keyword">import</span> struct<br><span class="hljs-keyword">import</span> lzrr_decompress <span class="hljs-keyword">as</span> lz<br><br>MAGIC = <span class="hljs-string">b&quot;\x89ali&quot;</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">parse_message</span>(<span class="hljs-params">data: <span class="hljs-built_in">bytes</span></span>):<br>    start = data.find(MAGIC)<br>    <span class="hljs-keyword">if</span> start &lt; <span class="hljs-number">0</span>:<br>        <span class="hljs-keyword">raise</span> ValueError(<span class="hljs-string">&quot;magic not found&quot;</span>)<br>    part_idx = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, start + <span class="hljs-number">4</span>)[<span class="hljs-number">0</span>]<br>    rsa_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, start + <span class="hljs-number">8</span>)[<span class="hljs-number">0</span>]<br>    pos = start + <span class="hljs-number">12</span> + rsa_len<br>    file_count = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>    pos += <span class="hljs-number">4</span><br>    files = []<br>    offsets = []<br>    <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(file_count):<br>        name_len = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        name_x = data[pos:pos + name_len]<br>        pos += name_len<br>        name = <span class="hljs-built_in">bytes</span>(b ^ <span class="hljs-number">233</span> <span class="hljs-keyword">for</span> b <span class="hljs-keyword">in</span> name_x).decode(<span class="hljs-string">&quot;utf-8&quot;</span>, errors=<span class="hljs-string">&quot;replace&quot;</span>)<br>        off = struct.unpack_from(<span class="hljs-string">&quot;&lt;I&quot;</span>, data, pos)[<span class="hljs-number">0</span>]<br>        pos += <span class="hljs-number">4</span><br>        files.append(name)<br>        offsets.append(off)<br>    <span class="hljs-keyword">return</span> part_idx, files, offsets<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">split_lzrr_blocks</span>(<span class="hljs-params">payload: <span class="hljs-built_in">bytes</span></span>) -&gt; <span class="hljs-built_in">list</span>[<span class="hljs-built_in">bytes</span>]:<br>    magic = <span class="hljs-string">b&quot;LZRR&quot;</span><br>    positions = [i <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(payload) - <span class="hljs-number">3</span>) <span class="hljs-keyword">if</span> payload[i:i + <span class="hljs-number">4</span>] == magic]<br>    blocks = []<br>    <span class="hljs-keyword">for</span> i, start <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(positions):<br>        end = positions[i + <span class="hljs-number">1</span>] <span class="hljs-keyword">if</span> i + <span class="hljs-number">1</span> &lt; <span class="hljs-built_in">len</span>(positions) <span class="hljs-keyword">else</span> <span class="hljs-built_in">len</span>(payload)<br>        blocks.append(payload[start:end])<br>    <span class="hljs-keyword">return</span> blocks<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">recover</span>(<span class="hljs-params">part_stream: Path, dec_payload: Path, out_dir: Path</span>) -&gt; <span class="hljs-literal">None</span>:<br>    data = part_stream.read_bytes()<br>    part_idx, files, _offsets = parse_message(data)<br>    payload = dec_payload.read_bytes()<br>    blocks = split_lzrr_blocks(payload)<br><br>    out_dir.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>    <span class="hljs-keyword">for</span> idx, block <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(blocks):<br>        out = lz.lzrr_decompress(block)<br>        name = files[idx] <span class="hljs-keyword">if</span> idx &lt; <span class="hljs-built_in">len</span>(files) <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;file_<span class="hljs-subst">&#123;idx&#125;</span>.bin&quot;</span><br>        dest = out_dir / name<br>        dest.parent.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>        dest.write_bytes(out)<br>        <span class="hljs-keyword">if</span> dest.suffix == <span class="hljs-string">&quot;.java&quot;</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;part<span class="hljs-subst">&#123;part_idx&#125;</span>: <span class="hljs-subst">&#123;dest.relative_to(out_dir).as_posix()&#125;</span>&quot;</span>)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>() -&gt; <span class="hljs-literal">None</span>:<br>    root = Path(__file__).resolve().parent<br>    recover(<br>        root / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_61111-127.0.0.1_8889.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;dec_part1_algo3_rsa.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part1&quot;</span>,<br>    )<br>    recover(<br>        root / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_57692-127.0.0.1_8889.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;dec_part2_algo2_seed.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part2&quot;</span>,<br>    )<br>    recover(<br>        root / <span class="hljs-string">&quot;streams_py&quot;</span> / <span class="hljs-string">&quot;127.0.0.1_52024-127.0.0.1_8889.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;dec_part3_algo3_rsa.bin&quot;</span>,<br>        root / <span class="hljs-string">&quot;recovered&quot;</span> / <span class="hljs-string">&quot;part3&quot;</span>,<br>    )<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<h3 id="图片合成">图片合成</h3>
+<p>最后从 <code>Image1Part*.java</code> 抽取 base64 ,生成 <code>part1..6.jpg</code>,再横向拼接成 <code>combined.jpg</code></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> __future__ <span class="hljs-keyword">import</span> annotations<br><br><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">import</span> base64<br><span class="hljs-keyword">import</span> re<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_images</span>(<span class="hljs-params">recovered_root: Path, out_dir: Path</span>) -&gt; <span class="hljs-built_in">list</span>[Path]:<br>    out_dir.mkdir(parents=<span class="hljs-literal">True</span>, exist_ok=<span class="hljs-literal">True</span>)<br>    out_paths: <span class="hljs-built_in">list</span>[Path] = []<br>    <span class="hljs-keyword">for</span> java_path <span class="hljs-keyword">in</span> recovered_root.rglob(<span class="hljs-string">&quot;Image1Part*.java&quot;</span>):<br>        text = java_path.read_text(encoding=<span class="hljs-string">&quot;utf-8&quot;</span>, errors=<span class="hljs-string">&quot;ignore&quot;</span>)<br>        m = re.search(<span class="hljs-string">r&quot;Image1Part(\d+)&quot;</span>, java_path.name)<br>        m2 = re.search(<span class="hljs-string">r&#x27;IMAGE_DATA\s*=\s*&quot;([A-Za-z0-9+/=]+)&quot;&#x27;</span>, text)<br>        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> (m <span class="hljs-keyword">and</span> m2):<br>            <span class="hljs-keyword">continue</span><br>        part_no = <span class="hljs-built_in">int</span>(m.group(<span class="hljs-number">1</span>))<br>        data = base64.b64decode(m2.group(<span class="hljs-number">1</span>))<br>        out_path = out_dir / <span class="hljs-string">f&quot;part<span class="hljs-subst">&#123;part_no&#125;</span>.jpg&quot;</span><br>        out_path.write_bytes(data)<br>        out_paths.append(out_path)<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">sorted</span>(out_paths, key=<span class="hljs-keyword">lambda</span> p: <span class="hljs-built_in">int</span>(re.search(<span class="hljs-string">r&quot;part(\d+)&quot;</span>, p.name).group(<span class="hljs-number">1</span>)))<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">combine_images</span>(<span class="hljs-params">paths: <span class="hljs-built_in">list</span>[Path], out_path: Path</span>) -&gt; Path | <span class="hljs-literal">None</span>:<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-keyword">from</span> PIL <span class="hljs-keyword">import</span> Image<br>    <span class="hljs-keyword">except</span> Exception <span class="hljs-keyword">as</span> exc:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;PIL not available: <span class="hljs-subst">&#123;exc&#125;</span>&quot;</span>)<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br>    imgs = [Image.<span class="hljs-built_in">open</span>(p) <span class="hljs-keyword">for</span> p <span class="hljs-keyword">in</span> paths]<br>    widths, heights = <span class="hljs-built_in">zip</span>(*(im.size <span class="hljs-keyword">for</span> im <span class="hljs-keyword">in</span> imgs))<br>    total_width = <span class="hljs-built_in">sum</span>(widths)<br>    max_height = <span class="hljs-built_in">max</span>(heights)<br>    combined = Image.new(<span class="hljs-string">&quot;RGB&quot;</span>, (total_width, max_height))<br>    x = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">for</span> im <span class="hljs-keyword">in</span> imgs:<br>        combined.paste(im, (x, <span class="hljs-number">0</span>))<br>        x += im.size[<span class="hljs-number">0</span>]<br>    combined.save(out_path)<br>    <span class="hljs-keyword">return</span> out_path<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>() -&gt; <span class="hljs-literal">None</span>:<br>    root = Path(__file__).resolve().parent<br>    recovered_root = root / <span class="hljs-string">&quot;recovered&quot;</span><br>    images_dir = recovered_root / <span class="hljs-string">&quot;images&quot;</span><br>    parts = extract_images(recovered_root, images_dir)<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> parts:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;no image parts extracted&quot;</span>)<br>        <span class="hljs-keyword">return</span><br>    out = combine_images(parts, images_dir / <span class="hljs-string">&quot;combined.jpg&quot;</span>)<br>    <span class="hljs-keyword">if</span> out:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;combined image -&gt; <span class="hljs-subst">&#123;out&#125;</span>&quot;</span>)<br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    main()<br></code></pre></td></tr></table></figure>
+<p><img src="../images/alictf2026/combined.jpg" srcset="/img/loading.gif" lazyload alt=""></p>
+<p>OCR 识别一下</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> pathlib <span class="hljs-keyword">import</span> Path<br><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np<br><span class="hljs-keyword">import</span> cv2<br><span class="hljs-keyword">import</span> easyocr<br><br>BASE_DIR = Path(__file__).resolve().parent<br>img_path = BASE_DIR / <span class="hljs-string">&#x27;recovered&#x27;</span> / <span class="hljs-string">&#x27;images&#x27;</span> / <span class="hljs-string">&#x27;combined.jpg&#x27;</span><br><br>raw = img_path.read_bytes()<br>img = cv2.imdecode(np.frombuffer(raw, dtype=np.uint8), cv2.IMREAD_COLOR)<br><br>gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">get_boxes</span>(<span class="hljs-params">bin_img</span>):<br>    cnts, _ = cv2.findContours(bin_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)<br>    boxes = []<br>    h, w = bin_img.shape<br>    <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> cnts:<br>        x, y, wc, hc = cv2.boundingRect(c)<br>        area = wc * hc<br>        <span class="hljs-keyword">if</span> area &lt; <span class="hljs-number">1000</span>:<br>            <span class="hljs-keyword">continue</span><br>        <span class="hljs-keyword">if</span> wc &gt; <span class="hljs-number">0.95</span> * w <span class="hljs-keyword">and</span> hc &gt; <span class="hljs-number">0.95</span> * h:<br>            <span class="hljs-keyword">continue</span><br>        boxes.append((x, y, wc, hc, area))<br>    boxes.sort(key=<span class="hljs-keyword">lambda</span> t: t[<span class="hljs-number">4</span>], reverse=<span class="hljs-literal">True</span>)<br>    <span class="hljs-keyword">return</span> boxes<br><br>th = cv2.adaptiveThreshold(<br>    gray,<br>    <span class="hljs-number">255</span>,<br>    cv2.ADAPTIVE_THRESH_MEAN_C,<br>    cv2.THRESH_BINARY_INV,<br>    <span class="hljs-number">35</span>,<br>    <span class="hljs-number">10</span><br>)<br><br>boxes = get_boxes(th)<br><br>reader = easyocr.Reader([<span class="hljs-string">&#x27;en&#x27;</span>], gpu=<span class="hljs-literal">False</span>)<br>allow = <span class="hljs-string">&#x27;abcdefABCDEF0123456789-&#123;&#125;&#x27;</span><br><br><span class="hljs-keyword">for</span> i, (x, y, wc, hc, area) <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(boxes[:<span class="hljs-number">5</span>]):<br>    crop = img[y:y+hc, x:x+wc]<br>    crop2 = cv2.resize(crop, <span class="hljs-literal">None</span>, fx=<span class="hljs-number">2</span>, fy=<span class="hljs-number">2</span>, interpolation=cv2.INTER_CUBIC)<br>    res = reader.readtext(crop2, allowlist=allow)<br>    texts = [(t, c) <span class="hljs-keyword">for</span> _, t, c <span class="hljs-keyword">in</span> res]<br>    <span class="hljs-built_in">print</span>(i, (x, y, wc, hc), texts)<br></code></pre></td></tr></table></figure>
+<p>flag 为 <code>alictf&#123;5a8e0fb1-d3f5-4b13-8424-164faab9bbd2&#125;</code></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>阿里 CTF 2026 逆向部分 WP</div>
+      <div>http://example.com/2026/02/02/alictf2026/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年2月2日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/01/26/LilacCTF2026/" title="LilacCTF2026 逆向 Wp + 复现">
+                        <span class="hidden-mobile">LilacCTF2026 逆向 Wp + 复现</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.2/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

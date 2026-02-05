@@ -19,15 +19,15 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="安卓四大组件Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码   静态注册 遵循一定的命名规则，一般是 Java_pa">
+    <meta name="description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码 静态注册 : 在 AndroidManifest.xml 中注册 遵循一">
 <meta property="og:type" content="article">
 <meta property="og:title" content="安卓基础知识笔记">
 <meta property="og:url" content="http://example.com/2025/07/02/android_note/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="安卓四大组件Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码   静态注册 遵循一定的命名规则，一般是 Java_pa">
+<meta property="og:description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码 静态注册 : 在 AndroidManifest.xml 中注册 遵循一">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-07-01T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-07-01T18:25:37.101Z">
+<meta property="article:modified_time" content="2025-12-21T05:17:52.548Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary_large_image">
@@ -235,7 +235,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          188 字
+          1.2k 字
         
       </span>
     
@@ -246,7 +246,7 @@
         
         
         
-          2 分钟
+          11 分钟
         
       </span>
     
@@ -288,13 +288,112 @@
             
               <div class="markdown-body">
                 
-                <h3 id="安卓四大组件"><a href="#安卓四大组件" class="headerlink" title="安卓四大组件"></a>安卓四大组件</h3><p>Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者)</p>
-<h3 id="JNI-静态注册和动态注册"><a href="#JNI-静态注册和动态注册" class="headerlink" title="JNI 静态注册和动态注册"></a>JNI 静态注册和动态注册</h3><p>Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码  </p>
-<p><strong>静态注册</strong> 遵循一定的命名规则，一般是 <code>Java_packagename_classname_methodname(JNIEnv *env,jclass/jobject,...)</code></p>
-<p><strong>动态注册</strong> 有几个关键点</p>
-<p>使用结构体 JNINativeMethod 来记录java方法和jni函数的对应关系 </p>
+                <h3 id="安卓四大组件">安卓四大组件</h3>
+<p>Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者)</p>
+<h3 id="JNI-静态注册和动态注册">JNI 静态注册和动态注册</h3>
+<p>Java 支持调用 C/C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C/C++ 代码</p>
+<p><strong>静态注册</strong> : 在 <code>AndroidManifest.xml</code> 中注册<br>
+遵循一定的命名规则，一般是 <code>Java_packagename_classname_methodname(JNIEnv *env,jclass/jobject,...)</code></p>
+<p><strong>动态注册</strong> : 通过代码在运行时注册<br>
+通过 <code>registerReceiver()</code> 方法实现，需要在适当时候调用 <code>unregisterReceiver()</code> 注销</p>
+<p>使用结构体 JNINativeMethod 来记录 java 方法和 jni 函数的对应关系</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name; <span class="hljs-comment">//Java方法名</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* signature; <span class="hljs-comment">//方法的参数和返回值，使用字符串记录，格式形如`()V, (I)I`，括号内表示函数参数，括号右侧表示函数返回值</span><br>    <span class="hljs-type">void</span>*       fnPtr; <span class="hljs-comment">// 指向JNI函数的函数指针</span><br>&#125; JNINativeMethod;<br></code></pre></td></tr></table></figure>
-<p>java 端的 native 方法<br>c&#x2F;c++ 代码实现的JNI_Onload()方法</p>
+<p>java 端的 native 方法<br>
+c/c++ 代码实现的JNI_Onload()方法</p>
+<h3 id="Frida-注入原理">Frida 注入原理</h3>
+<p>Frida 注入流程通常是：</p>
+<ul>
+<li>利用 <code>ptrace</code> 附加到目标进程</li>
+<li>强制修改寄存器（如 PC 指针），让目标进程去执行一段临时的 <code>shellcode</code></li>
+<li>这段 <code>shellcode</code> 会调用 <code>dlopen</code>, 将 Frida 的动态库(<a target="_blank" rel="noopener" href="http://frida-agent.so">frida-agent.so</a>) 加载到目标进程的内存空间</li>
+<li>Agent 加载成功后，它就直接在目标进程内部进行 <code>inline hook</code></li>
+<li>撤销 ptrace</li>
+</ul>
+<h3 id="Frida-hook-原理">Frida hook 原理</h3>
+<p>Frida 的 <code>Interceptor</code> 实现 hook 主要通过四级跳板完成</p>
+<ul>
+<li>先通过 inline hook 的一级跳板到达 <code>on_enter_trampoline</code> 的位置，此处为二级跳板</li>
+<li>在 <code>on_enter_trampoline</code> 处通过 <code>BR X16</code> 跳到第三级跳板 <code>enter_trunk</code>,在这里把 CPU 寄存器全部保存到栈上或者专门的 <code>CpuContext</code> 结构体中</li>
+<li>调用 <code>Invocation</code> 进入四级跳板，执行 <code>on_enter</code> 代码</li>
+<li>完成 <code>on_enter</code> 处注册代码后根据函数是否被替换分为两种情况：
+<ul>
+<li>如果函数被替换，则直接跳转到替换函数</li>
+<li>如果函数没有被替换，则跳转到 <code>on_leave_trampoline</code> 处，这里将执行原本的函数代码</li>
+</ul>
+</li>
+<li>执行完成后，根据是否设置 <code>on_leave</code> 又分为两种情况：
+<ul>
+<li>如果没有设置在，则直接返回</li>
+<li>如果设置了，则跳回到二级跳板执行 <code>leave_trunk</code>,和 <code>enter_trunk</code> 类似，结束后返回</li>
+</ul>
+</li>
+</ul>
+<p><code>Inline hook</code> 原理：</p>
+<ul>
+<li>找到目标函数在内存中的起始地址</li>
+<li>读取目标函数的开头几一段指令，因为即将要覆盖这部分指令，所以把它们备份到一块新的内存区域（ trampoline 跳板区）<br>
+ps: 如果备份的指令中包含相对跳转（比如 CALL +0x100），直接复制到新位置相对偏移量就错了，需要进行指令修复将其转化为绝对跳转或者重新计算偏移量</li>
+<li>将目标函数开头的那段指令覆盖为跳转指令，这条跳转指令指向 trampoline 跳板区</li>
+</ul>
+<p>所以 Interceptor 其实是对 inline hook 的一种封装</p>
+<h3 id="Frida-检测及绕过">Frida 检测及绕过</h3>
+<ul>
+<li>
+<p>端口检测 : Frida 默认使用 <code>27042</code> 和 <code>27043</code> 端口，可以通过扫描这些端口来检测 Frida 是否在运行</p>
+<ul>
+<li>绕过：通过端口转发修改 Frida 使用的端口</li>
+</ul>
+</li>
+<li>
+<p>检测 <code>/data/local/tmp</code> 目录下的 <code>frida-server</code> 文件</p>
+<ul>
+<li>绕过：修改文件名</li>
+</ul>
+</li>
+<li>
+<p>双进程保护： 一些应用会启动一个守护进程来监控主进程，如果检测到 Frida attach，内核中 <code>TracePid != 0</code>,则杀死主进程，应用闪退</p>
+<ul>
+<li>绕过：用 <code>spawn</code> 模式启动</li>
+</ul>
+</li>
+<li>
+<p>检测 <code>proc/self/maps</code> 文件中是否存在 <code>frida-agent-64.so</code>、<code>frida-agent-32.so</code> 等文件</p>
+<ul>
+<li>绕过：
+<ul>
+<li>定义一个函数用来阻止字符串的搜索匹配(<code>strstr</code>、<code>strcmp</code>)，避免检测到敏感内容如 <code>REJECT</code> <code>Frida</code> 等</li>
+<li>重定向 <code>maps</code> 文件的内容，隐藏特定的库和路径信息</li>
+<li>用 <code>eBPF</code> hook 系统调用并修改参数:在内核真正去查找文件之前，挂载在 <code>sys_enter_openat</code> 上的 <code>eBPF</code> 程序被触发，检测到系统调用的第一个参数(路径字符串)是 <code>proc/self/maps</code>, 使用 <code>bpf_probe_write_user</code> 将该内存地址的内容改为事先准备好的抹去了 frida 信息的 <code>maps</code> 文件<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">char</span> placeholder[] = <span class="hljs-string">&quot;/data/data/.../maps&quot;</span>;  <br>bpf_probe_write_user((<span class="hljs-type">void</span>*)addr, placeholder, <span class="hljs-keyword">sizeof</span>(placeholder));<br></code></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>检测 <code>proc/stack/线程 id/status</code> 文件中是否有 <code>gmain/gdbus/gum-js-loop/pool-frida</code> 等</p>
+<ol>
+<li>Frida 使用 <code>Glib</code> 库，<code>gamain</code> 是主循环事件 <code>GMainLoop</code> 的线程名；</li>
+<li><code>GDBus</code> 是 <code>Glib</code> 提供的用于 <code>D-Bus</code> 通信的库，<code>gdbus</code> 表示 <code>D-Bus</code> 相关线程；</li>
+<li><code>gum-js-loop</code> 表示 <code>Gum</code>（Gum 是 Frida 运行时引擎）执行注入的 js 代码的线程</li>
+<li><code>pool-frida</code> 表示 Frida 中的线程池</li>
+</ol>
+<ul>
+<li>绕过：类似上文绕过 maps 文件检测的方式，hook <code>libc.so</code> 中的 <code>strstr</code> 和 <code>strcmp</code> 函数，一旦检测到敏感字符串就返回未找到</li>
+</ul>
+</li>
+<li>
+<p>检测 <code>inline hook</code>，比较内存和本地字节，如果不一致则可认为被 inline hook 了</p>
+<ul>
+<li>绕过：找到校验逻辑并 hook 掉</li>
+</ul>
+</li>
+<li>
+<p>SVC(Supervisor Call) 指令：软件中断指令，允许用户态程序发起一个系统调用，CPU 从用户态切换到内核态执行特权操作。</p>
+<ul>
+<li>绕过：进行内核追踪，找到 SVC 调用出并根据栈回溯往前找到检测逻辑</li>
+</ul>
+</li>
+</ul>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>
