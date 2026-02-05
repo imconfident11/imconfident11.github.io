@@ -19,31 +19,25 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令    jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转 jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但 ida 不能正常识">
+    <meta name="description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 ### jz&#x2F;jnz 指令 1. jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转 jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但">
 <meta property="og:type" content="article">
 <meta property="og:title" content="花指令">
 <meta property="og:url" content="http://example.com/2025/04/29/hua/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz&#x2F;jnz 指令    jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转 jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但 ida 不能正常识">
+<meta property="og:description" content="花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 ### jz&#x2F;jnz 指令 1. jz(jump if zero) 指令的本质：如果ZF&#x3D;1(前一条指令的结果为0)则跳转 jnz(jump if not zero) 指令的本质：如果ZF&#x3D;0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h1.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h2.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h3.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h4.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h5.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h6.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h7.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h10.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h11.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h12.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h13.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h14.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h15.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h17.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h18.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h8.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h9.png">
-<meta property="og:image" content="http://example.com/2025/04/29/images/8/h19.png">
 <meta property="og:image" content="http://example.com/2025/04/29/images/8/h20.png">
 <meta property="article:published_time" content="2025-04-28T16:00:00.000Z">
 <meta property="article:modified_time" content="2025-12-20T04:36:00.228Z">
@@ -255,7 +249,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          840 字
+          842 字
         
       </span>
     
@@ -308,74 +302,68 @@
             
               <div class="markdown-body">
                 
-                <p>花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译</p>
-<h3 id="jz-jnz-指令">jz/jnz 指令</h3>
-<ol>
-<li></li>
+                <p>花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行,
+而程序无法很好地反编译 ### jz/jnz 指令 1. <code>jz</code>(jump if zero)
+指令的本质：如果ZF=1(前一条指令的结果为0)则跳转 <code>jnz</code>(jump if
+not zero) 指令的本质：如果ZF=0(前一条指令的结果不为0)则跳转
+连续两条<code>jz、jnz</code>指令且跳转到同一个地址构造出无条件跳转，但
+ida 不能正常识别 ida 打开有飘红的地方 <img src="/images/8/h1.png" srcset="/img/loading.gif" lazyload />
+看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址 <img
+src="/images/8/h2.png" srcset="/img/loading.gif" lazyload /> 下面的 mov 指令实际上6个字节，直接 nop
+可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop
+<img src="/images/8/h3.png" srcset="/img/loading.gif" lazyload /> 把 jn/jnz 指令其中一条改成
+nop，另一条改成 jmp，直接跳转到后面的代码 <img
+src="/images/8/h4.png" srcset="/img/loading.gif" lazyload /> <img src="/images/8/h5.png" srcset="/img/loading.gif" lazyload />
+最后在标签的位置(loc_413364)
+<code>U</code>一下，<code>P</code>(变成函数)一下，就修好了 <img
+src="/images/8/h6.png" srcset="/img/loading.gif" lazyload /> <img src="/images/8/h7.png" srcset="/img/loading.gif" lazyload /></p>
+<ol start="2" type="1">
+<li>反编译失败，Tab 切换到汇编 在 下一条指令即 mov 处 <code>U</code>
+<img src="/images/8/h10.png" srcset="/img/loading.gif" lazyload /> 在 跳转到的地方即 unk_41213F 处
+<code>C</code> <img src="/images/8/h11.png" srcset="/img/loading.gif" lazyload /> 又多出来两条新的jz
+jnz，重复上述步骤 <img src="/images/8/h12.png" srcset="/img/loading.gif" lazyload /> 所有 jz jnz
+出来之后，把这部分代码块都 nop 掉，再在最开始的标签处 <code>U</code>
+<code>P</code>，就能修复了 <img src="/images/8/h13.png" srcset="/img/loading.gif" lazyload /> <img
+src="/images/8/h14.png" srcset="/img/loading.gif" lazyload /> 最后f5 就可以了 <img
+src="/images/8/h15.png" srcset="/img/loading.gif" lazyload /></li>
 </ol>
-<p><code>jz</code>(jump if zero) 指令的本质：如果ZF=1(前一条指令的结果为0)则跳转<br>
-<code>jnz</code>(jump if not zero) 指令的本质：如果ZF=0(前一条指令的结果不为0)则跳转<br>
-连续两条<code>jz、jnz</code>指令且跳转到同一个地址构造出无条件跳转，但 ida 不能正常识别<br>
-ida 打开有飘红的地方<br>
-<img src="../images/8/h1.png" srcset="/img/loading.gif" lazyload alt=""><br>
-看汇编，这个地方有两条跳转指令，jn和jnz，跳转的地方是同一个地址<br>
-<img src="../images/8/h2.png" srcset="/img/loading.gif" lazyload alt=""><br>
-下面的 mov 指令实际上6个字节，直接 nop 可能会 nop 多，所以先 <code>U</code>(undefine)一下看到更细的汇编再 nop<br>
-<img src="../images/8/h3.png" srcset="/img/loading.gif" lazyload alt=""><br>
-把 jn/jnz 指令其中一条改成 nop，另一条改成 jmp，直接跳转到后面的代码<br>
-<img src="../images/8/h4.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<img src="../images/8/h5.png" srcset="/img/loading.gif" lazyload alt=""><br>
-最后在标签的位置(loc_413364) <code>U</code>一下，<code>P</code>(变成函数)一下，就修好了<br>
-<img src="../images/8/h6.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<img src="../images/8/h7.png" srcset="/img/loading.gif" lazyload alt=""></p>
-<ol start="2">
-<li>反编译失败，Tab 切换到汇编<br>
-在 下一条指令即 mov 处 <code>U</code><br>
-<img src="../images/8/h10.png" srcset="/img/loading.gif" lazyload alt=""><br>
-在 跳转到的地方即 unk_41213F 处 <code>C</code><br>
-<img src="../images/8/h11.png" srcset="/img/loading.gif" lazyload alt=""><br>
-又多出来两条新的jz jnz，重复上述步骤<br>
-<img src="../images/8/h12.png" srcset="/img/loading.gif" lazyload alt=""><br>
-所有 jz jnz 出来之后，把这部分代码块都 nop 掉，再在最开始的标签处 <code>U</code> <code>P</code>，就能修复了<br>
-<img src="../images/8/h13.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<img src="../images/8/h14.png" srcset="/img/loading.gif" lazyload alt=""><br>
-最后f5 就可以了<br>
-<img src="../images/8/h15.png" srcset="/img/loading.gif" lazyload alt=""></li>
-</ol>
-<h3 id="xor-test-jz-jnz-指令">xor test jz/jnz 指令</h3>
-<p><img src="../images/8/h17.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<code>xor ebx,ebx</code> 将 ebx 清零，设置 ZF=1<br>
-<code>test ebx,ebx</code> 测试 ebx 的值，实际执行 ebx AND ebx ，结果为0,保持 ZF =1<br>
-<code>jnz short near ptr byte_412AC9</code> 若 ZF=0,则跳转到 byte_412AC9，但此时 ZF=1，条件不满足，继续执行下一条指令<br>
-<code>jz short loc_412ACA</code>由于 ZF=1，跳转到 loc_412ACA<br>
-所以这种结构的花指令必定会执行 jz 跳转，去花的话就将从 xor 到 jz跳转到的地方 之间的指令都 nop 掉<br>
-<img src="../images/8/h18.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<h3 id="xor-test-jzjnz-指令">xor test jz/jnz 指令</h3>
+<p><img src="/images/8/h17.png" srcset="/img/loading.gif" lazyload /> <code>xor ebx,ebx</code> 将 ebx
+清零，设置 ZF=1 <code>test ebx,ebx</code> 测试 ebx 的值，实际执行 ebx
+AND ebx ，结果为0,保持 ZF =1 <code>jnz short near ptr byte_412AC9</code>
+若 ZF=0,则跳转到 byte_412AC9，但此时
+ZF=1，条件不满足，继续执行下一条指令
+<code>jz short loc_412ACA</code>由于 ZF=1，跳转到 loc_412ACA
+所以这种结构的花指令必定会执行 jz 跳转，去花的话就将从 xor 到
+jz跳转到的地方 之间的指令都 nop 掉 <img src="/images/8/h18.png" srcset="/img/loading.gif" lazyload /></p>
 <h3 id="call-retn-指令">call-retn 指令</h3>
-<p>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址<br>
+<p>call指令的本质：push 下一条指令地址(函数返回地址)然后jmp 函数地址
 ret指令的本质：pop eip</p>
-<p>函数反编译失败，查看汇编<br>
-<img src="../images/8/h8.png" srcset="/img/loading.gif" lazyload alt=""></p>
-<ul>
-<li>将 call 的下一条指令地址（0x412307）压入堆栈</li>
-<li>反汇编器会尝试从 0x412307 开始解析指令，但此处被插入的 0xE8（call 的操作码）误导，导致后续代码解析错误<br>
-<code>add [esp+0F0h+var_F0], 8</code></li>
-<li>实际操作：var_F0 是 IDA 生成的变量名，表示偏移 -0xF0，因此 esp+0F0h+var_F0 = esp</li>
-<li>等效代码：add [esp], 8，即将栈顶的返回地址（原为 0x412307）加 8，修改为 0x41230F<br>
-retn 的跳转:弹出修改后的返回地址 0x41230F，跳转到此处继续执行</li>
-<li>把 call 到 0x41230F 的代码都 nop 掉<br>
-<img src="../images/8/h9.png" srcset="/img/loading.gif" lazyload alt=""></li>
-<li>最后在 sub_4122B0 处 <code>U</code> <code>P</code> <code>F5</code>，就能修复了</li>
-</ul>
+<p>函数反编译失败，查看汇编 <img src="/images/8/h8.png" srcset="/img/loading.gif" lazyload /> - 将 call
+的下一条指令地址（0x412307）压入堆栈 - 反汇编器会尝试从 0x412307
+开始解析指令，但此处被插入的 0xE8（call
+的操作码）误导，导致后续代码解析错误
+<code>add [esp+0F0h+var_F0], 8</code> - 实际操作：var_F0 是 IDA
+生成的变量名，表示偏移 -0xF0，因此 esp+0F0h+var_F0 = esp - 等效代码：add
+[esp], 8，即将栈顶的返回地址（原为 0x412307）加 8，修改为 0x41230F retn
+的跳转:弹出修改后的返回地址 0x41230F，跳转到此处继续执行 - 把 call 到
+0x41230F 的代码都 nop 掉 <img src="/images/8/h9.png" srcset="/img/loading.gif" lazyload /><br />
+- 最后在 sub_4122B0 处 <code>U</code> <code>P</code>
+<code>F5</code>，就能修复了</p>
 <p>或者也可以动调看 rip/eip 查看执行流程去花</p>
 <h3 id="call-5-指令">call $+5 指令</h3>
 <ul>
 <li>$ 一般表示当前指令的起始地址</li>
 <li>+5 表示在当前地址增加 5 个字节</li>
-<li>一般一条 call 指令占用 5 个字节（1 字节操作码 0xE8 + 4 字节相对偏移量）</li>
-<li>所以，$+5 指向的正是紧跟在 call $+5 这条指令之后的那条指令，但问题在于： call 指令执行时会把它的下一条指令的地址压入堆栈（作为返回地址），这个被压入堆栈的地址，恰恰也是 $+5 指向的位置，恶意代码编写者会在 call $+5 之后紧接着放置一些无效指令，扰乱反汇编，因此要把这部分指令 nop 掉<br>
-<img src="../images/8/h19.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<img src="../images/8/h20.png" srcset="/img/loading.gif" lazyload alt=""><br>
-然后把 main 函数全部 U 掉，在函数头的地方 P 一下，f5反编译即可</li>
+<li>一般一条 call 指令占用 5 个字节（1 字节操作码 0xE8 + 4
+字节相对偏移量）</li>
+<li>所以，$+5 指向的正是紧跟在 call $+5
+这条指令之后的那条指令，但问题在于： call
+指令执行时会把它的下一条指令的地址压入堆栈（作为返回地址），这个被压入堆栈的地址，恰恰也是
+$+5 指向的位置，恶意代码编写者会在 call $+5
+之后紧接着放置一些无效指令，扰乱反汇编，因此要把这部分指令 nop 掉 <img
+src="/images/8/h19.png" srcset="/img/loading.gif" lazyload /> <img src="/images/8/h20.png" srcset="/img/loading.gif" lazyload /> 然后把
+main 函数全部 U 掉，在函数头的地方 P 一下，f5反编译即可</li>
 </ul>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
