@@ -19,12 +19,12 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小米">
+    <meta name="description" content="故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小">
 <meta property="og:type" content="article">
 <meta property="og:title" content="记一次失败的把 rwProcMem33 编译进 MI MIX2 内核的尝试">
 <meta property="og:url" content="http://example.com/2025/12/01/kernel_fail/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小米">
+<meta property="og:site_name" content="Eleven&#39;s Blog">
+<meta property="og:description" content="故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/2025/12/01/images/mykernel/ori.png">
 <meta property="og:image" content="http://example.com/2025/12/01/images/mykernel/kernel_version.png">
@@ -32,7 +32,7 @@
 <meta property="og:image" content="http://example.com/2025/12/01/images/mykernel/res.png">
 <meta property="og:image" content="http://example.com/2025/12/01/images/mykernel/pandora_kernel.png">
 <meta property="article:published_time" content="2025-11-30T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-12-01T14:57:53.776Z">
+<meta property="article:modified_time" content="2026-02-06T07:58:50.688Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="Kernel">
@@ -41,7 +41,7 @@
   
   
   
-  <title>记一次失败的把 rwProcMem33 编译进 MI MIX2 内核的尝试 - Hexo</title>
+  <title>记一次失败的把 rwProcMem33 编译进 MI MIX2 内核的尝试 - Eleven&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -303,21 +303,25 @@ target="_blank" rel="noopener" href="https://github.com/SeeFlowerX/stackplz">sta
 target="_blank" rel="noopener" href="https://github.com/abcz316/rwProcMem33">rwProcMem33</a>，所以就打算自己把
 <code>rwProcMem33</code> 编译进内核</p>
 <p>如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入
-<code>rwProcMem33</code>： <a
-target="_blank" rel="noopener" href="https://oacia.dev/rwProcMem33-usage/">将rwProcMem33编译进安卓内核</a>
-<a
+<code>rwProcMem33</code>：</p>
+<p><a
+target="_blank" rel="noopener" href="https://oacia.dev/rwProcMem33-usage/">将rwProcMem33编译进安卓内核</a></p>
+<p><a
 target="_blank" rel="noopener" href="https://blog.lleavesg.top/article/pixel5-kernel-build#c3df4e965526460484a7d283fba545e8">Pixel5
 内核编译并嵌入rwProcMem33</a></p>
 <p>我测试机是小米设备，一台 MI MIX2(内核 4.4)，一台 MI 11 Lite(内核
 5.4)，都达不到 <code>stackplz</code> 对内核版本 5.10+ 的要求</p>
 <p>以下内容是用 <code>MI MIX2</code> 这个设备来做的实验</p>
 <h2 id="新的想法">新的想法</h2>
-<p>“要不要试试 LineageOS” “那是什么”</p>
+<p>“要不要试试 LineageOS”</p>
+<p>“那是什么”</p>
 <p>最开始以为小米没有开源内核，就选择了换成开源的 <code>LineageOS</code>
-系统 我的测试机之前装过 <code>twrp</code> ，所以就用的 <code>twrp</code>
+系统</p>
+<p>我的测试机之前装过 <code>twrp</code> ，所以就用的 <code>twrp</code>
 来刷的，参考<a
 target="_blank" rel="noopener" href="https://miuiver.com/how-to-flash-lineageos/">小米手机刷入
-LineageOS 教程</a> 与设备适配的 <code>LineageOS</code> 镜像就在<a
+LineageOS 教程</a></p>
+<p>与设备适配的 <code>LineageOS</code> 镜像就在<a
 target="_blank" rel="noopener" href="https://download.lineageos.org/devices/chiron/builds">官网</a>找到,把最新的系统镜像，<code>boot.img</code>
 和 <code>recovery.img</code> 都下载了</p>
 <h2 id="小插曲">小插曲</h2>
@@ -328,10 +332,11 @@ target="_blank" rel="noopener" href="https://download.lineageos.org/devices/chir
 是什么（其实就是方便刷机的第三方 <code>recovery</code>），甚至对
 <code>rom</code>，<code>rec</code>，<code>fastboot</code>
 等等这些概念都模糊不清，其实还是因为没亲手搞过，当真正自己上手的时候很多东西很容易就明白了</p>
-<p><a target="_blank" rel="noopener" href="https://dl.twrp.me/mix2/">TWRP 下载网址</a> <a
-target="_blank" rel="noopener" href="https://twrp.me/xiaomi/xiaomimimix2.html">刷入 TWRP 官方教程</a>
-<a target="_blank" rel="noopener" href="https://miuiver.com/install-miui-developer-rom/">使用 TWRP 刷
-MIUI 开发版方法</a></p>
+<p><a target="_blank" rel="noopener" href="https://dl.twrp.me/mix2/">TWRP 下载网址</a></p>
+<p><a target="_blank" rel="noopener" href="https://twrp.me/xiaomi/xiaomimimix2.html">刷入 TWRP
+官方教程</a></p>
+<p><a target="_blank" rel="noopener" href="https://miuiver.com/install-miui-developer-rom/">使用 TWRP
+刷 MIUI 开发版方法</a></p>
 <h2 id="泥嚎lineageos">泥嚎，LineageOS</h2>
 <p>初次见面，请多指教。</p>
 <h3 id="准备源码">准备源码</h3>
@@ -345,46 +350,59 @@ target="_blank" rel="noopener" href="https://github.com/LineageOS/android_kernel
 内核的博客也不多，试了几种方式最后让我成功编译的是参考这篇文章 <a
 target="_blank" rel="noopener" href="https://gist.github.com/davidgarland/ae6da821016fde4c877973ddd3f8f116">lineageos_simple_kernel_build</a>，it’s
 super useful！</p>
-<p>先把内核源码克隆下来 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_kernel_xiaomi_msm8998<br>KERNEL_NAME=android_kernel_xiaomi_msm8998<br></code></pre></td></tr></table></figure></p>
+<p>先把内核源码克隆下来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_kernel_xiaomi_msm8998<br>KERNEL_NAME=android_kernel_xiaomi_msm8998<br></code></pre></td></tr></table></figure>
 <h3 id="准备工具链">准备工具链</h3>
 <p>在 https://github.com/LineageOS/android 选择构建内核对应的 linegasos
 版本，然后在 <code>snippets/lineage.xml</code> 中搜索
-<code>prebuilts/</code> 找到需要的工具链，把它们拉下来 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b \<br>  -b lineage-20.0 || <span class="hljs-literal">true</span><br>git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 \<br>  -b lineage-19.1 || <span class="hljs-literal">true</span><br>git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 \<br>  -b lineage-19.1 || <span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure></p>
+<code>prebuilts/</code> 找到需要的工具链，把它们拉下来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_clang_kernel_linux-x86_clang-r416183b \<br>  -b lineage-20.0 || <span class="hljs-literal">true</span><br>git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9 \<br>  -b lineage-19.1 || <span class="hljs-literal">true</span><br>git <span class="hljs-built_in">clone</span> https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9 \<br>  -b lineage-19.1 || <span class="hljs-literal">true</span><br></code></pre></td></tr></table></figure>
 <h3 id="编译内核">编译内核</h3>
-<p>记录下所有准备文件所在的目录并进入内核源码目录 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">BASEDIR=<span class="hljs-variable">$PWD</span><br><span class="hljs-built_in">cd</span> <span class="hljs-variable">$KERNEL_NAME</span><br></code></pre></td></tr></table></figure></p>
+<p>记录下所有准备文件所在的目录并进入内核源码目录</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">BASEDIR=<span class="hljs-variable">$PWD</span><br><span class="hljs-built_in">cd</span> <span class="hljs-variable">$KERNEL_NAME</span><br></code></pre></td></tr></table></figure>
 <p>清除所有内容，包括删除任何旧的内核配置文件（Mr. Proper
-其实是英国清洁用品品牌） <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">make mrproper<br></code></pre></td></tr></table></figure></p>
+其实是英国清洁用品品牌）</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">make mrproper<br></code></pre></td></tr></table></figure>
 <p>指定输出目录，之后构建内核时，结果文件都位于
-<code>$KERNEL_NAME/out</code> <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mkdir</span> -p out<br></code></pre></td></tr></table></figure></p>
+<code>$KERNEL_NAME/out</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">mkdir</span> -p out<br></code></pre></td></tr></table></figure>
 <p>在 <code>$KERNEL_NAME/arch/arm64/configs</code>
 目录下找到设备内核对应的配置文件,我的是
 <code>msm-perf_defconfig</code>,然后生成新的内核配置</p>
 <p>ps: 获取内核版本 <code>cat /proc/version</code> 或者
 <code>uname -r</code></p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs bash">make \<br>  O=out \<br>  ARCH=arm64 \<br>  msm-perf_defconfig<br></code></pre></td></tr></table></figure>
-<p>记录每个工具链的路径 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">GCCDIR=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9<br>GCCDIR32=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9<br>CLANGDIR=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_clang_kernel_linux-x86_clang-r416183b<br></code></pre></td></tr></table></figure></p>
-<p>最后编译内核 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">make \<br>  O=out \<br>  ARCH=arm64 \<br>  PATH=<span class="hljs-variable">$CLANGDIR</span>/bin:<span class="hljs-variable">$GCCDIR</span>/bin:<span class="hljs-variable">$PATH</span> \<br>  LD_LIBRARY_PATH=<span class="hljs-variable">$CLANGDIR</span>/lib \<br>  LLVM=1 \<br>  CROSS_COMPILE=<span class="hljs-variable">$GCCDIR</span>/bin/aarch64-linux-android- \<br>  CROSS_COMPILE_ARM32=<span class="hljs-variable">$GCCDIR32</span>/bin/arm-linux-androideabi- \<br>  CLANG_TRIPLE=aarch64-linux-gnu- \<br>  -j$(<span class="hljs-built_in">nproc</span>)<br></code></pre></td></tr></table></figure></p>
+<p>记录每个工具链的路径</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">GCCDIR=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-android-4.9<br>GCCDIR32=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_gcc_linux-x86_arm_arm-linux-androideabi-4.9<br>CLANGDIR=<span class="hljs-variable">$BASEDIR</span>/android_prebuilts_clang_kernel_linux-x86_clang-r416183b<br></code></pre></td></tr></table></figure>
+<p>最后编译内核</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">make \<br>  O=out \<br>  ARCH=arm64 \<br>  PATH=<span class="hljs-variable">$CLANGDIR</span>/bin:<span class="hljs-variable">$GCCDIR</span>/bin:<span class="hljs-variable">$PATH</span> \<br>  LD_LIBRARY_PATH=<span class="hljs-variable">$CLANGDIR</span>/lib \<br>  LLVM=1 \<br>  CROSS_COMPILE=<span class="hljs-variable">$GCCDIR</span>/bin/aarch64-linux-android- \<br>  CROSS_COMPILE_ARM32=<span class="hljs-variable">$GCCDIR32</span>/bin/arm-linux-androideabi- \<br>  CLANG_TRIPLE=aarch64-linux-gnu- \<br>  -j$(<span class="hljs-built_in">nproc</span>)<br></code></pre></td></tr></table></figure>
 <p>成功编译后生成的 img 文件在 <code>out/arch/arm64/boot/</code>
 目录下</p>
 <p><img src="/images/mykernel/ori.png" srcset="/img/loading.gif" lazyload /></p>
 <h3 id="替换内核">替换内核</h3>
 <p>参考<a
 target="_blank" rel="noopener" href="https://bitibiti.com/2023/10/24/Android%20%E6%90%9E%E6%9C%BA%E4%B9%8B%E7%BC%96%E8%AF%91%20lineageOS%20%E5%86%85%E6%A0%B8/">Android
-搞机之编译 lineageOS 内核</a> 下载 <code>AnyKernel3</code>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> --depth=1 https://github.com/osm0sis/AnyKernel3.git<br></code></pre></td></tr></table></figure></p>
-<p>编辑 <code>anykernel.sh</code> 文件 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">do.devicecheck=0 <span class="hljs-comment"># 关闭设备检查</span><br><span class="hljs-comment"># BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot # 注释掉原有的 boot 分区路径</span><br>BLOCK=auto; <span class="hljs-comment"># 设置为自动检测分区</span><br></code></pre></td></tr></table></figure></p>
+搞机之编译 lineageOS 内核</a></p>
+<p>下载 <code>AnyKernel3</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">git <span class="hljs-built_in">clone</span> --depth=1 https://github.com/osm0sis/AnyKernel3.git<br></code></pre></td></tr></table></figure>
+<p>编辑 <code>anykernel.sh</code> 文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">do.devicecheck=0 <span class="hljs-comment"># 关闭设备检查</span><br><span class="hljs-comment"># BLOCK=/dev/block/platform/omap/omap_hsmmc.0/by-name/boot # 注释掉原有的 boot 分区路径</span><br>BLOCK=auto; <span class="hljs-comment"># 设置为自动检测分区</span><br></code></pre></td></tr></table></figure>
 <p>将编译成功的内核 <code>Image</code> 文件复制到
-<code>AnyKernel3</code> 根目录下 将 Anykernel3 根目录下的所有文件打包成
-zip 压缩包 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">zip -r9 Anykernel.zip *<br></code></pre></td></tr></table></figure></p>
+<code>AnyKernel3</code> 根目录下</p>
+<p>将 Anykernel3 根目录下的所有文件打包成 zip 压缩包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">zip -r9 Anykernel.zip *<br></code></pre></td></tr></table></figure>
 <p>用 <code>twrp</code> 刷入 <code>Anykernel.zip</code>，重启系统</p>
 <p>这里我用 <a target="_blank" rel="noopener" href="https://miuiver.com/how-to-flash-lineageos/">twrp
 卡刷</a>失败了，貌似是因为现在刷入的 rom 是安卓 15，之前下载的 twrp
 是对应安卓 9 的，然后我又给手机刷了 Lineageos 的原厂 rec, 参考<a
-target="_blank" rel="noopener" href="https://www.cnblogs.com/sindtoto/p/18103645">LineageOS刷机教程</a>
-手机关机状态下，按住 音量下 + 电源键 进入 <code>fastboot</code> 模式</p>
+target="_blank" rel="noopener" href="https://www.cnblogs.com/sindtoto/p/18103645">LineageOS刷机教程</a></p>
+<p>手机关机状态下，按住 音量下 + 电源键 进入 <code>fastboot</code>
+模式</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">fastboot flash recovery &lt;recovery_filename&gt;.img<br></code></pre></td></tr></table></figure>
-<p>进入 LineageOS <code>recovery</code> 模式 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">adb reboot recovery<br></code></pre></td></tr></table></figure> 选择
-<code>Apply update</code> 因为我没插外置 sd 卡，就选择
+<p>进入 LineageOS <code>recovery</code> 模式</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">adb reboot recovery<br></code></pre></td></tr></table></figure>
+<p>选择 <code>Apply update</code></p>
+<p>因为我没插外置 sd 卡，就选择
 <code>adb sideload</code>，但是我选了之后电脑端识别不到设备，最后是用搞机助手刷上去的</p>
 <p>到这里本应该完美结束，但是实际上我刷入后手机黑屏，进不了系统，啊啊啊可恶，不过大概率是编译内核时为了修报错改源码出了问题</p>
 <p>编译过程中遇到的报错,试了好几种方式要么没效果要么产生新的报错，后面
@@ -408,7 +426,8 @@ ai
 切换到自己内核对应的版本</p>
 <p><img src="/images/mykernel/kernel_version.png" srcset="/img/loading.gif" lazyload /></p>
 <h4 id="修改-driversmakefile">修改 drivers/Makefile</h4>
-<p>在 <code>drivers/Makefile</code> 添加 <figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Makefile">obj-y += rwProcMem33/hwBreakpointProcModule/hwBreakpointProc_module/<br>obj-y += rwProcMem33/rwProcMem33Module/rwProcMem_module/<br></code></pre></td></tr></table></figure></p>
+<p>在 <code>drivers/Makefile</code> 添加</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs Makefile">obj-y += rwProcMem33/hwBreakpointProcModule/hwBreakpointProc_module/<br>obj-y += rwProcMem33/rwProcMem33Module/rwProcMem_module/<br></code></pre></td></tr></table></figure>
 <h4 id="byebye-warning">byebye warning</h4>
 <p>修改内核源码根目录下的
 <code>Makefile</code>，在<code>-Wno-format-security</code> 后加上一个
@@ -428,23 +447,25 @@ target="_blank" rel="noopener" href="https://t.me/s/pandora_kernel_release?befor
 <p><img src="/images/mykernel/pandora_kernel.png" srcset="/img/loading.gif" lazyload /></p>
 <p>没有办法实现从高版本到低版本的替换</p>
 <h2 id="另外的路">另外的路</h2>
-<p>没路了怎么办，像索隆一样用剑劈一条出来。
-骗你的，其实自己根本劈不开（哭了</p>
+<p>没路了怎么办，像索隆一样用剑劈一条出来。</p>
+<p>骗你的，其实自己根本劈不开（哭了</p>
 <p>接着是另外一条路，<a
-target="_blank" rel="noopener" href="https://www.coolapk.com/feed/68846608?s=MzAzMWM5MDE4Y2Y1NmRnNjkyYWUwOTN6a1540">小米mix2ksu以及如何去修补</a>
-尝试了把这篇文章里面的 <code>kernelsu</code> 刷进去，小米官方的 MIX2 的
-ROM 最高版本是安卓 9，上面文章中测试成功的是 安卓
+target="_blank" rel="noopener" href="https://www.coolapk.com/feed/68846608?s=MzAzMWM5MDE4Y2Y1NmRnNjkyYWUwOTN6a1540">小米mix2ksu以及如何去修补</a></p>
+<p>尝试了把这篇文章里面的 <code>kernelsu</code> 刷进去，小米官方的 MIX2
+的 ROM 最高版本是安卓 9，上面文章中测试成功的是 安卓
 11，担心适配问题，就去找了个魔改的<a
 target="_blank" rel="noopener" href="https://115-25-208-38.pd1.cjjd19.com/1135-user-share-pay-download-cdn.123295.com/123-59/d0a3eb44/1811867733-0/d0a3eb447f181866b7b2c42952e6c83b/c-m93?v=5&amp;t=1765034147&amp;r=LVU14T&amp;bzc=2&amp;bzs=313831333338373331383a37303737313136343a323132373133333237373a313835343230393935383a32&amp;ur=aalgmugalegvlu&amp;urn=0&amp;s=176503414708e8d885c1e76a96905471515e8db646&amp;bzp=0&amp;bi=2740055760&amp;filename=MIUI12.5+MIX2+21.12.7.zip&amp;x-mf-biz-cid=0bdc410e-4619-4fd8-8b80-9d4a5a4c7eba-5baabb&amp;auto_redirect=0&amp;ndcp=1&amp;cache_type=1&amp;xmfcid=dafede77-1ffc-4703-9b1e-db4116f2fd76384f0fa81e9">安卓
 11 的 ROM</a> 和适配的 <a
 target="_blank" rel="noopener" href="https://down.warbler.cc/XiaoMi-Mix-2/Recovery/Twrp/12/TWRP-3.6.2-android_12.0.img#google_vignette">twrp</a>
-重新刷上去 ps:小米官方<a
+重新刷上去</p>
+<p>ps:小米官方<a
 target="_blank" rel="noopener" href="https://xiaomirom.com/">镜像网站</a>下载无敌慢，在
 https://miuiver.com/ 这个网址下会快很多</p>
-<p>刷入 <code>kernelsu</code> 后，看到内核版本依旧是 4.4.302,并没有提升
-然后在酷安和 XDA 上翻了个遍，企图找到有无民间大佬编译好的适配设备的
+<p>刷入 <code>kernelsu</code> 后，看到内核版本依旧是
+4.4.302,并没有提升</p>
+<p>然后在酷安和 XDA 上翻了个遍，企图找到有无民间大佬编译好的适配设备的
 5.10+ 内核，看到半夜，发现是条死路，无。</p>
-<p>后面又在想要试着编译小米官方内核，它是有开放源码的<a
+<p>后面又在想要试着编译小米官方内核，它是有开放源码的 <a
 target="_blank" rel="noopener" href="https://github.com/MiCode/Xiaomi_Kernel_OpenSource">Xiaomi_Kernel_OpenSource</a>,但是当我尝试把官方
 ROM
 重新刷进去失败的时候，突然有点不太想继续了，凭借着现在的能力，想要成功编译出一个能用的
@@ -453,10 +474,12 @@ ROM
 ai
 给的解决方式，出错的机率太大，不确定性太多，不想让沉没成本继续增加了，就此收手。</p>
 <h2 id="还会再见吗">还会再见吗</h2>
-<p>故事的结局是? 没有结局。</p>
+<p>故事的结局是?</p>
+<p>没有结局。</p>
 <p>研究了大半周最后好像只能买台 pixel 6 来解决问题，哈哈。</p>
-<p>至于为什么还要把这个失败的经历写出来，可能是宽慰自己并非毫无收获的借口（？）<del>我哭了虽然好像确实没学到太多东西</del>
-或者希望等到有更多储备之后再来回看或者继续尝试吧。</p>
+<p>至于为什么还要把这个失败的经历写出来，可能是宽慰自己并非毫无收获的借口（？）</p>
+<p><del>我哭了虽然好像确实没学到太多东西</del></p>
+<p>或者希望等到有更多储备之后再来回看或者继续尝试吧。</p>
 <p>又或者，想记录下过程中情绪的起起伏伏，会为有新的想法感到无比兴奋，又可以怀揣着希望睡觉了，狠狠期待第二天接着折腾，也会因为探索中的不顺利生气和难受，可恶啊，最后是平静的放弃了，emm，暂且放弃。</p>
 <p>好像体验到了和打 CTF 拿 flag 不一样的神奇感觉。</p>
 <p>不是一个迷茫的逆向手了。至少最近不是。</p>

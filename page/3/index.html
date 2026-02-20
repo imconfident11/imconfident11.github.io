@@ -20,16 +20,16 @@
   <meta name="keywords" content="">
   
     <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+<meta property="og:title" content="Eleven&#39;s Blog">
 <meta property="og:url" content="http://example.com/page/3/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="Eleven&#39;s Blog">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:author" content="Eleven">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>Hexo</title>
+  <title>Eleven&#39;s Blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -247,7 +247,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/20/XYCTF2025/" target="_self">
         <div>
-          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 &gt;123456&gt;VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123;//DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；
+          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 123456VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123; //DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserve
         </div>
       </a>
 
@@ -432,7 +432,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/24/vm/" target="_self">
         <div>
-          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32_t
+          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32
         </div>
       </a>
 
@@ -493,7 +493,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/03/XYCTF2024/" target="_self">
         <div>
-          你是真的大学生吗? 附件是MS-DOS executable (EXE)文件，ida 不能反编译，硬看汇编  解密脚本 123456789101112131415161718192021222324252627&#x27;&#x27;&#x27;T[20]=C[20]^C[0]al=T[20]T[19]=C[19]^al即T[19]=C[19]^T[20]al=T[19]T[18]=C[18]^
+          你是真的大学生吗? 附件是MS-DOS executable (EXE)文件，ida 不能反编译，硬看汇编  解密脚本 123456789101112131415161718192021222324252627&#x27;&#x27;&#x27;T[20]=C[20]^C[0]al=T[20]T[19]=C[19]^al即T[19]=C[19]^T[20]al=T[19]T[18]=C[1
         </div>
       </a>
 
@@ -554,7 +554,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/02/crypto/" target="_self">
         <div>
-          流密码 特征就是密文仅由明文与密钥流经过异或运算得到。只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20. ### RC4 特征识别 - 长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 - 很多取模操作 - 有多个次数为 256 的循环 -
+          流密码 特征就是密文仅由明文与密钥流经过异或运算得到，只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20 RC4 特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为
         </div>
       </a>
 
@@ -617,7 +617,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/04/29/hua/" target="_self">
         <div>
-          花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 ### jz/jnz 指令 1. jz(jump if zero) 指令的本质：如果ZF=1(前一条指令的结果为0)则跳转 jnz(jump if not zero) 指令的本质：如果ZF=0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但
+          花指令原理就是在真实代码中插入一些垃圾代码的同时还保证原有程序的正确执行, 而程序无法很好地反编译 jz/jnz 指令  jz(jump if zero) 指令的本质：如果ZF=1(前一条指令的结果为0)则跳转  jnz(jump if not zero) 指令的本质：如果ZF=0(前一条指令的结果不为0)则跳转 连续两条jz、jnz指令且跳转到同一个地址构造出无条件跳转，但
         </div>
       </a>
 
@@ -678,7 +678,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/04/27/tgctf/" target="_self">
         <div>
-          base 64 变种 base64 123456789101112131415161718192021222324252627282930313233343536373839custom_table = &quot;GLp/+Wn7uqX8FQ2JDR1c0M6U53sjBwyxglmrCVdSThAfEOvPHaYZNzo4ktK9iebI&quot;table_dict = &#123;ch
+          base 64 变种 base64 123456789101112131415161718192021222324252627282930313233343536373839custom_table = &quot;GLp/+Wn7uqX8FQ2JDR1c0M6U53sjBwyxglmrCVdSThAfEOvPHaYZNzo4ktK9iebI&quot;table_dict = &#123;c
         </div>
       </a>
 
