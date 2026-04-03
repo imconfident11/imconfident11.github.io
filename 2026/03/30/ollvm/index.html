@@ -1,0 +1,824 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm 混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。 关于 OLLVM 混淆  产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在 llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR 的逻辑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OLLVM 原理和去除">
+<meta property="og:url" content="http://example.com/2026/03/30/ollvm/index.html">
+<meta property="og:site_name" content="Eleven&#39;s Blog">
+<meta property="og:description" content="这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm 混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。 关于 OLLVM 混淆  产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在 llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR 的逻辑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/before_sub.PNG">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_sub.PNG">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/before_bcf.PNG">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_bcf.PNG">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/bcf_cond.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/bcf_cmp.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/bss.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_set_var.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_set_var.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/set_user_var_value.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/auto_set_var.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/fla0.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_fla.png">
+<meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/preprocessor.png">
+<meta property="article:published_time" content="2026-03-29T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-02T17:24:50.756Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta property="article:tag" content="ollvm">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2026/03/30/images/ollvm/before_sub.PNG">
+  
+  
+  
+  <title>OLLVM 原理和去除 - Eleven&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="OLLVM 原理和去除"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-30 00:00" pubdate>
+          2026年3月30日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          35 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">OLLVM 原理和去除</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm
+混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。</p>
+<h3 id="关于-ollvm-混淆">关于 OLLVM 混淆</h3>
+<ul>
+<li>产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在
+llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR
+的逻辑</li>
+</ul>
+<blockquote>
+<p>LLVM
+是一个编译器架构，采用三段式设计，前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树
+AST,然后将分析好的代码转换成 LLVM 的中间表示IR(intermediate
+representation);<strong>Pass对IR做优化</strong>,后端负责将优化好的IR解释成对应平台的机器码
+<strong>核心思想</strong>是先把源码生成为一种与平台无关的中间表示
+IR，然后对这层 IR 做优化，最后再生成目标平台如 x86 / ARM 的机器码</p>
+</blockquote>
+<ul>
+<li>几种混淆方式：指令替换、虚假控制流、控制流平坦化、字符串混淆</li>
+</ul>
+<h3 id="指令替换-sub">指令替换 SUB</h3>
+<p>Instruction Substitution</p>
+<h4 id="原理">原理</h4>
+<p>将原始指令替换为等效但是更加难以理解和还原的复杂指令序列</p>
+<p>比如：</p>
+<ul>
+<li>加法：<code>a = -(-b + (-c))</code>
+,<code>r = rand (); a = b + r; a = a + c; a = a - r</code></li>
+<li>AND：<code>a = b &amp; c =&gt; a = (b ^ ~c) &amp; b</code></li>
+<li>XOR:
+<code>a = a ^ b =&gt; a = (~a &amp; b) | (a &amp; ~b)</code></li>
+</ul>
+<h4 id="对比">对比</h4>
+<p>混淆前</p>
+<p><img src="/images/ollvm/before_sub.PNG" srcset="/img/loading.gif" lazyload /></p>
+<p>混淆后</p>
+<p><img src="/images/ollvm/after_sub.PNG" srcset="/img/loading.gif" lazyload /></p>
+<h4 id="去除">去除</h4>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/joydo/d810">D810</a></li>
+<li><a
+target="_blank" rel="noopener" href="https://github.com/DenuvoSoftwareSolutions/GAMBA">GAMBA</a></li>
+</ul>
+<h3 id="虚假控制流-bcf">虚假控制流 BCF</h3>
+<p>Bogus Control Flow</p>
+<h4 id="原理-1">原理</h4>
+<p>插入“看起来有分支、但实际永远不会改变程序真实执行路径”的代码，在真实的控制流中加入额外的条件判断(通常依赖<strong>恒真/恒假</strong>的不透明谓词)，把基本块拆分成多个分支路径，但是实际上在运行时只会走其中的一条，而其他的分支的存在打乱了
+CFG，增大了静态分析的难度</p>
+<blockquote>
+<p>不透明谓词指在运行时的结果是恒定的，但是静态时反编译器无法判断真假的条件表达式</p>
+</blockquote>
+<p>Eg: <figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-keyword">if</span> ((x * x) &gt;= <span class="hljs-number">0</span>) &#123;<br>    <span class="hljs-comment">// 分支 A</span><br>&#125; <span class="hljs-keyword">else</span> &#123;<br>    <span class="hljs-comment">// 分支 B（实际上永远不会执行）</span><br>&#125;<br></code></pre></td></tr></table></figure></p>
+<p>对于人来说 <code>x*x &gt;= 0</code> 恒成立，永真，一定走 A
+分支，但是对于反编译器来说，它看到的是变量计算，不敢轻易优化掉 B
+这个分支</p>
+<h4 id="对比-1">对比</h4>
+<p>混淆前</p>
+<p><img src="/images/ollvm/before_bcf.PNG" srcset="/img/loading.gif" lazyload /></p>
+<p>混淆后</p>
+<p><img src="/images/ollvm/after_bcf.PNG" srcset="/img/loading.gif" lazyload /></p>
+<h4 id="去除-1">去除</h4>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/joydo/d810">D810</a></li>
+<li>Sections 改全局变量为只读，给全局变量赋值</li>
+</ul>
+<h4 id="eg">Eg</h4>
+<p>存在多处存在类似结构的条件判断表达式</p>
+<p><img src="/images/ollvm/bcf_cond.png" srcset="/img/loading.gif" lazyload /></p>
+<p>可以知道 <code>(x.3_28 * (x.3_28 - 1))</code>
+的值恒为偶数，而偶数（最低位是 0） <code>&amp; 1</code> 的值恒为 0，所以
+<code>((x.3_28 * (x.3_28 - 1)) &amp; 1) == 0</code>
+恒为真，分析到这一步其实就已经可以判断出整个条件恒为假了</p>
+<p>往上看 <code>r9.b</code> 的值取决于 <code>y.4</code> 与
+<code>0xa</code> 的比较结果 (<code>s&lt;</code> 表示有符号比较)</p>
+<p><img src="/images/ollvm/bcf_cmp.png" srcset="/img/loading.gif" lazyload /></p>
+<p>点进去可以看到 <code>y.4</code> 和 <code>x.3</code> 都是位于
+<code>.bss</code> 的全局变量，初始化值为 0</p>
+<p><img src="/images/ollvm/bss.png" srcset="/img/loading.gif" lazyload /></p>
+<p>因此 <code>y.4 s&lt; 0xa</code> 恒成立，<code>r9.b</code> 的值恒为 1
+-&gt; <code>(((x.3_28 * (x.3_28 - 1)) &amp; 1) == 0 | r9.b)</code>
+的值恒为 1 -&gt;
+<code>((((x.3_28 * (x.3_28 - 1)) &amp; 1) == 0 | r9.b) &amp; 1)</code>
+恒为 1 -&gt;
+<code>(((((x.3_28 * (x.3_28 - 1)) &amp; 1) == 0 | r9.b) &amp; 1) == 0)</code>
+恒假</p>
+<p>在 bn 里面可以通过 <strong>Set value of variable</strong>
+手动对变量进行赋值操作，将 <code>x.3_28</code> 和 <code>r9</code>
+的值都设置为 0</p>
+<p>设置完后分支跳转已经没有了</p>
+<p><img src="/images/ollvm/after_set_var.png" srcset="/img/loading.gif" lazyload /></p>
+<p><img src="/images/ollvm/after_set_var.png" srcset="/img/loading.gif" lazyload /></p>
+<p>如果要批量实现的话写脚本自动化去除即可</p>
+<p><img src="/images/ollvm/set_user_var_value.png" srcset="/img/loading.gif" lazyload /></p>
+<p><img src="/images/ollvm/auto_set_var.png" srcset="/img/loading.gif" lazyload /></p>
+<h3 id="控制流平坦化-fla">控制流平坦化 FLA</h3>
+<p>Control Flow Flattening</p>
+<h4 id="原理-2">原理</h4>
+<p>核心思想是引入了一个主分发器，将原本具有层次结构的控制流拆分成多个基本块，并且构造出一个状态机，根据
+<code>state</code> 的值用 <code>switch</code>
+或者跳转表来决定下一步执行哪个基本块，执行完后更新 <code>state</code>
+并返回分发器</p>
+<h4 id="对比-2">对比</h4>
+<p>放一张经典控制流平坦化的图</p>
+<p><img src="/images/ollvm/fla0.png" srcset="/img/loading.gif" lazyload /></p>
+<p>混淆后</p>
+<p><img src="/images/ollvm/after_fla.png" srcset="/img/loading.gif" lazyload /></p>
+<p>肉眼可见的丑陋…</p>
+<h4 id="去除-2">去除</h4>
+<ul>
+<li>找真实块</li>
+<li>找真实块之间的联系</li>
+<li>重建控制流</li>
+</ul>
+<h4 id="eg-1">Eg</h4>
+<h5 id="找真实块">找真实块</h5>
+<p>一般情况下，预处理器的前驱就是真实块，换言之，预处理器也可以称作汇聚块，所有真实块都汇聚于此</p>
+<p><img src="/images/ollvm/preprocessor.png" srcset="/img/loading.gif" lazyload /></p>
+<p>通过 CFG
+图确定预处理器的地址，遍历基本块，找到预处理器，将其前驱放入真实块列表</p>
+<p>并且在遍历基本块的过程中，如果一个块没有后继，那么基本能判定该块为
+ret 块</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> binaryninja <span class="hljs-keyword">import</span> *<br><br>PRE_BLOCK = <span class="hljs-number">0x402697</span><br><br><span class="hljs-comment"># f = current_function</span><br>TARGET_FUNC = <span class="hljs-number">0x401e80</span>  <br>f = bv.get_function_at(TARGET_FUNC)<br><br><span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> f:<br>    <span class="hljs-keyword">raise</span> Exception(<span class="hljs-string">&quot;[-] function not found&quot;</span>)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">end_addr</span>(<span class="hljs-params">bb</span>):<br>    a = bb.start<br>    last = a<br>    <span class="hljs-keyword">while</span> a &lt; bb.end:<br>        last = a<br>        info = f.arch.get_instruction_info(bv.read(a, f.arch.max_instr_length), a)<br>        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> info <span class="hljs-keyword">or</span> info.length == <span class="hljs-number">0</span>:<br>            <span class="hljs-keyword">break</span><br>        a += info.length<br>    <span class="hljs-keyword">return</span> last<br><br>tbs, fbs = <span class="hljs-built_in">set</span>(), <span class="hljs-built_in">set</span>()<br><br><span class="hljs-keyword">for</span> bb <span class="hljs-keyword">in</span> f.basic_blocks:<br>    cur = (bb.start, end_addr(bb))<br><br>    <span class="hljs-keyword">if</span> bb.start == PRE_BLOCK:<br>        fbs.add(cur)<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;[+] find true blocks&quot;</span>)<br>        <span class="hljs-keyword">for</span> e <span class="hljs-keyword">in</span> bb.incoming_edges:<br>            p = e.source<br>            tbs.add((p.start, end_addr(p)))<br>    <span class="hljs-keyword">elif</span> <span class="hljs-keyword">not</span> bb.outgoing_edges:<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;[+] find ret block&quot;</span>)<br>        tbs.add(cur)<br>    <span class="hljs-keyword">elif</span> bb.start != TARGET_FUNC:<br>        fbs.add(cur)<br><br>fbs -= tbs<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;true block:&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;tbs =&quot;</span>, [(<span class="hljs-built_in">hex</span>(s), <span class="hljs-built_in">hex</span>(e)) <span class="hljs-keyword">for</span> s, e <span class="hljs-keyword">in</span> <span class="hljs-built_in">sorted</span>(tbs)])<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;fake block:&quot;</span>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;fbs =&quot;</span>, [(<span class="hljs-built_in">hex</span>(s), <span class="hljs-built_in">hex</span>(e)) <span class="hljs-keyword">for</span> s, e <span class="hljs-keyword">in</span> <span class="hljs-built_in">sorted</span>(fbs)])<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p><code>bv</code> 就是 BinaryView，是 BN
+里最核心的对象之一，表示当前二进制视图，并且提供读取字节，函数，符号，数据变量等能力</p>
+</blockquote>
+<blockquote>
+<p><code>basic_block</code>
+是程序控制流中最小执行单元，单入口单出口并且中间没有跳转</p>
+</blockquote>
+<h5 id="真实块间的联系模拟执行">真实块间的联系(模拟执行)</h5>
+<p>用 unicorn 模拟执行找到真实块之间的关系</p>
+<blockquote>
+<p><strong>模拟执行</strong>
+指不用真正运行程序，在“虚拟环境”里执行代码，观察控制流和数据变化</p>
+</blockquote>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> unicorn <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> unicorn.x86_const <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> capstone <span class="hljs-keyword">import</span> *   <span class="hljs-comment"># 反汇编器接口，用来把机器码解析成指令</span><br><br>BASE = <span class="hljs-number">0x400000</span><br>CODE = BASE + <span class="hljs-number">0x0</span> <span class="hljs-comment"># 代码段起始地址</span><br>CODE_SIZE = <span class="hljs-number">0x100000</span> <span class="hljs-comment"># 代码段大小，这里设为 1MB</span><br>STACK = <span class="hljs-number">0x7F00000000</span><br>STACK_SIZE = <span class="hljs-number">0x100000</span><br><br>uc = Uc(UC_ARCH_X86, UC_MODE_64) <span class="hljs-comment"># 创建一个 x86-64 的模拟器实例</span><br>cs = Cs(CS_ARCH_X86, CS_MODE_64) <span class="hljs-comment"># 创建反汇编器</span><br><br>tbs_hex = [(<span class="hljs-string">&#x27;0x40223a&#x27;</span>, <span class="hljs-string">&#x27;0x40223a&#x27;</span>), (<span class="hljs-string">&#x27;0x40223f&#x27;</span>, <span class="hljs-string">&#x27;0x40225a&#x27;</span>), (<span class="hljs-string">&#x27;0x40225f&#x27;</span>, <span class="hljs-string">&#x27;0x402295&#x27;</span>), (<span class="hljs-string">&#x27;0x40229a&#x27;</span>, <span class="hljs-string">&#x27;0x402332&#x27;</span>), (<span class="hljs-string">&#x27;0x402337&#x27;</span>, <span class="hljs-string">&#x27;0x40234d&#x27;</span>), (<span class="hljs-string">&#x27;0x402352&#x27;</span>, <span class="hljs-string">&#x27;0x402366&#x27;</span>), (<span class="hljs-string">&#x27;0x40236b&#x27;</span>, <span class="hljs-string">&#x27;0x402386&#x27;</span>), (<span class="hljs-string">&#x27;0x40238b&#x27;</span>, <span class="hljs-string">&#x27;0x4023a4&#x27;</span>), (<span class="hljs-string">&#x27;0x4023a9&#x27;</span>, <span class="hljs-string">&#x27;0x4023c1&#x27;</span>), (<span class="hljs-string">&#x27;0x4023c6&#x27;</span>, <span class="hljs-string">&#x27;0x4023e2&#x27;</span>), (<span class="hljs-string">&#x27;0x4023e7&#x27;</span>, <span class="hljs-string">&#x27;0x4023fa&#x27;</span>), (<span class="hljs-string">&#x27;0x4023ff&#x27;</span>, <span class="hljs-string">&#x27;0x402426&#x27;</span>), (<span class="hljs-string">&#x27;0x40242b&#x27;</span>, <span class="hljs-string">&#x27;0x402441&#x27;</span>), (<span class="hljs-string">&#x27;0x402446&#x27;</span>, <span class="hljs-string">&#x27;0x402459&#x27;</span>), (<span class="hljs-string">&#x27;0x40245e&#x27;</span>, <span class="hljs-string">&#x27;0x402474&#x27;</span>), (<span class="hljs-string">&#x27;0x402479&#x27;</span>, <span class="hljs-string">&#x27;0x402483&#x27;</span>), (<span class="hljs-string">&#x27;0x402488&#x27;</span>, <span class="hljs-string">&#x27;0x4024a9&#x27;</span>), (<span class="hljs-string">&#x27;0x4024ae&#x27;</span>, <span class="hljs-string">&#x27;0x4024d9&#x27;</span>), (<span class="hljs-string">&#x27;0x4024de&#x27;</span>, <span class="hljs-string">&#x27;0x402500&#x27;</span>), (<span class="hljs-string">&#x27;0x402505&#x27;</span>, <span class="hljs-string">&#x27;0x40251c&#x27;</span>), (<span class="hljs-string">&#x27;0x402521&#x27;</span>, <span class="hljs-string">&#x27;0x402537&#x27;</span>), (<span class="hljs-string">&#x27;0x40253c&#x27;</span>, <span class="hljs-string">&#x27;0x402550&#x27;</span>), (<span class="hljs-string">&#x27;0x402555&#x27;</span>, <span class="hljs-string">&#x27;0x402570&#x27;</span>), (<span class="hljs-string">&#x27;0x402575&#x27;</span>, <span class="hljs-string">&#x27;0x40258e&#x27;</span>), (<span class="hljs-string">&#x27;0x402593&#x27;</span>, <span class="hljs-string">&#x27;0x4025b5&#x27;</span>), (<span class="hljs-string">&#x27;0x4025ba&#x27;</span>, <span class="hljs-string">&#x27;0x4025cd&#x27;</span>), (<span class="hljs-string">&#x27;0x4025d2&#x27;</span>, <span class="hljs-string">&#x27;0x4025f9&#x27;</span>), (<span class="hljs-string">&#x27;0x4025fe&#x27;</span>, <span class="hljs-string">&#x27;0x402608&#x27;</span>), (<span class="hljs-string">&#x27;0x40260d&#x27;</span>, <span class="hljs-string">&#x27;0x402623&#x27;</span>), (<span class="hljs-string">&#x27;0x402628&#x27;</span>, <span class="hljs-string">&#x27;0x40263b&#x27;</span>), (<span class="hljs-string">&#x27;0x402640&#x27;</span>, <span class="hljs-string">&#x27;0x402656&#x27;</span>), (<span class="hljs-string">&#x27;0x40265b&#x27;</span>, <span class="hljs-string">&#x27;0x402665&#x27;</span>), (<span class="hljs-string">&#x27;0x40266a&#x27;</span>, <span class="hljs-string">&#x27;0x40268b&#x27;</span>), (<span class="hljs-string">&#x27;0x402690&#x27;</span>, <span class="hljs-string">&#x27;0x402696&#x27;</span>)]<br>tbs = [(<span class="hljs-built_in">int</span>(s, <span class="hljs-number">16</span>), <span class="hljs-built_in">int</span>(e, <span class="hljs-number">16</span>)) <span class="hljs-keyword">for</span> s, e <span class="hljs-keyword">in</span> tbs_hex]<br><br>tb_path = [] <span class="hljs-comment"># 记录执行路径</span><br>main_addr = <span class="hljs-number">0x401E80</span><br>main_end = <span class="hljs-number">0x40269C</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">hook_code</span>(<span class="hljs-params">uc, address, size, user_data</span>):<br><br>    data = CODE_DATA[address - BASE: address - BASE + size]<br>    <span class="hljs-keyword">for</span> insn <span class="hljs-keyword">in</span> cs.disasm(data, address):<br>        <span class="hljs-comment"># print(f&quot;&#123;hex(insn.address)&#125;: &#123;insn.mnemonic&#125; &#123;insn.op_str&#125;&quot;)</span><br><br>        <span class="hljs-keyword">if</span> insn.mnemonic == <span class="hljs-string">&quot;call&quot;</span>: <span class="hljs-comment"># 遇到 call 时不真正调用</span><br>            uc.reg_write(UC_X86_REG_RIP, address + size) <span class="hljs-comment"># 把 RIP 设置到下一条指令地址，跳过调用</span><br>            <span class="hljs-keyword">return</span><br><br>        <span class="hljs-keyword">elif</span> insn.mnemonic == <span class="hljs-string">&quot;ret&quot;</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;find ret block&quot;</span>)<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;emu tb_path:&quot;</span>)<br>            <span class="hljs-built_in">print</span>(tb_path)<br>            uc.emu_stop()<br>            <span class="hljs-keyword">return</span><br><br>    <span class="hljs-keyword">for</span> tb <span class="hljs-keyword">in</span> tbs: <span class="hljs-comment"># (start, end) </span><br>        <span class="hljs-keyword">if</span> address == tb[<span class="hljs-number">1</span>]: <span class="hljs-comment"># 当前地址是否是块的结束地址</span><br>            zf = (uc.reg_read(UC_X86_REG_EFLAGS) &gt;&gt; <span class="hljs-number">6</span>) &amp; <span class="hljs-number">1</span> <span class="hljs-comment"># 读取 EFLAGS 寄存器提取第六位，即 ZF</span><br>            tb_path.append((tb, zf))<br>            <span class="hljs-keyword">break</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">hook_mem_invalid</span>(<span class="hljs-params">uc, access, address, size, value, user_data</span>): <span class="hljs-comment"># 访问为映射内存时</span><br>    rip = uc.reg_read(UC_X86_REG_RIP)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[mem-invalid] rip=<span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(rip)&#125;</span> access=<span class="hljs-subst">&#123;access&#125;</span> addr=<span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(address)&#125;</span> size=<span class="hljs-subst">&#123;size&#125;</span> value=<span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(value) <span class="hljs-keyword">if</span> <span class="hljs-built_in">isinstance</span>(value, <span class="hljs-built_in">int</span>) <span class="hljs-keyword">else</span> value&#125;</span>&quot;</span>)<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">False</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">hook_intr</span>(<span class="hljs-params">uc, intno, user_data</span>): <span class="hljs-comment"># 执行中断时</span><br>    rip = uc.reg_read(UC_X86_REG_RIP)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[intr] rip=<span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(rip)&#125;</span> intno=<span class="hljs-subst">&#123;intno&#125;</span>&quot;</span>)<br>    uc.emu_stop()<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">inituc</span>(<span class="hljs-params">uc</span>): <span class="hljs-comment"># 初始化模拟器环境</span><br>    uc.mem_map(CODE, CODE_SIZE, UC_PROT_ALL) <span class="hljs-comment"># 权限设置为可读可写可执行</span><br>    uc.mem_map(STACK, STACK_SIZE, UC_PROT_ALL)<br><br>    uc.mem_write(CODE, CODE_DATA)<br>    uc.reg_write(UC_X86_REG_RSP, STACK + STACK_SIZE - <span class="hljs-number">0x1000</span>) <span class="hljs-comment"># 留出一页栈空间作缓冲区</span><br><br>    uc.hook_add(UC_HOOK_CODE, hook_code) <span class="hljs-comment"># 每执行一条指令时调用 hook_code</span><br>    uc.hook_add(UC_HOOK_MEM_UNMAPPED, hook_mem_invalid)<br>    uc.hook_add(UC_HOOK_INTR, hook_intr)<br><br><span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&#x27;./test-fla&#x27;</span>, <span class="hljs-string">&#x27;rb&#x27;</span>) <span class="hljs-keyword">as</span> f:<br>    CODE_DATA = f.read()<br><br>inituc(uc)<br><br><span class="hljs-keyword">try</span>:<br>    uc.emu_start(main_addr, main_end)<br><span class="hljs-keyword">except</span> UcError <span class="hljs-keyword">as</span> e:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;Unicorn error: <span class="hljs-subst">&#123;e&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h5 id="重建控制流">重建控制流</h5>
+<p>把真实块按照正确的顺序连在一起，这里的思路是，对 <code>fbs</code>
+末尾的指令统一 nop 掉，对 <code>tbs</code>
+逐块检查处理，遍历模拟执行的结果 <code>tb_path</code>，根据
+<code>zf</code> 的值加上跳转 <code>jz/jnz</code></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> binaryninja <span class="hljs-keyword">import</span> *<br><br>f = current_function<br>arch = bv.arch<br><br>pre_block = <span class="hljs-number">0x401E8B</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">insn_len</span>(<span class="hljs-params">addr</span>):<br>    <span class="hljs-keyword">return</span> bv.get_instruction_length(addr)<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">disasm</span>(<span class="hljs-params">addr</span>): <br>    <span class="hljs-keyword">return</span> bv.get_disassembly(addr) <span class="hljs-comment"># 返回该地址的反编译字符串</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">nop</span>(<span class="hljs-params">addr</span>):<br>    bv.convert_to_nop(addr) <span class="hljs-comment"># 把地址处指令改成等长的 nop</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">write_branch</span>(<span class="hljs-params">addr, asm</span>):<br>    old_len = insn_len(addr)<br>    code = arch.assemble(asm, addr) <span class="hljs-comment"># 汇编-&gt;机器码</span><br>    <span class="hljs-comment"># if len(code) &gt; old_len:</span><br>    <span class="hljs-comment">#     return False</span><br>    bv.write(addr, code + <span class="hljs-string">b&quot;\x90&quot;</span> * (old_len - <span class="hljs-built_in">len</span>(code))) <span class="hljs-comment"># 写新机器码并且用 nop 填充剩余字节</span><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">True</span><br><br>tb_path = [((<span class="hljs-number">4203071</span>, <span class="hljs-number">4203098</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203103</span>, <span class="hljs-number">4203157</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203162</span>, <span class="hljs-number">4203314</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203656</span>, <span class="hljs-number">4203689</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203694</span>, <span class="hljs-number">4203737</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203742</span>, <span class="hljs-number">4203776</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203781</span>, <span class="hljs-number">4203804</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), <span class="hljs-number">0</span>),<br>           ((<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), <span class="hljs-number">0</span>), ((<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), <span class="hljs-number">1</span>),<br>           ((<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), <span class="hljs-number">1</span>), ((<span class="hljs-number">4204138</span>, <span class="hljs-number">4204171</span>), <span class="hljs-number">1</span>)]<br>tbs = [(<span class="hljs-number">4203066</span>, <span class="hljs-number">4203066</span>), (<span class="hljs-number">4203071</span>, <span class="hljs-number">4203098</span>), (<span class="hljs-number">4203103</span>, <span class="hljs-number">4203157</span>), (<span class="hljs-number">4203162</span>, <span class="hljs-number">4203314</span>), (<span class="hljs-number">4203319</span>, <span class="hljs-number">4203341</span>), (<span class="hljs-number">4203346</span>, <span class="hljs-number">4203366</span>), (<span class="hljs-number">4203371</span>, <span class="hljs-number">4203398</span>), (<span class="hljs-number">4203403</span>, <span class="hljs-number">4203428</span>), (<span class="hljs-number">4203433</span>, <span class="hljs-number">4203457</span>), (<span class="hljs-number">4203462</span>, <span class="hljs-number">4203490</span>), (<span class="hljs-number">4203495</span>, <span class="hljs-number">4203514</span>), (<span class="hljs-number">4203519</span>, <span class="hljs-number">4203558</span>), (<span class="hljs-number">4203563</span>, <span class="hljs-number">4203585</span>), (<span class="hljs-number">4203590</span>, <span class="hljs-number">4203609</span>), (<span class="hljs-number">4203614</span>, <span class="hljs-number">4203636</span>), (<span class="hljs-number">4203641</span>, <span class="hljs-number">4203651</span>), (<span class="hljs-number">4203656</span>, <span class="hljs-number">4203689</span>), (<span class="hljs-number">4203694</span>, <span class="hljs-number">4203737</span>), (<span class="hljs-number">4203742</span>, <span class="hljs-number">4203776</span>), (<span class="hljs-number">4203781</span>, <span class="hljs-number">4203804</span>), (<span class="hljs-number">4203809</span>, <span class="hljs-number">4203831</span>), (<span class="hljs-number">4203836</span>, <span class="hljs-number">4203856</span>), (<span class="hljs-number">4203861</span>, <span class="hljs-number">4203888</span>), (<span class="hljs-number">4203893</span>, <span class="hljs-number">4203918</span>), (<span class="hljs-number">4203923</span>, <span class="hljs-number">4203957</span>), (<span class="hljs-number">4203962</span>, <span class="hljs-number">4203981</span>), (<span class="hljs-number">4203986</span>, <span class="hljs-number">4204025</span>), (<span class="hljs-number">4204030</span>, <span class="hljs-number">4204040</span>), (<span class="hljs-number">4204045</span>, <span class="hljs-number">4204067</span>), (<span class="hljs-number">4204072</span>, <span class="hljs-number">4204091</span>), (<span class="hljs-number">4204096</span>, <span class="hljs-number">4204118</span>), (<span class="hljs-number">4204123</span>, <span class="hljs-number">4204133</span>), (<span class="hljs-number">4204138</span>, <span class="hljs-number">4204171</span>), (<span class="hljs-number">4204176</span>, <span class="hljs-number">4204182</span>)]<br>fbs = [(<span class="hljs-number">4202133</span>, <span class="hljs-number">4202159</span>), (<span class="hljs-number">4202165</span>, <span class="hljs-number">4202165</span>), (<span class="hljs-number">4202170</span>, <span class="hljs-number">4202187</span>), (<span class="hljs-number">4202193</span>, <span class="hljs-number">4202193</span>), (<span class="hljs-number">4202198</span>, <span class="hljs-number">4202215</span>), (<span class="hljs-number">4202221</span>, <span class="hljs-number">4202221</span>), (<span class="hljs-number">4202226</span>, <span class="hljs-number">4202243</span>), (<span class="hljs-number">4202249</span>, <span class="hljs-number">4202249</span>), (<span class="hljs-number">4202254</span>, <span class="hljs-number">4202271</span>), (<span class="hljs-number">4202277</span>, <span class="hljs-number">4202277</span>), (<span class="hljs-number">4202282</span>, <span class="hljs-number">4202299</span>), (<span class="hljs-number">4202305</span>, <span class="hljs-number">4202305</span>), (<span class="hljs-number">4202310</span>, <span class="hljs-number">4202327</span>), (<span class="hljs-number">4202333</span>, <span class="hljs-number">4202333</span>), (<span class="hljs-number">4202338</span>, <span class="hljs-number">4202355</span>), (<span class="hljs-number">4202361</span>, <span class="hljs-number">4202361</span>), (<span class="hljs-number">4202366</span>, <span class="hljs-number">4202383</span>), (<span class="hljs-number">4202389</span>, <span class="hljs-number">4202389</span>), (<span class="hljs-number">4202394</span>, <span class="hljs-number">4202411</span>), (<span class="hljs-number">4202417</span>, <span class="hljs-number">4202417</span>), (<span class="hljs-number">4202422</span>, <span class="hljs-number">4202439</span>), (<span class="hljs-number">4202445</span>, <span class="hljs-number">4202445</span>), (<span class="hljs-number">4202450</span>, <span class="hljs-number">4202467</span>), (<span class="hljs-number">4202473</span>, <span class="hljs-number">4202473</span>), (<span class="hljs-number">4202478</span>, <span class="hljs-number">4202495</span>), (<span class="hljs-number">4202501</span>, <span class="hljs-number">4202501</span>), (<span class="hljs-number">4202506</span>, <span class="hljs-number">4202523</span>), (<span class="hljs-number">4202529</span>, <span class="hljs-number">4202529</span>), (<span class="hljs-number">4202534</span>, <span class="hljs-number">4202551</span>), (<span class="hljs-number">4202557</span>, <span class="hljs-number">4202557</span>), (<span class="hljs-number">4202562</span>, <span class="hljs-number">4202579</span>), (<span class="hljs-number">4202585</span>, <span class="hljs-number">4202585</span>), (<span class="hljs-number">4202590</span>, <span class="hljs-number">4202607</span>), (<span class="hljs-number">4202613</span>, <span class="hljs-number">4202613</span>), (<span class="hljs-number">4202618</span>, <span class="hljs-number">4202635</span>), (<span class="hljs-number">4202641</span>, <span class="hljs-number">4202641</span>), (<span class="hljs-number">4202646</span>, <span class="hljs-number">4202663</span>), (<span class="hljs-number">4202669</span>, <span class="hljs-number">4202669</span>), (<span class="hljs-number">4202674</span>, <span class="hljs-number">4202691</span>), (<span class="hljs-number">4202697</span>, <span class="hljs-number">4202697</span>), (<span class="hljs-number">4202702</span>, <span class="hljs-number">4202719</span>), (<span class="hljs-number">4202725</span>, <span class="hljs-number">4202725</span>), (<span class="hljs-number">4202730</span>, <span class="hljs-number">4202747</span>), (<span class="hljs-number">4202753</span>, <span class="hljs-number">4202753</span>), (<span class="hljs-number">4202758</span>, <span class="hljs-number">4202775</span>), (<span class="hljs-number">4202781</span>, <span class="hljs-number">4202781</span>), (<span class="hljs-number">4202786</span>, <span class="hljs-number">4202803</span>), (<span class="hljs-number">4202809</span>, <span class="hljs-number">4202809</span>), (<span class="hljs-number">4202814</span>, <span class="hljs-number">4202831</span>), (<span class="hljs-number">4202837</span>, <span class="hljs-number">4202837</span>), (<span class="hljs-number">4202842</span>, <span class="hljs-number">4202859</span>), (<span class="hljs-number">4202865</span>, <span class="hljs-number">4202865</span>), (<span class="hljs-number">4202870</span>, <span class="hljs-number">4202887</span>), (<span class="hljs-number">4202893</span>, <span class="hljs-number">4202893</span>), (<span class="hljs-number">4202898</span>, <span class="hljs-number">4202915</span>), (<span class="hljs-number">4202921</span>, <span class="hljs-number">4202921</span>), (<span class="hljs-number">4202926</span>, <span class="hljs-number">4202943</span>), (<span class="hljs-number">4202949</span>, <span class="hljs-number">4202949</span>), (<span class="hljs-number">4202954</span>, <span class="hljs-number">4202971</span>), (<span class="hljs-number">4202977</span>, <span class="hljs-number">4202977</span>), (<span class="hljs-number">4202982</span>, <span class="hljs-number">4202999</span>), (<span class="hljs-number">4203005</span>, <span class="hljs-number">4203005</span>), (<span class="hljs-number">4203010</span>, <span class="hljs-number">4203027</span>), (<span class="hljs-number">4203033</span>, <span class="hljs-number">4203033</span>), (<span class="hljs-number">4203038</span>, <span class="hljs-number">4203055</span>), (<span class="hljs-number">4203061</span>, <span class="hljs-number">4203061</span>), (<span class="hljs-number">4204183</span>, <span class="hljs-number">4204183</span>)]<br><br>block_info = &#123;&#125;<br><span class="hljs-keyword">for</span> s, _ <span class="hljs-keyword">in</span> tbs:<br>    block_info[s] = &#123;<span class="hljs-string">&quot;finish&quot;</span>: <span class="hljs-literal">False</span>, <span class="hljs-string">&quot;ret&quot;</span>:<span class="hljs-literal">False</span>&#125;<br><br><span class="hljs-keyword">with</span> bv.undoable_transaction(): <span class="hljs-comment"># with 块里的改动可以撤销</span><br>    <span class="hljs-keyword">for</span> _, end <span class="hljs-keyword">in</span> fbs:<br>        nop(end)<br><br>    <span class="hljs-keyword">for</span> start, end <span class="hljs-keyword">in</span> tbs:<br>        bb = f.get_basic_block_at(start)<br>        <span class="hljs-keyword">if</span> bb <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>            <span class="hljs-keyword">continue</span><br><br>        dont_patch = <span class="hljs-literal">False</span><br>        a = start<br>        <span class="hljs-keyword">while</span> a &lt; bb.end <span class="hljs-keyword">and</span> a &lt;= end: <span class="hljs-comment"># 遍历当前块指令</span><br>            text = disasm(a)<br>            mnem = text.split(<span class="hljs-literal">None</span>, <span class="hljs-number">1</span>)[<span class="hljs-number">0</span>] <span class="hljs-keyword">if</span> text <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span> <span class="hljs-comment"># 取指令助记符 &quot;cmovz eax, ebx&quot; -&gt; &quot;cmovz&quot;</span><br><br>            <span class="hljs-keyword">if</span> mnem.startswith(<span class="hljs-string">&quot;cmov&quot;</span>): <span class="hljs-comment"># cmov 会影响分支跳转</span><br>                nop(a)<br>                dont_patch = <span class="hljs-literal">True</span><br>            <span class="hljs-keyword">elif</span> mnem == <span class="hljs-string">&quot;ret&quot;</span>:<br>                block_info[start][<span class="hljs-string">&quot;ret&quot;</span>] = <span class="hljs-literal">True</span><br>                dont_patch = <span class="hljs-literal">True</span><br><br>            a += insn_len(a)<br><br>        <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> dont_patch:<br>            nop(end)<br>            block_info[start][<span class="hljs-string">&quot;finish&quot;</span>] = <span class="hljs-literal">True</span><br><br>    write_branch(pre_block, <span class="hljs-string">f&quot;jmp <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(tb_path[<span class="hljs-number">0</span>][<span class="hljs-number">0</span>][<span class="hljs-number">0</span>])&#125;</span>&quot;</span>) <span class="hljs-comment"># pre_block 跳向 tb_path 中第一个块的起始地址</span><br><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-built_in">len</span>(tb_path) - <span class="hljs-number">1</span>):<br>        (cur_start, cur_end), zf = tb_path[i]<br>        nxt_start = tb_path[i + <span class="hljs-number">1</span>][<span class="hljs-number">0</span>][<span class="hljs-number">0</span>]<br><br>        <span class="hljs-keyword">if</span> block_info[cur_start][<span class="hljs-string">&quot;finish&quot;</span>] <span class="hljs-keyword">or</span> block_info[cur_start][<span class="hljs-string">&quot;ret&quot;</span>]:<br>            <span class="hljs-keyword">continue</span><br><br>        fallthrough = cur_end + insn_len(cur_end)<br>        <span class="hljs-keyword">if</span> fallthrough == nxt_start:<br>            <span class="hljs-keyword">continue</span><br><br>        op = (<span class="hljs-string">&quot;jnz&quot;</span>, <span class="hljs-string">&quot;jz&quot;</span>)[zf]  <br>        <span class="hljs-comment"># zf == 0 对应 jnz, zf == 1 对应 jz</span><br>        <span class="hljs-keyword">if</span> write_branch(cur_end, <span class="hljs-string">f&quot;<span class="hljs-subst">&#123;op&#125;</span> <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(nxt_start)&#125;</span>&quot;</span>):<br>            block_info[cur_start][<span class="hljs-string">&quot;finish&quot;</span>] = <span class="hljs-literal">True</span><br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[skip] branch too large @ <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(cur_end)&#125;</span> -&gt; <span class="hljs-subst">&#123;<span class="hljs-built_in">hex</span>(nxt_start)&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h4 id="模拟执行">模拟执行</h4>
+<p>Unicorn 就像手动搭一个最小 CPU
+运行环境，需要自己准备内存、代码、寄存器和栈，然后让它从某个地址开始跑，并通过
+hook 观察执行过程</p>
+<p>基本框架 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> unicorn <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> unicorn.x86_const <span class="hljs-keyword">import</span> *<br><br><span class="hljs-comment"># 基本地址布局</span><br>BASE = <span class="hljs-number">0x400000</span><br>CODE_ADDR = BASE<br>CODE_SIZE = <span class="hljs-number">0x1000</span><br><br>STACK_ADDR = <span class="hljs-number">0x70000000</span><br>STACK_SIZE = <span class="hljs-number">0x10000</span><br><br><span class="hljs-comment"># 一小段机器码</span><br><span class="hljs-comment"># mov eax, 1</span><br><span class="hljs-comment"># add eax, 2</span><br><span class="hljs-comment"># ret</span><br>CODE = <span class="hljs-string">b&quot;\xB8\x01\x00\x00\x00&quot;</span> \<br>       <span class="hljs-string">b&quot;\x83\xC0\x02&quot;</span> \<br>       <span class="hljs-string">b&quot;\xC3&quot;</span><br><br><span class="hljs-comment"># 创建模拟器</span><br>uc = Uc(UC_ARCH_X86, UC_MODE_64)<br><br><span class="hljs-comment"># 映射内存</span><br>uc.mem_map(CODE_ADDR, CODE_SIZE)<br>uc.mem_map(STACK_ADDR, STACK_SIZE)<br><br><span class="hljs-comment">#  写入代码</span><br>uc.mem_write(CODE_ADDR, CODE)<br><br><span class="hljs-comment"># 初始化栈</span><br>rsp = STACK_ADDR + STACK_SIZE - <span class="hljs-number">0x8</span><br>uc.reg_write(UC_X86_REG_RSP, rsp)<br><br><span class="hljs-comment"># 给 ret 准备一个返回地址，否则 ret 会从栈顶取一个地址跳过去，很可能崩</span><br>RETURN_ADDR = <span class="hljs-number">0x0</span><br>uc.mem_write(rsp, RETURN_ADDR.to_bytes(<span class="hljs-number">8</span>, <span class="hljs-string">&quot;little&quot;</span>))<br><br><span class="hljs-comment"># 添加代码执行 hook</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">hook_code</span>(<span class="hljs-params">uc, address, size, user_data</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[exec] 0x<span class="hljs-subst">&#123;address:x&#125;</span>, size=<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>)<br><br>uc.hook_add(UC_HOOK_CODE, hook_code) <span class="hljs-comment"># 添加 hook</span><br><br><span class="hljs-comment"># 启动模拟</span><br><span class="hljs-keyword">try</span>:<br>    uc.emu_start(CODE_ADDR, CODE_ADDR + <span class="hljs-built_in">len</span>(CODE))<br><span class="hljs-keyword">except</span> UcError <span class="hljs-keyword">as</span> e:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Emulation error:&quot;</span>, e)<br><br>eax = uc.reg_read(UC_X86_REG_EAX)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;EAX = <span class="hljs-subst">&#123;eax&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+      
+        <a href="/tags/ollvm/" class="print-no-link">#ollvm</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>OLLVM 原理和去除</div>
+      <div>http://example.com/2026/03/30/ollvm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月30日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/31/xhs_shield/" title="xhs shield 参数分析">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">xhs shield 参数分析</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/03/21/douban/" title="libmsaoaidsec.so 分析">
+                        <span class="hidden-mobile">libmsaoaidsec.so 分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

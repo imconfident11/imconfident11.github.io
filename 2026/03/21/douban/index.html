@@ -1,0 +1,794 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 123456789101112131415161718192021222324">
+<meta property="og:type" content="article">
+<meta property="og:title" content="libmsaoaidsec.so 分析">
+<meta property="og:url" content="http://example.com/2026/03/21/douban/index.html">
+<meta property="og:site_name" content="Eleven&#39;s Blog">
+<meta property="og:description" content="分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 123456789101112131415161718192021222324">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-20T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-02T17:25:17.013Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Reverse">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="frida 检测">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>libmsaoaidsec.so 分析 - Eleven&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="libmsaoaidsec.so 分析"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-03-21 00:00" pubdate>
+          2026年3月21日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          28 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">libmsaoaidsec.so 分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida
+检测，这里以一个经典的 so 来学习一下 frida 检测的绕过</p>
+<p>样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3</p>
+<h3 id="hook-dlopen">hook dlopen</h3>
+<p>hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">hk_dlopen</span>(<span class="hljs-params"></span>): <span class="hljs-built_in">void</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] Hook dlopen&quot;</span>);<br><br>    <span class="hljs-keyword">const</span> ignoreLibs = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Set</span>&lt;<span class="hljs-built_in">string</span>&gt;([<br>        <span class="hljs-string">&quot;libaudioclientimpl.so&quot;</span>,<br>        <span class="hljs-string">&quot;libmigui.so&quot;</span>,<br>        <span class="hljs-string">&quot;libkoom-monitor.so&quot;</span>,<br>        <span class="hljs-string">&quot;libhprof.so&quot;</span><br>    ]);<br><br>    <span class="hljs-keyword">const</span> <span class="hljs-attr">jniCache</span>: <span class="hljs-title class_">Record</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-title class_">NativePointer</span> | <span class="hljs-literal">null</span>&gt; = &#123;&#125;;<br><br>    <span class="hljs-keyword">function</span> <span class="hljs-title function_">shouldIgnore</span>(<span class="hljs-params"><span class="hljs-attr">libName</span>: <span class="hljs-built_in">string</span></span>): <span class="hljs-built_in">boolean</span> &#123;<br>        <span class="hljs-keyword">if</span> (!libName) <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> k <span class="hljs-keyword">of</span> ignoreLibs) &#123;<br>            <span class="hljs-keyword">if</span> (libName.<span class="hljs-title function_">indexOf</span>(k) !== -<span class="hljs-number">1</span>) <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">function</span> <span class="hljs-title function_">installHook</span>(<span class="hljs-params"><span class="hljs-attr">symbol</span>: <span class="hljs-string">&quot;dlopen&quot;</span> | <span class="hljs-string">&quot;android_dlopen_ext&quot;</span></span>): <span class="hljs-built_in">void</span> &#123;<br>        <span class="hljs-keyword">let</span> <span class="hljs-attr">target</span>: <span class="hljs-title class_">NativePointer</span>;<br>        <span class="hljs-keyword">try</span> &#123;<br>            target = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">getGlobalExportByName</span>(<span class="hljs-built_in">symbol</span>);<br>        &#125; <span class="hljs-keyword">catch</span> (_e) &#123;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[-] <span class="hljs-subst">$&#123;<span class="hljs-built_in">symbol</span>&#125;</span> not found`</span>);<br>            <span class="hljs-keyword">return</span>;<br>        &#125;<br><br>        <span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">attach</span>(target, &#123;<br>            <span class="hljs-title function_">onEnter</span>(<span class="hljs-params"><span class="hljs-attr">args</span>: <span class="hljs-title class_">NativePointer</span>[]</span>) &#123;<br>                <span class="hljs-keyword">const</span> libName = args[<span class="hljs-number">0</span>].<span class="hljs-title function_">isNull</span>() ? <span class="hljs-string">&quot;&quot;</span> : args[<span class="hljs-number">0</span>].<span class="hljs-title function_">readUtf8String</span>() || <span class="hljs-string">&quot;&quot;</span>;<br>                <span class="hljs-keyword">const</span> flags = args[<span class="hljs-number">1</span>].<span class="hljs-title function_">toInt32</span>();<br><br>                (<span class="hljs-variable language_">this</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).<span class="hljs-property">libName</span> = libName;<br>                (<span class="hljs-variable language_">this</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).<span class="hljs-property">ignore</span> = <span class="hljs-title function_">shouldIgnore</span>(libName);<br><br>                <span class="hljs-keyword">if</span> (!(<span class="hljs-variable language_">this</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).<span class="hljs-property">ignore</span>) &#123;<br>                    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[*] <span class="hljs-subst">$&#123;<span class="hljs-built_in">symbol</span>&#125;</span> called with: <span class="hljs-subst">$&#123;libName&#125;</span> (flags: 0x<span class="hljs-subst">$&#123;flags.toString(<span class="hljs-number">16</span>)&#125;</span>)`</span>);<br>                &#125;<br>            &#125;,<br>            <span class="hljs-title function_">onLeave</span>(<span class="hljs-params"><span class="hljs-attr">retval</span>: <span class="hljs-title class_">NativePointer</span></span>) &#123;<br>                <span class="hljs-keyword">if</span> ((<span class="hljs-variable language_">this</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).<span class="hljs-property">ignore</span>) <span class="hljs-keyword">return</span>;<br><br>                <span class="hljs-keyword">const</span> <span class="hljs-attr">libName</span>: <span class="hljs-built_in">string</span> = (<span class="hljs-variable language_">this</span> <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).<span class="hljs-property">libName</span> || <span class="hljs-string">&quot;&quot;</span>;<br>                <span class="hljs-keyword">if</span> (retval.<span class="hljs-title function_">isNull</span>()) &#123;<br>                    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[-] Failed to load: <span class="hljs-subst">$&#123;libName&#125;</span>`</span>);<br>                    <span class="hljs-keyword">return</span>;<br>                &#125;<br><br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[+] Successfully loaded: <span class="hljs-subst">$&#123;libName&#125;</span>`</span>);<br><br>            &#125;<br>        &#125;);<br><br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[+] <span class="hljs-subst">$&#123;<span class="hljs-built_in">symbol</span>&#125;</span> hook installed`</span>);<br>    &#125;<br><br>    <span class="hljs-title function_">installHook</span>(<span class="hljs-string">&quot;dlopen&quot;</span>);<br>    <span class="hljs-title function_">installHook</span>(<span class="hljs-string">&quot;android_dlopen_ext&quot;</span>);<br>&#125;<br><br><span class="hljs-title function_">hk_dlopen</span>();<br></code></pre></td></tr></table></figure>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">frida-compile hook_dlopen.ts -o hook_dlopen.js<br>frida -U -f com.douban.frodo -l.\hook_dlopen.js<br></code></pre></td></tr></table></figure>
+<p>输出 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs stylus">Spawning `com<span class="hljs-selector-class">.douban</span>.frodo`...<br><span class="hljs-selector-attr">[*]</span> Hook dlopen<br><span class="hljs-selector-attr">[+]</span> dlopen hook installed<br><span class="hljs-selector-attr">[+]</span> android_dlopen_ext hook installed<br>Spawned `com<span class="hljs-selector-class">.douban</span>.frodo`. Resuming <span class="hljs-selector-tag">main</span> thread!<br><span class="hljs-selector-attr">[*]</span> android_dlopen_ext called with: libframework-connectivity-tiramisu-jni<span class="hljs-selector-class">.so</span> (flags: <span class="hljs-number">0</span>x2)<br><span class="hljs-selector-attr">[Pixel 6::com.douban.frodo ]</span>-&gt; <span class="hljs-selector-attr">[+]</span> Successfully loaded: libframework-connectivity-tiramisu-jni<span class="hljs-selector-class">.so</span><br><span class="hljs-selector-attr">[*]</span> android_dlopen_ext called with: /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com<span class="hljs-selector-class">.douban</span>.frodo-ulsR97QYcr8aOckQpu-AYQ==/oat/arm64/base<span class="hljs-selector-class">.odex</span> (flags: <span class="hljs-number">0</span>x2)<br><span class="hljs-selector-attr">[+]</span> Successfully loaded: /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com<span class="hljs-selector-class">.douban</span>.frodo-ulsR97QYcr8aOckQpu-AYQ==/oat/arm64/base<span class="hljs-selector-class">.odex</span><br><span class="hljs-selector-attr">[*]</span> android_dlopen_ext called with: /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com<span class="hljs-selector-class">.douban</span>.frodo-ulsR97QYcr8aOckQpu-AYQ==/lib/arm64/libmsaoaidsec<span class="hljs-selector-class">.so</span> (flags: <span class="hljs-number">0</span>x2)<br><span class="hljs-selector-attr">[*]</span> dlopen called with: libc<span class="hljs-selector-class">.so</span> (flags: <span class="hljs-number">0</span>x2)<br><span class="hljs-selector-attr">[+]</span> Successfully loaded: libc<span class="hljs-selector-class">.so</span><br><span class="hljs-selector-attr">[*]</span> dlopen called with: libc<span class="hljs-selector-class">.so</span> (flags: <span class="hljs-number">0</span>x2)<br><span class="hljs-selector-attr">[+]</span> Successfully loaded: libc<span class="hljs-selector-class">.so</span><br>Process terminated<br></code></pre></td></tr></table></figure></p>
+<h3 id="hook-pthread_create">hook pthread_create</h3>
+<p>看到 <code>libmsaoaidsec.so</code>,hook <code>pthread_create</code>
+看看它的线程创建流程</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">hook_pthread_create</span>(<span class="hljs-params"></span>): <span class="hljs-built_in">void</span> &#123;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] Hooking pthread_create...&quot;</span>);<br>    <span class="hljs-keyword">const</span> libc = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">getModuleByName</span>(<span class="hljs-string">&quot;libc.so&quot;</span>);<br>    <span class="hljs-keyword">const</span> pthread_create = libc.<span class="hljs-title function_">getExportByName</span>(<span class="hljs-string">&quot;pthread_create&quot;</span>);<br>    <span class="hljs-keyword">const</span> libcAddr = libc.<span class="hljs-property">base</span>;<br>    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] libc base address: &quot;</span> + libcAddr);<br><br>    <span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">attach</span>(pthread_create, &#123;<br>        <span class="hljs-attr">onEnter</span>: <span class="hljs-keyword">function</span> (<span class="hljs-params">args</span>) &#123;<br>            <span class="hljs-keyword">let</span> func_addr = args[<span class="hljs-number">2</span>];<br>            <span class="hljs-keyword">let</span> secmod = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">findModuleByName</span>(<span class="hljs-string">&quot;libmsaoaidsec.so&quot;</span>);<br>            <br>            <span class="hljs-keyword">if</span> (!secmod) &#123;<br>                <span class="hljs-comment">// console.log(&quot;[-] module not loaded yet&quot;);</span><br>                <span class="hljs-keyword">return</span>;<br>            &#125;<br><br>            <span class="hljs-keyword">let</span> secmodAddr = secmod.<span class="hljs-property">base</span>;<br>            <span class="hljs-keyword">let</span> secmodSize = secmod.<span class="hljs-property">size</span>;<br>            <span class="hljs-keyword">let</span> secmodEnd = secmodAddr.<span class="hljs-title function_">add</span>(secmodSize);<br><br>            <span class="hljs-comment">// 只有当 func_addr 落在 libmsaoaidsec.so 的起始地址和结束地址之间时，才打印</span><br>            <span class="hljs-keyword">if</span> (func_addr.<span class="hljs-title function_">compare</span>(secmodAddr) &gt;= <span class="hljs-number">0</span> &amp;&amp; func_addr.<span class="hljs-title function_">compare</span>(secmodEnd) &lt; <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;-----------------------------------------&quot;</span>);<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] Target pthread_create intercepted!&quot;</span>);<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] libmsaoaidsec.so base: &quot;</span> + secmodAddr);<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] func_addr: &quot;</span> + func_addr);<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[*] func_offset: 0x&quot;</span> + func_addr.<span class="hljs-title function_">sub</span>(secmodAddr).<span class="hljs-title function_">toString</span>(<span class="hljs-number">16</span>));<br>            &#125;<br>        &#125;<br>    &#125;);<br>&#125;<br><br><span class="hljs-title function_">setImmediate</span>(hook_pthread_create);<br></code></pre></td></tr></table></figure>
+<p>输出 <figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs stylus">Spawning `com<span class="hljs-selector-class">.douban</span>.frodo`...<br><span class="hljs-selector-attr">[*]</span> Hooking pthread_create...<br><span class="hljs-selector-attr">[*]</span> libc base <span class="hljs-selector-tag">address</span>: <span class="hljs-number">0</span>x7a8a6cc000<br>Spawned `com<span class="hljs-selector-class">.douban</span>.frodo`. Resuming <span class="hljs-selector-tag">main</span> thread!<br><span class="hljs-selector-attr">[Pixel 6::com.douban.frodo ]</span>-&gt; -----------------------------------------<br><span class="hljs-selector-attr">[*]</span> Target pthread_create intercepted!<br><span class="hljs-selector-attr">[*]</span> libmsaoaidsec<span class="hljs-selector-class">.so</span> base: <span class="hljs-number">0</span>x76b7842000<br><span class="hljs-selector-attr">[*]</span> func_addr: <span class="hljs-number">0</span>x76b785e544<br><span class="hljs-selector-attr">[*]</span> func_offset: <span class="hljs-number">0</span>x1c544<br>-----------------------------------------<br><span class="hljs-selector-attr">[*]</span> Target pthread_create intercepted!<br><span class="hljs-selector-attr">[*]</span> libmsaoaidsec<span class="hljs-selector-class">.so</span> base: <span class="hljs-number">0</span>x76b7842000<br><span class="hljs-selector-attr">[*]</span> func_addr: <span class="hljs-number">0</span>x76b785d8d4<br><span class="hljs-selector-attr">[*]</span> func_offset: <span class="hljs-number">0</span>x1b8d4<br>-----------------------------------------<br><span class="hljs-selector-attr">[*]</span> Target pthread_create intercepted!<br><span class="hljs-selector-attr">[*]</span> libmsaoaidsec<span class="hljs-selector-class">.so</span> base: <span class="hljs-number">0</span>x76b7842000<br><span class="hljs-selector-attr">[*]</span> func_addr: <span class="hljs-number">0</span>x76b7868e5c<br><span class="hljs-selector-attr">[*]</span> func_offset: <span class="hljs-number">0</span>x26e5c<br>Process terminated<br><span class="hljs-selector-attr">[Pixel 6::com.douban.frodo ]</span>-&gt;<br></code></pre></td></tr></table></figure></p>
+<p>可以看到它创建了三个线程，分别位于 <code>libmsaoaidsec.so</code> 的
+<code>0x1c544</code>, <code>0x1b8d4</code>, <code>0x26e5c</code>
+这三个偏移地址上</p>
+<p>先尝试直接让它们的线程函数返回 0</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">anti</span>(<span class="hljs-params"></span>):<span class="hljs-built_in">void</span>&#123;<br>    <span class="hljs-keyword">const</span> libc = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">getModuleByName</span>(<span class="hljs-string">&quot;libc.so&quot;</span>);<br>    <span class="hljs-keyword">const</span> pthread_create = libc.<span class="hljs-title function_">getExportByName</span>(<span class="hljs-string">&quot;pthread_create&quot;</span>);<br>    <span class="hljs-keyword">if</span>(!pthread_create)&#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[-] pthread_create not found in libc.so&quot;</span>);<br>        <span class="hljs-keyword">return</span>;<br>    &#125;<br>    <span class="hljs-keyword">let</span> pthread_create_native = <span class="hljs-keyword">new</span> <span class="hljs-title class_">NativeFunction</span>(pthread_create, <span class="hljs-string">&#x27;int&#x27;</span>, [<span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>]);<br>    <span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">replace</span>(pthread_create, <span class="hljs-keyword">new</span> <span class="hljs-title class_">NativeCallback</span>(<span class="hljs-keyword">function</span> (<span class="hljs-params"><span class="hljs-attr">thread</span>: <span class="hljs-title class_">NativePointer</span>, <span class="hljs-attr">attr</span>: <span class="hljs-title class_">NativePointer</span>, <span class="hljs-attr">start_routine</span>: <span class="hljs-title class_">NativePointer</span>, <span class="hljs-attr">arg</span>: <span class="hljs-title class_">NativePointer</span></span>) &#123;<br>        <span class="hljs-keyword">let</span> <span class="hljs-variable language_">module</span> = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">findModuleByAddress</span>(start_routine);<br>        <span class="hljs-keyword">let</span> moduleName = <span class="hljs-variable language_">module</span> ? <span class="hljs-variable language_">module</span>.<span class="hljs-property">name</span> : <span class="hljs-string">&quot;unknown&quot;</span>;<br>        <span class="hljs-keyword">let</span> offset = <span class="hljs-variable language_">module</span> ? start_routine.<span class="hljs-title function_">sub</span>(<span class="hljs-variable language_">module</span>.<span class="hljs-property">base</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-number">16</span>) : <span class="hljs-string">&quot;unknown offset&quot;</span>;<br>        <span class="hljs-keyword">if</span>(moduleName.<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;libmsaoaidsec.so&quot;</span>) !== -<span class="hljs-number">1</span>)&#123;<br>            <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;kill thread at offset 0x&quot;</span> + offset + <span class="hljs-string">&quot; in &quot;</span> + moduleName);<br>            <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br>        &#125;<br>        <span class="hljs-keyword">return</span> <span class="hljs-title function_">pthread_create_native</span>(thread, attr, start_routine, arg);<br>    &#125;, <span class="hljs-string">&#x27;int&#x27;</span>, [<span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>, <span class="hljs-string">&#x27;pointer&#x27;</span>]));<br>&#125;<br><br><span class="hljs-title function_">setImmediate</span>(anti);<br></code></pre></td></tr></table></figure>
+<p>但是这么做并不能绕过</p>
+<figure class="highlight plaintext"><figcaption><span>thread at offset 0x1c544 in libmsaoaidsec.so</span></figcaption><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br></pre></td><td class="code"><pre><code class="hljs kill">kill thread at offset 0x1b8d4 in libmsaoaidsec.so<br>kill thread at offset 0x26e5c in libmsaoaidsec.so<br>Process crashed: Bad access due to invalid address<br><br>***<br>*** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***<br>Build fingerprint: &#x27;google/oriole/oriole:16/BP2A.250605.031.A2/13578606:user/release-keys&#x27;<br>Revision: &#x27;MP1.0&#x27;<br>ABI: &#x27;arm64&#x27;<br>Timestamp: 2026-03-03 08:25:26.174351187+0800<br>Process uptime: 2s<br>Cmdline: com.douban.frodo<br>pid: 13341, tid: 13341, name: om.douban.frodo  &gt;&gt;&gt; com.douban.frodo &lt;&lt;&lt;<br>uid: 10283<br>tagged_addr_ctrl: 0000000000000001 (PR_TAGGED_ADDR_ENABLE)<br>signal 11 (SIGSEGV), code 1 (SEGV_MAPERR), fault addr 0x000000000000076c<br>Cause: null pointer dereference<br>    x0  00000076b8d61730  x1  0000000000010000  x2  0000000000000001  x3  0000000000000001<br>    x4  0000000000000100  x5  0000000000000000  x6  000000000000002c  x7  00000076b8d4675d<br>    x8  0000000000000024  x9  b181773333c6d7d7  x10 000000000000c000  x11 000000003df61213<br>    x12 0000000000000000  x13 0000000000000005  x14 0000000000000001  x15 0000000000000006<br>    x16 00000076b8d5da68  x17 00000076b8d3d950  x18 00000076b8d450ac  x19 00000076b8d5e01c<br>    x20 00000000000005e4  x21 0000000000000000  x22 0000007aa4fba880  x23 00000000bb1e2113<br>    x24 000000000e3ba312  x25 00000000de366c1c  x26 0000000019437faa  x27 000000004f03bfb2<br>    x28 00000000e7e21422  x29 0000007fc4cbe700<br>    lr  00000076b8d36d90  sp  0000007fc4cbd4c0  pc  00000076b8d36d10  pst 0000000020001000<br>41 total frames<br>backtrace:<br>      #00 pc 0000000000020d10  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/lib/arm64/libmsaoaidsec.so      <br>      #01 pc 0000000000011f64  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/lib/arm64/libmsaoaidsec.so      <br>      #02 pc 00000000000095f8  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/lib/arm64/libmsaoaidsec.so      <br>      #03 pc 0000000000014824  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/lib/arm64/libmsaoaidsec.so      <br>      #04 pc 00000000000529a0  /apex/com.android.runtime/bin/linker64 (__dl__ZN6soinfo17call_constructorsEv+640) (BuildId: 87182a913672e7d75e7da85dcea916a0)<br>      #05 pc 0000000000051b50  /apex/com.android.runtime/bin/linker64 (__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv+1360) (BuildId: 87182a913672e7d75e7da85dcea916a0)<br>      #06 pc 0000000000051558  /apex/com.android.runtime/bin/linker64 (__dl__ZL10dlopen_extPKciPK17android_dlextinfoPKv.__uniq.234527301065430621646263515731762262959+72) (BuildId: 87182a913672e7d75e7da85dcea916a0)<br>      #07 pc 0000000000001110  /apex/com.android.runtime/lib64/bionic/libdl.so (android_dlopen_ext+16) (BuildId: 43d87b46ed1b46fe9dcfd125aff58cd8)<br>      #08 pc 000000000001dae0  /apex/com.android.art/lib64/libnativeloader.so (android::NativeLoaderNamespace::Load(char const*) const+140) (BuildId: b6e77688d559c566e6ab929caf51bee3)<br>      #09 pc 000000000000c880  /apex/com.android.art/lib64/libnativeloader.so (OpenNativeLibrary+916) (BuildId: b6e77688d559c566e6ab929caf51bee3)<br>      #10 pc 0000000000580734  /apex/com.android.art/lib64/libart.so (art::JavaVMExt::LoadNativeLibrary(_JNIEnv*, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt; const&amp;, _jobject*, _jclass*, std::__1::basic_string&lt;char, std::__1::char_traits&lt;char&gt;, std::__1::allocator&lt;char&gt;&gt;*)+736) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #11 pc 000000000000575c  /apex/com.android.art/lib64/libopenjdkjvm.so (JVM_NativeLoad+368) (BuildId: 59b6fc99630ea9ddc24ff84c08f7c890)  <br>      #12 pc 0000000000d49d44  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (art_jni_trampoline+148)<br>      #13 pc 0000000000365270  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (java.lang.Runtime.loadLibrary0+320)<br>      #14 pc 000000000036639c  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (java.lang.Runtime.loadLibrary0+428)<br>      #15 pc 0000000000376984  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (java.lang.System.loadLibrary+84)<br>      #16 pc 0000000000689588  /apex/com.android.art/lib64/libart.so (nterp_helper+152) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #17 pc 00000000043762bc  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/oat/arm64/base.vdex (com.douban.frodo.FrodoApplication.p+16)<br>      #18 pc 000000000068a444  /apex/com.android.art/lib64/libart.so (nterp_helper+3924) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #19 pc 000000000437657e  /data/app/~~Cf51eG3ZHEZ1OKV2HLZsZg==/com.douban.frodo-ulsR97QYcr8aOckQpu-AYQ==/oat/arm64/base.vdex (com.douban.frodo.FrodoApplication.onCreate+250)<br>      #20 pc 00000000006a58a0  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.app.Instrumentation.callApplicationOnCreate+48)<br>      #21 pc 000000000061f634  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.app.ActivityThread.handleBindApplication+5044)<br>      #22 pc 0000000000619be0  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.app.ActivityThread.-$$Nest$mhandleBindApplication+48)<br>      #23 pc 00000000006186c0  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.app.ActivityThread$H.handleMessage+8240)<br>      #24 pc 00000000008e1068  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.os.Handler.dispatchMessage+152)       <br>      #25 pc 000000000091dccc  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.os.Looper.loopOnce+1260)<br>      #26 pc 000000000091d764  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.os.Looper.loop+244)<br>      #27 pc 0000000000628b04  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (android.app.ActivityThread.main+1492)<br>      #28 pc 0000000000328460  /apex/com.android.art/lib64/libart.so (art_quick_invoke_static_stub+640) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #29 pc 00000000003224a0  /apex/com.android.art/lib64/libart.so (_jobject* art::InvokeMethod&lt;(art::PointerSize)8&gt;(art::ScopedObjectAccessAlreadyRunnable const&amp;, _jobject*, _jobject*, _jobject*, unsigned long)+544) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #30 pc 00000000005c5af8  /apex/com.android.art/lib64/libart.so (art::Method_invoke(_JNIEnv*, _jobject*, _jobject*, _jobjectArray*) (.__uniq.165753521025965369065708152063621506277)+32) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #31 pc 0000000000d498d4  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (art_jni_trampoline+116)<br>      #32 pc 0000000000c10ba4  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run+116)<br>      #33 pc 0000000000c19014  /data/misc/apexdata/com.android.art/dalvik-cache/arm64/boot.oat (com.android.internal.os.ZygoteInit.main+3204) <br>      #34 pc 0000000000328460  /apex/com.android.art/lib64/libart.so (art_quick_invoke_static_stub+640) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #35 pc 0000000000327098  /apex/com.android.art/lib64/libart.so (art::JValue art::InvokeWithVarArgs&lt;_jmethodID*&gt;(art::ScopedObjectAccessAlreadyRunnable const&amp;, _jobject*, _jmethodID*, std::__va_list)+800) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #36 pc 000000000064a850  /apex/com.android.art/lib64/libart.so (art::JNI&lt;true&gt;::CallStaticVoidMethodV(_JNIEnv*, _jclass*, _jmethodID*, std::__va_list)+156) (BuildId: b229f9d1b6196afaae086f29f029f907)<br>      #37 pc 00000000000fe568  /system/lib64/libandroid_runtime.so (_JNIEnv::CallStaticVoidMethod(_jclass*, _jmethodID*, ...)+104) (BuildId: 28384e4cde81e0fe31efa0d6350b2a2c)<br>      #38 pc 0000000000129a6c  /system/lib64/libandroid_runtime.so (android::AndroidRuntime::start(char const*, android::Vector&lt;android::String8&gt; const&amp;, bool)+908) (BuildId: 28384e4cde81e0fe31efa0d6350b2a2c)<br>      #39 pc 000000000000259c  /system/bin/app_process64 (main+1212) (BuildId: df6fb853fe7081ef957fc51f17d1a5eb)<br>      #40 pc 0000000000069818  /apex/com.android.runtime/lib64/bionic/libc.so (__libc_init+120) (BuildId: 56d1c072e220860e239a4a1824a78f97)   <br>***<br></code></pre></td></tr></table></figure>
+<h3 id="进一步分析">进一步分析</h3>
+<p>主要可能有两个问题，一是 <code>pthread_create</code> 的第一个参数
+<code>pthread_t *thread</code> 没有被赋值，正常的
+<code>pthread_create</code> 执行成功后会将新线程的句柄写入这个指针；二是
+<code>libmsaoaidsec.so</code> 在初始化时，会扫描内存检查
+<code>libc.so</code> 中的 <code>pthread_create</code>
+函数头是否被修改，而 <code>Interceptor.replace</code>
+会在函数头写入一条跳转指令即
+Trampoline，这会被检测到并认为是被篡改了，所以直接崩溃了</p>
+<p>所以现在只能换种方式，推测检测逻辑在 <code>libmsaoaidsec.so</code> 的
+<code>.init</code> 函数里</p>
+<h4 id="so-的加载">so 的加载</h4>
+<p>so 的加载流程大致是这样的：</p>
+<pre><code class=" mermaid">graph TD
+    %% 全局样式
+    classDef default fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    classDef highlight fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef core fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    
+    %% 第一阶段：Java 层逻辑
+    subgraph Phase1 [Phase 1: Java Framework]
+        A1[System.loadLibrary libname] --&gt; A2[Runtime.loadLibrary0]
+        A2 --&gt; A3&#123;ClassLoader 类型?&#125;
+        A3 -- PathClassLoader --&gt; A4[DexPathList.findLibrary]
+        A4 --&gt; A5[&quot;搜索 /data/app/.../lib/arm64/&quot;]
+        A5 --&gt; A6[获取绝对路径: /path/to/libtest.so]
+    end
+
+    %% 第二阶段：ART 运行时与命名空间
+    subgraph Phase2 [Phase 2: ART Runtime]
+        A6 --&gt; B1[&quot;Runtime.nativeLoad(path, loader)&quot;]
+        B1 --&gt; B2[&quot;JavaVMExt::LoadNativeLibrary (art/runtime)&quot;]
+        B2 --&gt; B3[&quot;NativeLoader (libnativeloader.so)&quot;]
+        B3 --&gt; B4[&quot;Find or Create LinkerNamespace&quot;]
+        B4 -- &quot;关联 ClassLoader&quot; --&gt; B5[&quot;生成 android_dlextinfo (含 namespace)&quot;]
+    end
+
+    %% 第三阶段：Bionic Linker 内核逻辑 (核心)
+    subgraph Phase3 [Phase 3: Bionic Linker]
+        B5 --&gt; C1[&quot;android_dlopen_ext (linker/linker.cpp)&quot;]
+        C1 --&gt; C2[&quot;find_library (查找 soinfo)&quot;]
+        C2 --&gt; C3[&quot;ElfReader::Load (解析 ELF Header)&quot;]
+        
+        %% 内存布局
+        C3 --&gt; C4[&quot;mmap PT_LOAD Segments (预留地址空间)&quot;]
+        C4 --&gt; C5[&quot;mmap .text / .data (物理映射)&quot;]
+        
+        %% 依赖处理
+        C5 --&gt; C6[&quot;BFS: 广度优先解析 DT_NEEDED (依赖库)&quot;]
+        C6 -- &quot;递归加载&quot; --&gt; C1
+        
+        %% 符号与重定位
+        C6 --&gt; C7[&quot;Symbol Lookup (遍历符号表 .dynsym)&quot;]
+        C7 --&gt; C8[&quot;Relocation (修正 GOT/PLT 地址)&quot;]
+        C8 --&gt; C9[&quot;protect_relro (内存只读保护)&quot;]
+    end
+
+    %% 第四阶段：初始化与 JNI 握手
+    subgraph Phase4 [Phase 4: Initialization]
+        C9 --&gt; D1[&quot;call_constructors (linker.cpp)&quot;]
+        D1 --&gt; D2[&quot;DT_INIT (_init 函数)&quot;]
+        D2 --&gt; D3[&quot;DT_INIT_ARRAY (C++ 全局构造函数)&quot;]
+        
+        D3 -- &quot;返回 handle&quot; --&gt; D4[&quot;SharedLibrary::FindSymbol(JNI_OnLoad)&quot;]
+        D4 --&gt; D5&#123;存在 JNI_OnLoad?&#125;
+        D5 -- Yes --&gt; D6[&quot;执行 JNI_OnLoad (动态注册)&quot;]
+        D5 -- No --&gt; D7[&quot;等待 Java 层调用 (静态匹配)&quot;]
+    end
+
+    %% 关键数据结构标注
+    class A6,B5,C2,D4 highlight;
+    class C3,C4,C5 core;
+</code></pre>
+<h4 id="init-函数">init 函数</h4>
+<p>因为检测逻辑很有可能在初始化函数阶段，所以选择在
+<code>android_dlopen_ext</code> 的 <code>onEnter</code> 阶段 hook
+<code>.init</code> 函数</p>
+<p>由于 so 没有加载完全，无法 hook 导出函数或者通过基地址＋偏移的方式
+hook，所以就通过在 <code>.init</code> 函数里找一个导入函数进行 hook</p>
+<p>反编译 <code>libmsaoaidsec.so</code>,找到了它的
+<code>.init_proc</code> 函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">void</span> <span class="hljs-title function_">init_proc</span><span class="hljs-params">()</span><br>&#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">char</span> *v0; <span class="hljs-comment">// x23</span><br>  __int64 v1; <span class="hljs-comment">// x0</span><br>  <span class="hljs-type">__pid_t</span> v2; <span class="hljs-comment">// w0</span><br>  <span class="hljs-type">unsigned</span> __int64 StatusReg; <span class="hljs-comment">// [xsp+0h] [xbp-870h] BYREF</span><br>  <span class="hljs-type">unsigned</span> __int64 *v4; <span class="hljs-comment">// [xsp+8h] [xbp-868h]</span><br>  <span class="hljs-type">int</span> v6; <span class="hljs-comment">// [xsp+18h] [xbp-858h]</span><br>  <span class="hljs-type">int</span> v7; <span class="hljs-comment">// [xsp+1Ch] [xbp-854h]</span><br>  <span class="hljs-type">unsigned</span> __int64 *v8; <span class="hljs-comment">// [xsp+20h] [xbp-850h]</span><br>  <span class="hljs-type">char</span> *v10; <span class="hljs-comment">// [xsp+30h] [xbp-840h]</span><br>  FILE *v11; <span class="hljs-comment">// [xsp+38h] [xbp-838h]</span><br>  <span class="hljs-type">char</span> v12[<span class="hljs-number">2000</span>]; <span class="hljs-comment">// [xsp+40h] [xbp-830h] BYREF</span><br>  __int64 v13; <span class="hljs-comment">// [xsp+810h] [xbp-60h]</span><br><br>  StatusReg = _ReadStatusReg(ARM64_SYSREG(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">13</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>));<br>  v13 = *(_QWORD *)(StatusReg + <span class="hljs-number">40</span>);<br>  v4 = &amp;StatusReg - <span class="hljs-number">250</span>;<br>  *off_47FB8 = sub_123F0();<br>  sub_12550();<br>  sub_12440();<br>  <span class="hljs-keyword">if</span> ( *off_47FB8 &gt; <span class="hljs-number">23</span> )<br>    *off_47ED8 = <span class="hljs-number">1</span>;<br>  <span class="hljs-keyword">if</span> ( (sub_25A48() &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">0</span> )<br>  &#123;<br>    v10 = v12;<br>    <span class="hljs-built_in">memset</span>(v10, <span class="hljs-number">0</span>, <span class="hljs-number">0x7D0u</span>LL);<br>    v2 = getpid();<br>    _sprintf_chk(v12, <span class="hljs-number">0LL</span>, <span class="hljs-number">2000LL</span>, <span class="hljs-string">&quot;/proc/%d/cmdline&quot;</span>, v2);<br>    v11 = fopen(v12, <span class="hljs-string">&quot;r&quot;</span>);<br>    <span class="hljs-keyword">if</span> ( v11 )<br>    &#123;<br>      v8 = v4;<br>      <span class="hljs-built_in">memset</span>(v4, <span class="hljs-number">0</span>, <span class="hljs-number">0x7D0u</span>LL);<br>      v0 = (<span class="hljs-type">const</span> <span class="hljs-type">char</span> *)v4;<br>      <span class="hljs-built_in">fscanf</span>(v11, <span class="hljs-string">&quot;%s&quot;</span>, v4);<br>      fclose(v11);<br>      <span class="hljs-keyword">if</span> ( !<span class="hljs-built_in">strchr</span>(v0, <span class="hljs-number">58</span>) )<br>        sub_1BEC4();<br>    &#125;<br>    v1 = sub_13728();<br>    sub_23AD4(v1);<br>    v6 = sub_C830();<br>    <span class="hljs-keyword">if</span> ( v6 != <span class="hljs-number">1</span> || (v7 = sub_95C8()) != <span class="hljs-number">0</span> )<br>      sub_9150();<br>  &#125;<br>&#125;<br><br>__int64 <span class="hljs-title function_">sub_123F0</span><span class="hljs-params">()</span><br>&#123;<br>  _QWORD v1[<span class="hljs-number">2</span>]; <span class="hljs-comment">// [xsp+0h] [xbp-20h] BYREF</span><br><br>  v1[<span class="hljs-number">1</span>] = *(_QWORD *)(_ReadStatusReg(ARM64_SYSREG(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">13</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>)) + <span class="hljs-number">40</span>);<br>  v1[<span class="hljs-number">0</span>] = <span class="hljs-number">0LL</span>;<br>  _system_property_get(<span class="hljs-string">&quot;ro.build.version.sdk&quot;</span>, v1);<br>  <span class="hljs-keyword">return</span> atoi((<span class="hljs-type">const</span> <span class="hljs-type">char</span> *)v1);<br>&#125;<br><br><span class="hljs-type">char</span> *<span class="hljs-title function_">sub_12550</span><span class="hljs-params">()</span><br>&#123;<br>  <span class="hljs-type">char</span> *result; <span class="hljs-comment">// x0</span><br>  <span class="hljs-type">char</span> haystack[<span class="hljs-number">16</span>]; <span class="hljs-comment">// [xsp+8h] [xbp-78h] BYREF</span><br>  __int128 v2; <span class="hljs-comment">// [xsp+18h] [xbp-68h]</span><br>  __int128 v3; <span class="hljs-comment">// [xsp+28h] [xbp-58h]</span><br>  __int128 v4; <span class="hljs-comment">// [xsp+38h] [xbp-48h]</span><br>  __int128 v5; <span class="hljs-comment">// [xsp+48h] [xbp-38h]</span><br>  __int64 v6; <span class="hljs-comment">// [xsp+58h] [xbp-28h]</span><br>  <span class="hljs-type">int</span> v7; <span class="hljs-comment">// [xsp+60h] [xbp-20h]</span><br>  __int64 v8; <span class="hljs-comment">// [xsp+68h] [xbp-18h]</span><br><br>  v8 = *(_QWORD *)(_ReadStatusReg(ARM64_SYSREG(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">13</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>)) + <span class="hljs-number">40</span>);<br>  v7 = <span class="hljs-number">0</span>;<br>  v6 = <span class="hljs-number">0LL</span>;<br>  v5 = <span class="hljs-number">0u</span>;<br>  v4 = <span class="hljs-number">0u</span>;<br>  v3 = <span class="hljs-number">0u</span>;<br>  v2 = <span class="hljs-number">0u</span>;<br>  *(_OWORD *)haystack = <span class="hljs-number">0u</span>;<br>  <span class="hljs-keyword">if</span> ( !(<span class="hljs-type">unsigned</span> <span class="hljs-type">int</span>)_system_property_get(<span class="hljs-string">&quot;persist.sys.dalvik.vm.lib&quot;</span>, haystack) || *off_47FB8 &gt;= <span class="hljs-number">21</span> )<br>    _system_property_get(<span class="hljs-string">&quot;persist.sys.dalvik.vm.lib.2&quot;</span>, haystack);<br>  result = <span class="hljs-built_in">strstr</span>(haystack, <span class="hljs-string">&quot;art&quot;</span>);<br>  <span class="hljs-keyword">if</span> ( result )<br>    *off_47FB0[<span class="hljs-number">0</span>] = <span class="hljs-number">1</span>;<br>  <span class="hljs-keyword">return</span> result;<br>&#125;<br><br><span class="hljs-type">char</span> *<span class="hljs-title function_">sub_12440</span><span class="hljs-params">()</span><br>&#123;<br>  <span class="hljs-type">char</span> *result; <span class="hljs-comment">// x0</span><br>  <span class="hljs-type">int</span> *v1; <span class="hljs-comment">// x20</span><br>  <span class="hljs-type">char</span> s[<span class="hljs-number">16</span>]; <span class="hljs-comment">// [xsp+8h] [xbp-88h] BYREF</span><br>  __int128 v3; <span class="hljs-comment">// [xsp+18h] [xbp-78h]</span><br>  __int128 v4; <span class="hljs-comment">// [xsp+28h] [xbp-68h]</span><br>  __int128 v5; <span class="hljs-comment">// [xsp+38h] [xbp-58h]</span><br>  __int128 v6; <span class="hljs-comment">// [xsp+48h] [xbp-48h]</span><br>  __int64 v7; <span class="hljs-comment">// [xsp+58h] [xbp-38h]</span><br>  <span class="hljs-type">int</span> v8; <span class="hljs-comment">// [xsp+60h] [xbp-30h]</span><br>  __int64 v9; <span class="hljs-comment">// [xsp+68h] [xbp-28h]</span><br><br>  v9 = *(_QWORD *)(_ReadStatusReg(ARM64_SYSREG(<span class="hljs-number">3</span>, <span class="hljs-number">3</span>, <span class="hljs-number">13</span>, <span class="hljs-number">0</span>, <span class="hljs-number">2</span>)) + <span class="hljs-number">40</span>);<br>  v8 = <span class="hljs-number">0</span>;<br>  v7 = <span class="hljs-number">0LL</span>;<br>  v6 = <span class="hljs-number">0u</span>;<br>  v5 = <span class="hljs-number">0u</span>;<br>  v4 = <span class="hljs-number">0u</span>;<br>  v3 = <span class="hljs-number">0u</span>;<br>  *(_OWORD *)s = <span class="hljs-number">0u</span>;<br>  _system_property_get(<span class="hljs-string">&quot;ro.build.version.release_or_codename&quot;</span>, s);<br>  result = <span class="hljs-built_in">strchr</span>(s, <span class="hljs-number">83</span>);<br>  <span class="hljs-keyword">if</span> ( result || (result = <span class="hljs-built_in">strstr</span>(s, <span class="hljs-string">&quot;12&quot;</span>)) != <span class="hljs-number">0LL</span> )<br>  &#123;<br>    <span class="hljs-keyword">if</span> ( *off_47FB8 &lt;= <span class="hljs-number">32</span> )<br>      *off_47FB8 = <span class="hljs-number">31</span>;<br>  &#125;<br>  <span class="hljs-keyword">else</span><br>  &#123;<br>    v1 = off_47FB8;<br>    <span class="hljs-keyword">if</span> ( *off_47FB8 == <span class="hljs-number">32</span> )<br>    &#123;<br>      v8 = <span class="hljs-number">0</span>;<br>      v7 = <span class="hljs-number">0LL</span>;<br>      v6 = <span class="hljs-number">0u</span>;<br>      v5 = <span class="hljs-number">0u</span>;<br>      v4 = <span class="hljs-number">0u</span>;<br>      v3 = <span class="hljs-number">0u</span>;<br>      *(_OWORD *)s = <span class="hljs-number">0u</span>;<br>      _system_property_get(<span class="hljs-string">&quot;ro.build.version.security_patch&quot;</span>, s);<br>      result = <span class="hljs-built_in">strstr</span>(s, <span class="hljs-string">&quot;2022-02&quot;</span>);<br>      <span class="hljs-keyword">if</span> ( result )<br>        *v1 = <span class="hljs-number">31</span>;<br>    &#125;<br>  &#125;<br>  <span class="hljs-keyword">return</span> result;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>注意到 <code>__system_property_get</code>
+这个导入函数，可以在它被调用并且传入特定参数(比如
+“ro.build.version.sdk”)的时候进行 hook，此时就能确定是在
+<code>.init_proc</code> 阶段了;然后进行 frida 注入，replace
+掉前面三个偏移处的函数</p>
+<p>绕过检测代码 <figure class="highlight ts"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><code class="hljs ts"><span class="hljs-keyword">function</span> <span class="hljs-title function_">nop_64</span>(<span class="hljs-params"><span class="hljs-attr">addr</span>:<span class="hljs-title class_">NativePointer</span></span>):<span class="hljs-built_in">void</span>&#123;<br>    <span class="hljs-keyword">try</span>&#123;<br>        <span class="hljs-title class_">Memory</span>.<span class="hljs-title function_">protect</span>(addr, <span class="hljs-number">4</span> , <span class="hljs-string">&#x27;rwx&#x27;</span>);<br>        <span class="hljs-keyword">let</span> ins = <span class="hljs-title class_">Instruction</span>.<span class="hljs-title function_">parse</span>(addr);<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`[*] Original instruction at <span class="hljs-subst">$&#123;addr&#125;</span>: <span class="hljs-subst">$&#123;ins.toString()&#125;</span>`</span>);<br>        <span class="hljs-keyword">let</span> w = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Arm64Writer</span>(addr);<br>        w.<span class="hljs-title function_">putRet</span>();<br>        w.<span class="hljs-title function_">flush</span>();<br>        w.<span class="hljs-title function_">dispose</span>();<br>    &#125; <span class="hljs-keyword">catch</span>(e) &#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[-]Error in nop_64: &quot;</span> + e);<br>    &#125;<br>&#125;<br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">hook_init</span>(<span class="hljs-params"></span>): <span class="hljs-built_in">void</span> &#123;<br>    <span class="hljs-keyword">const</span> <span class="hljs-attr">libc</span>: <span class="hljs-title class_">Module</span> | <span class="hljs-literal">null</span> = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">getModuleByName</span>(<span class="hljs-string">&quot;libc.so&quot;</span>);<br>    <span class="hljs-keyword">const</span> <span class="hljs-attr">target</span>: <span class="hljs-title class_">NativePointer</span> | <span class="hljs-literal">null</span> = libc.<span class="hljs-title function_">findExportByName</span>(<span class="hljs-string">&quot;__system_property_get&quot;</span>);<br>    <br>    <span class="hljs-keyword">if</span> (target === <span class="hljs-literal">null</span>) &#123;<br>        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[-] __system_property_get not found&quot;</span>);<br>        <span class="hljs-keyword">return</span>; <br>    &#125;<br><br>    <span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">attach</span>(target, &#123;<br>        <span class="hljs-attr">onEnter</span>: <span class="hljs-keyword">function</span>(<span class="hljs-params"><span class="hljs-attr">this</span>: <span class="hljs-title class_">InvocationContext</span>, <span class="hljs-attr">args</span>: <span class="hljs-title class_">InvocationArguments</span></span>): <span class="hljs-built_in">void</span> &#123;<br><br>            <span class="hljs-keyword">let</span> <span class="hljs-attr">arg0</span>: <span class="hljs-built_in">string</span> | <span class="hljs-literal">null</span> = args[<span class="hljs-number">0</span>].<span class="hljs-title function_">readUtf8String</span>();<br>            <span class="hljs-keyword">if</span> (arg0 &amp;&amp; arg0.<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;ro.build.version.sdk&quot;</span>) !== -<span class="hljs-number">1</span>) &#123;<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[+] system_property_get called&quot;</span>);<br>                <br>                <span class="hljs-keyword">let</span> <span class="hljs-attr">mod</span>: <span class="hljs-title class_">Module</span> | <span class="hljs-literal">null</span> = <span class="hljs-title class_">Process</span>.<span class="hljs-title function_">findModuleByName</span>(<span class="hljs-string">&quot;libmsaoaidsec.so&quot;</span>);<br>                <span class="hljs-keyword">if</span> (mod) &#123;<br>                    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[+] so base: &quot;</span> + mod.<span class="hljs-property">base</span>);<br><br>                    <span class="hljs-keyword">let</span> <span class="hljs-attr">offsets</span>: <span class="hljs-built_in">number</span>[] =[<span class="hljs-number">0x1c544</span>, <span class="hljs-number">0x1b8d4</span>, <span class="hljs-number">0x26e5c</span>];<br>                    offsets.<span class="hljs-title function_">forEach</span>(<span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">offset</span>: <span class="hljs-built_in">number</span></span>) =&gt;</span> &#123;<br>                        <span class="hljs-keyword">let</span> <span class="hljs-attr">func_addr</span>: <span class="hljs-title class_">NativePointer</span> = mod.<span class="hljs-property">base</span>.<span class="hljs-title function_">add</span>(offset);<br>                        <span class="hljs-title function_">nop_64</span>(func_addr);<br>                        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[+] NOP Offset 0x&quot;</span> + offset.<span class="hljs-title function_">toString</span>(<span class="hljs-number">16</span>));<br>                    &#125;)<br><br>                &#125; <br>            &#125; <br>        &#125; <br>    &#125;);<br>&#125; <br><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">hook_dlopen</span>(<span class="hljs-params"></span>): <span class="hljs-built_in">void</span> &#123;<br>    <span class="hljs-keyword">const</span> dlopen_ext = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">getGlobalExportByName</span>(<span class="hljs-string">&quot;android_dlopen_ext&quot;</span>);<br>    <span class="hljs-title class_">Interceptor</span>.<span class="hljs-title function_">attach</span>(dlopen_ext,&#123;<br>        <span class="hljs-attr">onEnter</span>:<span class="hljs-keyword">function</span>(<span class="hljs-params">args</span>)&#123;<br>            <span class="hljs-keyword">let</span> path = args[<span class="hljs-number">0</span>].<span class="hljs-title function_">readUtf8String</span>();<br>            <span class="hljs-keyword">if</span>(path &amp;&amp; path.<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;libmsaoaidsec.so&quot;</span>) !== -<span class="hljs-number">1</span>)&#123;<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&quot;[+] android_dlopen_ext called with: &quot;</span> + path);<br>                <span class="hljs-title function_">hook_init</span>();<br>            &#125;<br><br>        &#125;<br>    &#125;)<br>&#125;<br><br><span class="hljs-title function_">setImmediate</span>(hook_dlopen);<br></code></pre></td></tr></table></figure></p>
+<h3 id="ps">ps</h3>
+<p>要是这样绕不过的话可能还要考虑更多其他的检测</p>
+<p>比如字符串的检测，像
+<code>frida</code>、<code>gum-js</code>、<code>gmain</code>、<code>REJECT</code>等等，这些字符通常来自
+Frida agent、本地 Gum 运行时、GLib
+事件循环线程名称或相关错误信息，检测可能会扫
+<code>proc/self/maps</code>、<code>proc/self/status</code>、线程名、内存、符号表等来进行字符串匹配，对抗的话就需要
+hook <code>libc</code> 中的 <code>strstr</code>、<code>strcmp</code>
+等字符串比较函数，在这些函数执行时拦截参数，替换掉关键词或者篡改匹配结果，使得包含上述特征字符串的检测始终返回未匹配</p>
+<p>安全库可能会扫描
+<code>proc/self/maps</code>，查看是否有可疑的内存映射，比如 frida
+注入产生的
+so、匿名可执行映射或者带有特征路径的映射项，检测流程一般是打开
+<code>/proc/self/maps</code>,逐行读取内容，解析权限、路径、匿名段信息，再根据规则判断是否可疑，对抗的话一般是两条思路:一是让检测器拿不到真实的
+maps 视图，另一种则是降低 maps 中的可疑特征</p>
+<p>另外，如果目标程序没有通过 libc 的
+<code>open</code>、<code>fread</code>
+等封装函数，而是自实现了相关函数，直接使用 syscall(svc)
+进行系统调用，那么在 libc 层的 hook 就不能生效了，这种情况下，可以用
+stackplz 或者其他工具在内核态捕获 <code>openat</code>
+等并结合调用栈信息定位到用户态发起调用的位置</p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E6%88%98/" class="category-chain-item">实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reverse/" class="print-no-link">#Reverse</a>
+      
+        <a href="/tags/Android/" class="print-no-link">#Android</a>
+      
+        <a href="/tags/frida-%E6%A3%80%E6%B5%8B/" class="print-no-link">#frida 检测</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>libmsaoaidsec.so 分析</div>
+      <div>http://example.com/2026/03/21/douban/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年3月21日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/03/30/ollvm/" title="OLLVM 原理和去除">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">OLLVM 原理和去除</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/02/02/alictf2026/" title="阿里 CTF 2026 逆向部分 WP">
+                        <span class="hidden-mobile">阿里 CTF 2026 逆向部分 WP</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

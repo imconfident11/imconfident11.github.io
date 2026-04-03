@@ -239,6 +239,264 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2026/04/01/solve_two_branch_jump/" target="_self">
+          BN IL 层解决多条件控制的双分支间接跳转
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/04/01/solve_two_branch_jump/" target="_self">
+        <div>
+          样本 在分析 libxyass.so 的过程中，遇到了含有多个 csel 语句控制的 br 跳转  左图汇编层可以看出在 br 跳转语句前经过了三个 csel 条件判断  csel 指令的模式是 csel dest, src1, src2, condition，如果 condition 成立则 dst = src1，否则 dst = src2  观察发现这三个判断的条件都是相同
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-04-01 00:00" pubdate>
+              2026-04-01
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E6%88%98/" class="category-chain-item">实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Android/">#Android</a>
+            
+              <a href="/tags/Binary-Ninja/">#Binary Ninja</a>
+            
+              <a href="/tags/%E9%97%B4%E6%8E%A5%E8%B7%B3%E8%BD%AC/">#间接跳转</a>
+            
+              <a href="/tags/%E6%B7%B7%E6%B7%86/">#混淆</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/03/31/xhs_shield/" target="_self">
+          xhs shield 参数分析
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/03/31/xhs_shield/" target="_self">
+        <div>
+          断断续续其实拖了挺长时间的，本意是想通过亲手实践来学一下逆 app 的参数是一个怎样的流程，顺便了解下实战中涉及的安卓逆向的知识 定位 so 抓包分析 用 Reqable 对 xhs 进行抓包，翻了下请求，在请求头里看到了 shield 参数，一共 134 个字符  多观察几个请求头的这个参数可以发现它前 112 个字符是一样的，后面 22 个字符是变化的 hook NewStr
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-03-31 00:00" pubdate>
+              2026-03-31
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E6%88%98/" class="category-chain-item">实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/Android/">#Android</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/03/30/ollvm/" target="_self">
+          OLLVM 原理和去除
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/03/30/ollvm/" target="_self">
+        <div>
+          这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm 混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。 关于 OLLVM 混淆  产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在 llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR 的逻辑
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-03-30 00:00" pubdate>
+              2026-03-30
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/ollvm/">#ollvm</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/03/21/douban/" target="_self">
+          libmsaoaidsec.so 分析
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2026/03/21/douban/" target="_self">
+        <div>
+          分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 123456789101112131415161718192021222324
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-03-21 00:00" pubdate>
+              2026-03-21
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%AE%9E%E6%88%98/" class="category-chain-item">实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/Android/">#Android</a>
+            
+              <a href="/tags/frida-%E6%A3%80%E6%B5%8B/">#frida 检测</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2026/02/02/alictf2026/" target="_self">
           阿里 CTF 2026 逆向部分 WP
         </a>
@@ -604,252 +862,6 @@
               <a href="/tags/Reverse/">#Reverse</a>
             
               <a href="/tags/%E5%8F%8D%E8%B0%83%E8%AF%95/">#反调试</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/11/17/VCTF2025/" target="_self">
-          VCTF Reverse wp + 复现
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/17/VCTF2025/" target="_self">
-        <div>
-          闻香识女人 修花指令 花指令结构1： 1234567891011.text:0000000000002CB9                 push    rbx.text:0000000000002CBA                 xor     rbx, rbx.text:0000000000002CBD                 test    rbx, rbx.text
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-11-17 00:00" pubdate>
-              2025-11-17
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/11/03/just/" target="_self">
-          强网拟态2025 mobile just WP
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/11/03/just/" target="_self">
-        <div>
-          看到了 twogoat 师傅的文章 强网拟态2025初赛 Mobile方向just Writeup，然后自己复现了一下，记录下学习过程 题目分析  查看文件结构发现是 unity il2cpp 编译的 il2cpp 编译过程中，原始的 C# 代码被提前编译(AOT)成了原生 c++ 代码，再由各个平台的C++编译器直接编译成机器码，最终打包进了 libil2cpp.so 这个动态链
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-11-03 00:00" pubdate>
-              2025-11-03
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/10/28/geekgame2025/" target="_self">
-          GeekGame 团结引擎  WP
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/28/geekgame2025/" target="_self">
-        <div>
-          CTF 中一般遇到的 Unity 逆向会遇到两种模式，一种是 Mono， 另外一种是 IL2CPP；两者都是 Unity 引擎用于将 C# 代码转换成可以在不同平台上运行代码的后端编译模式 有关 Mono 与 IL2CPP,这篇文章讲得比较详细了 浅谈Unity与.Net、Mono、IL2CPP 如果用 mono 编译的话一般是如下的结构(本题即是)   Data 里面的结构大致是这
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-10-28 00:00" pubdate>
-              2025-10-28
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/10/05/angr_ollvm/" target="_self">
-          Angr 反混淆对抗 OLLVM
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/10/05/angr_ollvm/" target="_self">
-        <div>
-          参考是 https://bbs.kanxue.com/thread-286549.htm 对抗控制流平坦化 FLA Control Flow Flattening 其主要目标是打乱程序原有的控制流结构（如 if/else、for、while、switch 等），干扰静态分析 原始代码 12345678void example(int x) &#123;    if (x &gt; 10
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-10-05 00:00" pubdate>
-              2025-10-05
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Angr/">#Angr</a>
-            
-              <a href="/tags/OLLVM/">#OLLVM</a>
             
           </div>
         
