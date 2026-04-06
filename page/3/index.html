@@ -247,7 +247,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/25/NSSCTF2025/" target="_self">
         <div>
-          checkit java 层 附件是 apk, java 层没什么东西 MainActivity 如下,关键在于调用了本地方法 checkInput 123456789101112131415161718192021222324252627282930313233package com.test.ezre;import android.os.Bundle;import android.vi
+          checkit java 层 附件是 apk, java 层没什么东西 MainActivity 如下,关键在于调用了本地方法 checkInput 123456789101112131415161718192021222324252627282930313233package com.test.ezre;import android.os.Bundle;import android.view.V
         </div>
       </a>
 
@@ -308,7 +308,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/17/LilCTF2025/" target="_self">
         <div>
-          Reverse obfusheader.h 控制流混淆，题目中有给提示跟踪数据流 附件用 ida 打开之后有花指令和很多未识别成代码的数据，花指令的结构都是类似的一种  在标签处(loc_14000C392)按 U,得到 12345.text:000000014000C390                 jz      short near ptr unk_14000C393.t
+          Reverse obfusheader.h 控制流混淆，题目中有给提示跟踪数据流 附件用 ida 打开之后有花指令和很多未识别成代码的数据，花指令的结构都是类似的一种  在标签处(loc_14000C392)按 U,得到 12345.text:000000014000C390                 jz      short near ptr unk_14000C393.text:000
         </div>
       </a>
 
@@ -371,7 +371,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/01/llvm/" target="_self">
         <div>
-          写在前面 这篇文章的前半部分包括写的环境搭建都是基于 LLVM 源码的构建方式，重点在于帮助了解 llvm 的结构，如果目的只是编写 Pass 的话，直接跳到 自己编写 LLVM Pass 部分即可 LLVM 环境搭建 由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https://github.com/llvm/llvm-project.
+          写在前面 这篇文章的前半部分包括写的环境搭建都是基于 LLVM 源码的构建方式，重点在于帮助了解 llvm 的结构，如果目的只是编写 Pass 的话，直接跳到 自己编写 LLVM Pass 部分即可 LLVM 环境搭建 由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https://github.com/llvm/llvm-project.git 里面
         </div>
       </a>
 
@@ -432,7 +432,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/21/cuda/" target="_self">
         <div>
-          写在前面 CUDA (Compute Unified Device Architecture) 是由 NVIDIA 开发的一种并行计算平台和编程模型；它允许软件开发者和研究人员利用 NVIDIA GPU 的强大并行处理能力来加速通用计算任务，而不仅仅局限于图形渲染 cuda 逆向本身不难，一般是使用 cuobjump 来获得 ptx 汇编 ，根据汇编理出加密逻辑最后进行解密即可 PTX
+          写在前面 CUDA (Compute Unified Device Architecture) 是由 NVIDIA 开发的一种并行计算平台和编程模型；它允许软件开发者和研究人员利用 NVIDIA GPU 的强大并行处理能力来加速通用计算任务，而不仅仅局限于图形渲染 cuda 逆向本身不难，一般是使用 cuobjump 来获得 ptx 汇编 ，根据汇编理出加密逻辑最后进行解密即可 PTX 基础知识
         </div>
       </a>
 
@@ -495,7 +495,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/20/XYCTF2025/" target="_self">
         <div>
-          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 123456VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123; //DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserve
+          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 123456VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123; //DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserved:
         </div>
       </a>
 
@@ -556,7 +556,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/15/pyd/" target="_self">
         <div>
-          what’s pyd .pyd 文件本质上是一个 Windows 的 DLL 文件, 通过 C/C++ 编译器（如 MSVC）把 C/C++ 代码编译成二进制形式，实现了 Python 扩展模块的接口，可以通过 import xxx 的方式像普通的 .py 文件那样导入使用 preparation 先在 windows 下自己编译一个带有调试信息的 pyd 文件，主要用于后续 bin
+          what’s pyd .pyd 文件本质上是一个 Windows 的 DLL 文件, 通过 C/C++ 编译器（如 MSVC）把 C/C++ 代码编译成二进制形式，实现了 Python 扩展模块的接口，可以通过 import xxx 的方式像普通的 .py 文件那样导入使用 preparation 先在 windows 下自己编译一个带有调试信息的 pyd 文件，主要用于后续 bindiff 比较
         </div>
       </a>
 
@@ -619,7 +619,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/02/android_note/" target="_self">
         <div>
-          安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C/C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C/C++ 代码 静态注册 : 在 AndroidManifest.xml 中
+          安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C/C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C/C++ 代码 静态注册 : 在 AndroidManifest.xml 中注册 遵循一
         </div>
       </a>
 
@@ -680,7 +680,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/24/vm/" target="_self">
         <div>
-          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32
+          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32_t edx
         </div>
       </a>
 
@@ -741,7 +741,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/03/XYCTF2024/" target="_self">
         <div>
-          你是真的大学生吗? 附件是MS-DOS executable (EXE)文件，ida 不能反编译，硬看汇编  解密脚本 123456789101112131415161718192021222324252627&#x27;&#x27;&#x27;T[20]=C[20]^C[0]al=T[20]T[19]=C[19]^al即T[19]=C[19]^T[20]al=T[19]T[18]=C[1
+          你是真的大学生吗? 附件是MS-DOS executable (EXE)文件，ida 不能反编译，硬看汇编  解密脚本 123456789101112131415161718192021222324252627&#x27;&#x27;&#x27;T[20]=C[20]^C[0]al=T[20]T[19]=C[19]^al即T[19]=C[19]^T[20]al=T[19]T[18]=C[18]^a
         </div>
       </a>
 
@@ -802,7 +802,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/02/crypto/" target="_self">
         <div>
-          流密码 特征就是密文仅由明文与密钥流经过异或运算得到，只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20 RC4 特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为
+          流密码 特征就是密文仅由明文与密钥流经过异或运算得到，只要识别出流密码,我们就可以选择动态调试获取密钥流或者直接把目标密文 patch 进去拿输出就可以了,常见的有 RC4、Salsa20 以及 ChaCha20 RC4 特征识别  长度为 256 的 S 盒，且在每一步生成与加密过程中都伴随着 S 盒的 swap 操作 很多取模操作 有多个次数为 256 的循环 最后的操作为异或  加密流程简述
         </div>
       </a>
 

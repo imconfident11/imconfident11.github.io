@@ -240,14 +240,14 @@
       <h2 class="index-header">
         
         <a href="/2026/04/01/solve_two_branch_jump/" target="_self">
-          IL 层解决多条件控制的双分支间接跳转--Binary Ninja
+          BN IL 层解决多条件控制的双分支间接跳转
         </a>
       </h2>
 
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/04/01/solve_two_branch_jump/" target="_self">
         <div>
-          样本 在分析 libxyass.so 的过程中，遇到了含有多个 csel 语句控制的 br 跳转  左图汇编层可以看出在 br 跳转语句前经过了三个 csel 条件判断  csel 指令的模式是 csel dest, src1, src2, condition，如果 condition 成立则 dst = src1，否则 dst = src2  观察发现这三个判断的条件都是相同
+          样本 在分析 libxyass.so 的过程中，遇到了含有多个 csel 语句控制的 br 跳转  左图汇编层可以看出在 br 跳转语句前经过了三个 csel 条件判断  csel 指令的模式是 csel dest, src1, src2, condition，如果 condition 成立则 dst = src1，否则 dst = src2  观察发现这三个判断的条件都是相同的 ne, 可以推测
         </div>
       </a>
 
@@ -294,6 +294,8 @@
             
               <a href="/tags/workflow/">#workflow</a>
             
+              <a href="/tags/Binary-Ninja/">#Binary Ninja</a>
+            
           </div>
         
       </div>
@@ -314,7 +316,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/03/31/xhs_shield/" target="_self">
         <div>
-          断断续续其实拖了挺长时间的，本意是想通过亲手实践来学一下逆 app 的参数是一个怎样的流程，顺便了解下实战中涉及的安卓逆向的知识 定位 so 抓包分析 用 Reqable 对 xhs 进行抓包，翻了下请求，在请求头里看到了 shield 参数，一共 134 个字符  多观察几个请求头的这个参数可以发现它前 112 个字符是一样的，后面 22 个字符是变化的 hook NewStr
+          断断续续其实拖了挺长时间的，本意是想通过亲手实践来学一下逆 app 的参数是一个怎样的流程，顺便了解下实战中涉及的安卓逆向的知识 定位 so 抓包分析 用 Reqable 对 xhs 进行抓包，翻了下请求，在请求头里看到了 shield 参数，一共 134 个字符  多观察几个请求头的这个参数可以发现它前 112 个字符是一样的，后面 22 个字符是变化的 hook NewStringUTF 首先
         </div>
       </a>
 
@@ -377,7 +379,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/03/30/ollvm/" target="_self">
         <div>
-          这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm 混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。 关于 OLLVM 混淆  产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在 llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR 的逻辑
+          这篇文章原始的内容其实是去年学的时候写的，当时当作学 ollvm 混淆原理记的笔记，这学期重新温习的时候又有了写新的发现，把之前的内容完善一下，记录于此。 关于 OLLVM 混淆  产生：字面上来看，ollvm 就是在 llvm 上加了混淆(obfuscator)，实际是在 llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为混淆 IR 的逻辑   LLVM 是一个
         </div>
       </a>
 
@@ -440,7 +442,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/03/21/douban/" target="_self">
         <div>
-          分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 123456789101112131415161718192021222324
+          分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 12345678910111213141516171819202122232425262
         </div>
       </a>
 
@@ -505,7 +507,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/02/02/alictf2026/" target="_self">
         <div>
-          逆向三道题出了两道，另一道纯恶心人来的 发现晚上出 flag 概率比白天高 =w= pixelflow 初步分析 找到 global-metadata.dat 和 GameAssembly.dll 用 il2cppdumper 解包 但是在 Assembly-CSharp.dll 没看到什么东西 于是开始分析 GameAssembly.dll,参考 普通PC端IL2Cpp Unit
+          逆向三道题出了两道，另一道纯恶心人来的 发现晚上出 flag 概率比白天高 =w= pixelflow 初步分析 找到 global-metadata.dat 和 GameAssembly.dll 用 il2cppdumper 解包 但是在 Assembly-CSharp.dll 没看到什么东西 于是开始分析 GameAssembly.dll,参考 普通PC端IL2Cpp Unity游戏逆向方法体
         </div>
       </a>
 
@@ -566,7 +568,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/01/26/LilacCTF2026/" target="_self">
         <div>
-          ezPython 解包 先用 pyinstxtractor 解包，解包后的文件中找到 main.pyc, 用 pylingual 在线反编译 12345678910111213141516171819202122232425262728# Decompiled with PyLingual (https://pylingual.io)# Internal filename: &#x27;m
+          ezPython 解包 先用 pyinstxtractor 解包，解包后的文件中找到 main.pyc, 用 pylingual 在线反编译 12345678910111213141516171819202122232425262728# Decompiled with PyLingual (https://pylingual.io)# Internal filename: &#x27;main.
         </div>
       </a>
 
@@ -627,7 +629,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2026/01/19/TxGame2024_pre/" target="_self">
         <div>
-          寻找关键结构体 和 23 年的不同，24 年的题不是 unity 引擎的游戏了，而是 UE 引擎，该引擎使用 C++ 实现，有极强的反射机制。 逆向 UE 需要几个关键的结构体 GName、GUObjectArray、GWorld  GName:为了优化性能，UE 不会把在每个对象中存储字符串，而是将所有的字符串存储在一个全局的字符串池中，并给每个字符串分配一个唯一的索引 id，有
+          寻找关键结构体 和 23 年的不同，24 年的题不是 unity 引擎的游戏了，而是 UE 引擎，该引擎使用 C++ 实现，有极强的反射机制。 逆向 UE 需要几个关键的结构体 GName、GUObjectArray、GWorld  GName:为了优化性能，UE 不会把在每个对象中存储字符串，而是将所有的字符串存储在一个全局的字符串池中，并给每个字符串分配一个唯一的索引 id，有了 GName，
         </div>
       </a>
 
@@ -692,7 +694,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/12/15/TxGame2023_pre/" target="_self">
         <div>
-          分析 unity il2cpp 编译的游戏，先解包找出 global-metadata.dat 和 libil2cpp.so 文件，尝试用 Il2CppDumper 进行分析，但是分析失败了  应该是 libil2cpp.so 被加密了(在 010 editor 中对 global-metadata.dat 运行 UnityMetadata 模板，显示模板执行成功；对 libil2cpp
+          分析 unity il2cpp 编译的游戏，先解包找出 global-metadata.dat 和 libil2cpp.so 文件，尝试用 Il2CppDumper 进行分析，但是分析失败了  应该是 libil2cpp.so 被加密了(在 010 editor 中对 global-metadata.dat 运行 UnityMetadata 模板，显示模板执行成功；对 libil2cpp.so 运
         </div>
       </a>
 
@@ -757,7 +759,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/12/01/kernel_fail/" target="_self">
         <div>
-          故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小
+          故事的开头 故事的开始总是这样，猝不及防。 事情的起因只是想要使用 stackplz 而不得，平替工具也只找到 rwProcMem33，所以就打算自己把 rwProcMem33 编译进内核 如果是 pixel 设备的话，可以参考这两篇文章在内核嵌入 rwProcMem33： 将rwProcMem33编译进安卓内核 Pixel5 内核编译并嵌入rwProcMem33 我测试机是小米设备，一台 MI
         </div>
       </a>
 
@@ -820,7 +822,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/11/19/RCTF2025/" target="_self">
         <div>
-          分析 直接运行附件的 exe 打印出的 flag 是乱码，提示说找到所有的反调试就可以获取 flag main 函数 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505152535455565758596061626364656667686970717273
+          分析 直接运行附件的 exe 打印出的 flag 是乱码，提示说找到所有的反调试就可以获取 flag main 函数 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475
         </div>
       </a>
 
