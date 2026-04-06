@@ -41,7 +41,7 @@
 <meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/after_fla.png">
 <meta property="og:image" content="http://example.com/2026/03/30/images/ollvm/preprocessor.png">
 <meta property="article:published_time" content="2026-03-29T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-04-02T17:24:50.756Z">
+<meta property="article:modified_time" content="2026-04-03T05:50:11.947Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta property="article:tag" content="ollvm">
@@ -316,10 +316,10 @@ llvm 的 IR 层增加或者替换 pass，将原本用于优化的 IR Pass 改为
 <p>LLVM
 是一个编译器架构，采用三段式设计，前端可以使用不同的编译工具对代码文件做词法分析以形成抽象语法树
 AST,然后将分析好的代码转换成 LLVM 的中间表示IR(intermediate
-representation);<strong>Pass对IR做优化</strong>,后端负责将优化好的IR解释成对应平台的机器码
-<strong>核心思想</strong>是先把源码生成为一种与平台无关的中间表示
-IR，然后对这层 IR 做优化，最后再生成目标平台如 x86 / ARM 的机器码</p>
+representation);<strong>Pass对IR做优化</strong>,后端负责将优化好的IR解释成对应平台的机器码</p>
 </blockquote>
+<p><strong>核心思想</strong>是先把源码生成为一种与平台无关的中间表示
+IR，然后对这层 IR 做优化，最后再生成目标平台如 x86 / ARM 的机器码</p>
 <ul>
 <li>几种混淆方式：指令替换、虚假控制流、控制流平坦化、字符串混淆</li>
 </ul>
@@ -451,6 +451,10 @@ ret 块</p>
 运行环境，需要自己准备内存、代码、寄存器和栈，然后让它从某个地址开始跑，并通过
 hook 观察执行过程</p>
 <p>基本框架 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><code class="hljs py"><span class="hljs-keyword">from</span> unicorn <span class="hljs-keyword">import</span> *<br><span class="hljs-keyword">from</span> unicorn.x86_const <span class="hljs-keyword">import</span> *<br><br><span class="hljs-comment"># 基本地址布局</span><br>BASE = <span class="hljs-number">0x400000</span><br>CODE_ADDR = BASE<br>CODE_SIZE = <span class="hljs-number">0x1000</span><br><br>STACK_ADDR = <span class="hljs-number">0x70000000</span><br>STACK_SIZE = <span class="hljs-number">0x10000</span><br><br><span class="hljs-comment"># 一小段机器码</span><br><span class="hljs-comment"># mov eax, 1</span><br><span class="hljs-comment"># add eax, 2</span><br><span class="hljs-comment"># ret</span><br>CODE = <span class="hljs-string">b&quot;\xB8\x01\x00\x00\x00&quot;</span> \<br>       <span class="hljs-string">b&quot;\x83\xC0\x02&quot;</span> \<br>       <span class="hljs-string">b&quot;\xC3&quot;</span><br><br><span class="hljs-comment"># 创建模拟器</span><br>uc = Uc(UC_ARCH_X86, UC_MODE_64)<br><br><span class="hljs-comment"># 映射内存</span><br>uc.mem_map(CODE_ADDR, CODE_SIZE)<br>uc.mem_map(STACK_ADDR, STACK_SIZE)<br><br><span class="hljs-comment">#  写入代码</span><br>uc.mem_write(CODE_ADDR, CODE)<br><br><span class="hljs-comment"># 初始化栈</span><br>rsp = STACK_ADDR + STACK_SIZE - <span class="hljs-number">0x8</span><br>uc.reg_write(UC_X86_REG_RSP, rsp)<br><br><span class="hljs-comment"># 给 ret 准备一个返回地址，否则 ret 会从栈顶取一个地址跳过去，很可能崩</span><br>RETURN_ADDR = <span class="hljs-number">0x0</span><br>uc.mem_write(rsp, RETURN_ADDR.to_bytes(<span class="hljs-number">8</span>, <span class="hljs-string">&quot;little&quot;</span>))<br><br><span class="hljs-comment"># 添加代码执行 hook</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">hook_code</span>(<span class="hljs-params">uc, address, size, user_data</span>):<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;[exec] 0x<span class="hljs-subst">&#123;address:x&#125;</span>, size=<span class="hljs-subst">&#123;size&#125;</span>&quot;</span>)<br><br>uc.hook_add(UC_HOOK_CODE, hook_code) <span class="hljs-comment"># 添加 hook</span><br><br><span class="hljs-comment"># 启动模拟</span><br><span class="hljs-keyword">try</span>:<br>    uc.emu_start(CODE_ADDR, CODE_ADDR + <span class="hljs-built_in">len</span>(CODE))<br><span class="hljs-keyword">except</span> UcError <span class="hljs-keyword">as</span> e:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Emulation error:&quot;</span>, e)<br><br>eax = uc.reg_read(UC_X86_REG_EAX)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;EAX = <span class="hljs-subst">&#123;eax&#125;</span>&quot;</span>)<br></code></pre></td></tr></table></figure></p>
+<h3 id="参考">参考</h3>
+<p><a
+target="_blank" rel="noopener" href="https://oacia.dev/ollvm-study/">ollvm三种混淆模式的反混淆思路</a></p>
+<p>本文的示例样本也是来自这篇参考文章</p>
 <link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
                 
               </div>

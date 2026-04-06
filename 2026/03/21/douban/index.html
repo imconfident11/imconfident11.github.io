@@ -27,7 +27,7 @@
 <meta property="og:description" content="分析 app 的过程中，需要用 frida hook 的话一般就需要对抗 frida 检测，这里以一个经典的 so 来学习一下 frida 检测的绕过 样本是豆瓣，本篇文章使用的 frida 版本: 17.7.3 hook dlopen hook 它的 dlopen 看一下 so 的加载流程，定位检测的 so 123456789101112131415161718192021222324">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2026-03-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-04-02T17:25:17.013Z">
+<meta property="article:modified_time" content="2026-04-05T17:59:15.450Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Reverse">
 <meta property="article:tag" content="Android">
@@ -582,6 +582,21 @@ stackplz 或者其他工具在内核态捕获 <code>openat</code>
 
   
 
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
 
 
 
