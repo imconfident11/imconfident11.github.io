@@ -19,15 +19,15 @@
   <meta name="author" content="Eleven">
   <meta name="keywords" content="">
   
-    <meta name="description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码 静态注册 : 在 AndroidManifest.xml 中注册 遵循一">
+    <meta name="description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) Binder 工作原理 通过 Binder，Android 可以跨越不同进程和内存空间进行数据交换和调用远程方法 当进程 A 想要获取进程 B 中某个对象的方法时，它先通过 Binder 获取 B 的接口对象，这个接口对象其实就是 B 中服">
 <meta property="og:type" content="article">
 <meta property="og:title" content="安卓基础知识笔记">
 <meta property="og:url" content="http://example.com/2025/07/02/android_note/index.html">
 <meta property="og:site_name" content="Eleven&#39;s Blog">
-<meta property="og:description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) JNI 静态注册和动态注册 Java 支持调用 C&#x2F;C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C&#x2F;C++ 代码 静态注册 : 在 AndroidManifest.xml 中注册 遵循一">
+<meta property="og:description" content="安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) Binder 工作原理 通过 Binder，Android 可以跨越不同进程和内存空间进行数据交换和调用远程方法 当进程 A 想要获取进程 B 中某个对象的方法时，它先通过 Binder 获取 B 的接口对象，这个接口对象其实就是 B 中服">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2025-07-01T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-12-21T05:17:52.548Z">
+<meta property="article:modified_time" content="2026-04-13T14:59:54.164Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Android">
 <meta name="twitter:card" content="summary_large_image">
@@ -235,7 +235,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.2k 字
+          1.8k 字
         
       </span>
     
@@ -246,7 +246,7 @@
         
         
         
-          11 分钟
+          15 分钟
         
       </span>
     
@@ -290,6 +290,13 @@
                 
                 <h3 id="安卓四大组件">安卓四大组件</h3>
 <p>Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者)</p>
+<h3 id="Binder-工作原理">Binder 工作原理</h3>
+<p>通过 Binder，Android 可以跨越不同进程和内存空间进行数据交换和调用远程方法</p>
+<p>当进程 A 想要获取进程 B 中某个对象的方法时，它先通过 Binder 获取 B 的接口对象，这个接口对象其实就是 B 中服务的代理，A 通过它来发起远程方法调用；Binder 驱动会将 A 的请求数据打包成 Parcel 数据传递给 B，B 收到数据后解包并执行对应的方法，再将结果封装成 Parcel 传递给 A，A 收到结果后解包并继续执行后续逻辑</p>
+<blockquote>
+<p>Parcel 是 Android 中用于在进程间传递数据的容器类，由于不同进程的内存空间是隔离的，不能直接传递内存中的对象，而 Parcel 就负责将对象的序列化（转化为字节流）后传输，接收端再将这些字节流反序列化为对象</p>
+</blockquote>
+<p>跟传统的 socket 通信相比，Binder 是通过内存映射的方式，在进程间共享内存区域来传递数据，而不用进行多次数据拷贝</p>
 <h3 id="JNI-静态注册和动态注册">JNI 静态注册和动态注册</h3>
 <p>Java 支持调用 C/C++ 代码，JNI(Java Native Interface)的作用是粘合 Java 代码和 C/C++ 代码</p>
 <p><strong>静态注册</strong> : 在 <code>AndroidManifest.xml</code> 中注册<br>
@@ -299,7 +306,25 @@
 <p>使用结构体 JNINativeMethod 来记录 java 方法和 jni 函数的对应关系</p>
 <figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-keyword">typedef</span> <span class="hljs-keyword">struct</span> &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* name; <span class="hljs-comment">//Java方法名</span><br>    <span class="hljs-type">const</span> <span class="hljs-type">char</span>* signature; <span class="hljs-comment">//方法的参数和返回值，使用字符串记录，格式形如`()V, (I)I`，括号内表示函数参数，括号右侧表示函数返回值</span><br>    <span class="hljs-type">void</span>*       fnPtr; <span class="hljs-comment">// 指向JNI函数的函数指针</span><br>&#125; JNINativeMethod;<br></code></pre></td></tr></table></figure>
 <p>java 端的 native 方法<br>
-c/c++ 代码实现的JNI_Onload()方法</p>
+c/c++ 代码实现的 JNI_Onload()方法</p>
+<p><strong>JNI 环境指针</strong><br>
+<code>JNIEnv* env = self-&gt;GetJniEnv();</code><br>
+JNIEnv 是一个结构体，包含了大量的函数指针，这些函数指针指向 JNI 提供的各种功能函数，如查找类、调用方法、访问字段<br>
+等,通过 JNIEnv* env，我们可以调用这些函数来实现 Java 和 C/C++ 代码之间的交互</p>
+<p>JNIEnv 是线程相关的，一个线程必须 attach 到 JVM 后才有自己的 <code>JNIEnv*</code></p>
+<h3 id="Android-是怎么加载-dex-的">Android 是怎么加载 dex 的</h3>
+<blockquote>
+<p>dex 是安卓设计的一种可执行字节码文件格式，开发者写的 Java/Kotlin 代码先会被编译成很多 .class 文件，再被转换并合并成一个或多个 .dex 文件，里面集中保存了应用运行所需的类定义、方法定义、字段信息、字符串常量、类型信息以及方法的字节码指令</p>
+</blockquote>
+<p>dex 的加载链路大致如下：</p>
+<ul>
+<li>AMS 让应用进程起来，ActivityThread 绑定应用</li>
+<li>LoadedApk 为这个包创建应用 ClassLoader</li>
+<li>PathClassLoader/BaseDexClassLoader 把 apk/split/apex/jar 路径整理成 DexPathList</li>
+<li>DexPathList 为每个代码路径打开 DexFile</li>
+<li>DexFile 通过 JNI 进入 ART，OatFileManager / DexFileLoader 真正打开 dex、vdex、oat</li>
+<li>后续 loadClass() 时，ART 的 ClassLinker 在这些已打开的 dex 里找类，并在第一次命中时 DefineClass</li>
+</ul>
 <h3 id="Frida-注入原理">Frida 注入原理</h3>
 <p>Frida 注入流程通常是：</p>
 <ul>

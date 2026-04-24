@@ -1,0 +1,802 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/avatar.jpg">
+  <link rel="icon" href="/img/avatar.jpg">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Eleven">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="App 的启动流程   当用户点击应用图标时，由 Launcher 通过 Binder IPC 调用系统服务,请求启动目标应用的 Activity,本质上是调用 startActivity()   请求会进入系统服务 AcitivityManagerService(AMS), AMS 首先会判断进程是否存在，如果存在就直接复用，否则就创建一个新进程   新进程的创建不是直接 fork 出来的，而是">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Fart -- 基于主动 ART 主动调用脱壳学习">
+<meta property="og:url" content="http://example.com/2026/04/08/fart/index.html">
+<meta property="og:site_name" content="Eleven&#39;s Blog">
+<meta property="og:description" content="App 的启动流程   当用户点击应用图标时，由 Launcher 通过 Binder IPC 调用系统服务,请求启动目标应用的 Activity,本质上是调用 startActivity()   请求会进入系统服务 AcitivityManagerService(AMS), AMS 首先会判断进程是否存在，如果存在就直接复用，否则就创建一个新进程   新进程的创建不是直接 fork 出来的，而是">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2026/04/08/images/fart/AT_Unpacker_ori.png">
+<meta property="article:published_time" content="2026-04-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-23T02:48:00.187Z">
+<meta property="article:author" content="Eleven">
+<meta property="article:tag" content="Android">
+<meta property="article:tag" content="Fart">
+<meta property="article:tag" content="脱壳">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2026/04/08/images/fart/AT_Unpacker_ori.png">
+  
+  
+  
+  <title>Fart -- 基于主动 ART 主动调用脱壳学习 - Eleven&#39;s Blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Eleven&#39;s Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/links/" target="_self">
+                <i class="iconfont icon-link-fill"></i>
+                <span>友链</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/wlop2.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Fart -- 基于主动 ART 主动调用脱壳学习"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-08 00:00" pubdate>
+          2026年4月8日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Fart -- 基于主动 ART 主动调用脱壳学习</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h3 id="App-的启动流程">App 的启动流程</h3>
+<ol>
+<li>
+<p>当用户点击应用图标时，由 <code>Launcher</code> 通过 <strong>Binder</strong> IPC 调用系统服务,请求启动目标应用的 <code>Activity</code>,本质上是调用 <code>startActivity()</code></p>
+</li>
+<li>
+<p>请求会进入系统服务 <code>AcitivityManagerService(AMS)</code>, AMS 首先会判断进程是否存在，如果存在就直接复用，否则就创建一个新进程</p>
+</li>
+<li>
+<p>新进程的创建不是直接 fork 出来的，而是通过 <code>Zygote</code> 来创建的，<code>Zygote</code> 已经预加载了 <code>ART</code> 和一些系统类和资源，fork 出来的进程能更快地启动</p>
+<ul>
+<li>AMS 通过 <strong>socket</strong> 向 Zygote 发送创建某个应用进程的请求</li>
+<li>Zygote 执行 <code>fork()</code>,创建出一个新的进程</li>
+<li>新进程会执行 <code>ActivityThread.main()</code>,这是真正的入口函数</li>
+</ul>
+</li>
+<li>
+<p>在 <code>AcitivityThread.main()</code> 中会完成主线程（即 UI 线程）的创建，包括初始化 <code>Looper</code> 和创建 <code>MessageQueue</code>；同时会创建一个 <code>ApplicationThread</code> 实例，并通过 <strong>Binder</strong> 将其注册到 AMS 中；接着通过 <code>LoadedApk.makeApplication()</code> 加载 <code>Application</code> 实例,并调用 <code>attach()</code> 和 <code>onCreate()</code> 来完成 <code>Application</code> 的初始化</p>
+</li>
+<li>
+<p>接下来 AMS 通过 <strong>Binder</strong> 通知应用进程启动目标 Activity,<code>ActivityThread</code> 接收到消息后调用 <code>scheduleLaunchActivity()</code> 来处理请求，然后通过 <code>performLaunchActivity()</code> 方法来实际启动目标 Activity ,并调用 <code>Activity.attach()</code> 绑定到当前线程，绑定完后，系统会依次调用 <code>onCreate()</code>，<code>onStart()</code>，<code>onResume()</code>，使得目标 Activity 完成初始化并进入到可以交互的状态</p>
+</li>
+</ol>
+<blockquote>
+<p>Binder 是安卓系统中用于进程间通信的核心机制，允许不同进程间中的应用程序进行数据交换和远程调用方法</p>
+</blockquote>
+<p><code>ActivityThread.main()</code> 通过 <code>Looper.loop()</code> 进入消息循环，此时，ActivityThread 会等待并处理来自其他系统服务的请求和消息，当收到来自 AMS 的 bindApplication 请求时，会通过 Handler 机制处理，在 Handler 的回调中，ActivityThread 会调用 <code>handleBindApplication()</code> 方法</p>
+<p>Handler 其实就是一个用于处理消息的对象,当消息到达时，Handler 会根据消息的内容去调用相应的处理方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-comment">// ActivityThread 类内部定义的 Handler（H）</span><br><span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">H</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Handler</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleMessage</span><span class="hljs-params">(Message msg)</span> &#123;<br>        <span class="hljs-keyword">switch</span> (msg.what) &#123;<br>            <span class="hljs-keyword">case</span> BIND_APPLICATION:<br>                handleBindApplication((AppBindData) msg.obj);<br>                <span class="hljs-keyword">break</span>;<br>            <span class="hljs-comment">// ...</span><br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p><code>handleMessage()</code> 就是 Handler 处理消息的核心，每个消息都会被传递到这个方法中，<code>msg.what</code> 是消息的标识，当传递的消息类型是 <code>BIND_APPLICATION</code> 时，就会调用 <code>handleBindApplication()</code> 方法来处理这个消息</p>
+<p>(下文中的代码部分都是基于 <a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:">android-16.0.0_r1</a> 源码进行分析并做了部分摘取的)</p>
+<p>分析 <code>frameworks/base/core/java/android/app/ActivityThread.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">handleBindApplication</span><span class="hljs-params">(AppBindData data)</span> &#123;<br>    <span class="hljs-comment">// 绑定应用的数据</span><br>    mBoundApplication = data;<br><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">boolean</span> <span class="hljs-variable">isSdkSandbox</span> <span class="hljs-operator">=</span> data.sdkSandboxClientAppPackage != <span class="hljs-literal">null</span>;<br>        <span class="hljs-comment">// 创建并返回一个 LoadedApk 对象</span><br>        data.info = getPackageInfo(data.appInfo, mCompatibilityInfo, <span class="hljs-literal">null</span> <span class="hljs-comment">/* baseLoader */</span>,<br>                <span class="hljs-literal">false</span> <span class="hljs-comment">/* securityViolation */</span>, <span class="hljs-literal">true</span> <span class="hljs-comment">/* includeCode */</span>,<br>                <span class="hljs-literal">false</span> <span class="hljs-comment">/* registerPackage */</span>, isSdkSandbox);<br>        <span class="hljs-keyword">if</span> (isSdkSandbox) &#123;<br>            data.info.setSdkSandboxStorage(data.sdkSandboxClientAppVolumeUuid,<br>                    data.sdkSandboxClientAppPackage);<br>        &#125;<br><br>    <span class="hljs-comment">// Instrumentation info affects the class loader, so load it before</span><br>    <span class="hljs-comment">// setting up the app context.</span><br>    <span class="hljs-keyword">final</span> InstrumentationInfo ii;<br>    <span class="hljs-keyword">if</span> (data.instrumentationName != <span class="hljs-literal">null</span>) &#123;<br>            ii = prepareInstrumentation(data);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            ii = <span class="hljs-literal">null</span>;<br>        &#125;<br>    <br>    <span class="hljs-comment">// 创建并返回一个新的 ContextImpl 实例，ContextImpl 是 Context 类的具体实现</span><br>    <span class="hljs-keyword">final</span> <span class="hljs-type">ContextImpl</span> <span class="hljs-variable">appContext</span> <span class="hljs-operator">=</span> ContextImpl.createAppContext(<span class="hljs-built_in">this</span>, data.info);<br><br>    <span class="hljs-comment">// 初始化 Instrumentation</span><br>    <span class="hljs-keyword">if</span> (ii != <span class="hljs-literal">null</span>) &#123;<br>        initInstrumentation(ii, data, appContext);<br>    &#125; <span class="hljs-keyword">else</span> &#123;<br>        mInstrumentation = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Instrumentation</span>();<br>        mInstrumentation.basicInit(<span class="hljs-built_in">this</span>);<br>    &#125;<br><br>    Application app;<br><br>    <span class="hljs-comment">// 初始化 application 实例</span><br>    app = data.info.makeApplicationInner(data.restrictedBackupMode, <span class="hljs-literal">null</span>);<br>    mInitialApplication = app;<br><br>    <span class="hljs-comment">// 调用 onCreate()</span><br>    <span class="hljs-keyword">try</span> &#123;<br>            mInstrumentation.onCreate(data.instrumentationArgs);<br>        &#125;<br>        <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<br>                <span class="hljs-string">&quot;Exception thrown in onCreate() of &quot;</span> + data.instrumentationName, e);<br>        &#125;<br>        <span class="hljs-keyword">try</span> &#123;<br>            timestampApplicationOnCreateNs = SystemClock.uptimeNanos();<br>            mInstrumentation.callApplicationOnCreate(app);<br>    <br><br><br>&#125;<br></code></pre></td></tr></table></figure>
+<p>上面调用的 <code>makeApplicationInner()</code> 是 <code>LoadedApk</code> 类中的方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">public</span> Application <span class="hljs-title function_">makeApplicationInner</span><span class="hljs-params">(<span class="hljs-type">boolean</span> forceDefaultAppClass,</span><br><span class="hljs-params">            Instrumentation instrumentation)</span> &#123;<br>        <span class="hljs-keyword">return</span> makeApplicationInner(forceDefaultAppClass, instrumentation,<br>                <span class="hljs-comment">/* allowDuplicateInstances= */</span> <span class="hljs-literal">false</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> Application <span class="hljs-title function_">makeApplicationInner</span><span class="hljs-params">(<span class="hljs-type">boolean</span> forceDefaultAppClass,</span><br><span class="hljs-params">            Instrumentation instrumentation, <span class="hljs-type">boolean</span> allowDuplicateInstances)</span> &#123;<br>        <span class="hljs-keyword">if</span> (mApplication != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-keyword">return</span> mApplication;<br>        &#125;<br><br>            <span class="hljs-comment">// 确定应用程序的 Application 类</span><br>            <span class="hljs-type">Application</span> <span class="hljs-variable">app</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>            <span class="hljs-keyword">final</span> <span class="hljs-type">String</span> <span class="hljs-variable">myProcessName</span> <span class="hljs-operator">=</span> Process.myProcessName();<br>            <span class="hljs-type">String</span> <span class="hljs-variable">appClass</span> <span class="hljs-operator">=</span> mApplicationInfo.getCustomApplicationClassNameForProcess(<br>                    myProcessName);<br>            <span class="hljs-keyword">if</span> (forceDefaultAppClass || (appClass == <span class="hljs-literal">null</span>)) &#123;<br>                appClass = <span class="hljs-string">&quot;android.app.Application&quot;</span>;<br>            &#125;<br><br>            <span class="hljs-comment">// 初始化类加载器</span><br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-keyword">final</span> java.lang.<span class="hljs-type">ClassLoader</span> <span class="hljs-variable">cl</span> <span class="hljs-operator">=</span> getClassLoader();<br>                <span class="hljs-keyword">if</span> (!mPackageName.equals(<span class="hljs-string">&quot;android&quot;</span>)) &#123;<br>                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,<br>                            <span class="hljs-string">&quot;initializeJavaContextClassLoader&quot;</span>);<br>                    initializeJavaContextClassLoader();<br>                    Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);<br>                &#125;<br><br>                <span class="hljs-comment">// 实例化 Application </span><br>                app = mActivityThread.mInstrumentation.newApplication(<br>                        cl, appClass, appContext);<br>                appContext.setOuterContext(app);<br>            &#125; <span class="hljs-keyword">catch</span> (Exception e) &#123;<br>                <span class="hljs-keyword">if</span> (!mActivityThread.mInstrumentation.onException(app, e)) &#123;<br>                    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<br>                        <span class="hljs-string">&quot;Unable to instantiate application &quot;</span> + appClass<br>                        + <span class="hljs-string">&quot; package &quot;</span> + mPackageName + <span class="hljs-string">&quot;: &quot;</span> + e.toString(), e);<br>                &#125;<br>            &#125;<br><br>            <span class="hljs-comment">// 应用初始化与注册</span><br>            mActivityThread.addApplication(app);<br>            mApplication = app;<br><br>            <span class="hljs-keyword">if</span> (instrumentation != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-keyword">try</span> &#123;<br>                    <span class="hljs-comment">// 调用 onCreate()</span><br>                    instrumentation.callApplicationOnCreate(app);<br>                &#125; <br></code></pre></td></tr></table></figure>
+<p>其中实例化 Application 的部分调用了 <code>Instrumentation</code> 类中 <code>newApplication()</code> 方法，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@RavenwoodKeep</span><br>    <span class="hljs-keyword">public</span> Application <span class="hljs-title function_">newApplication</span><span class="hljs-params">(ClassLoader cl, String className, Context context)</span><br>            <span class="hljs-keyword">throws</span> InstantiationException, IllegalAccessException, <br>            ClassNotFoundException &#123;<br>        <span class="hljs-type">Application</span> <span class="hljs-variable">app</span> <span class="hljs-operator">=</span> getFactory(context.getPackageName())<br>                .instantiateApplication(cl, className);<br>        app.attach(context);<br>        <span class="hljs-keyword">return</span> app;<br>    &#125;<br>    <br><span class="hljs-meta">@RavenwoodKeep</span><br><span class="hljs-keyword">static</span> <span class="hljs-keyword">public</span> Application <span class="hljs-title function_">newApplication</span><span class="hljs-params">(Class&lt;?&gt; clazz, Context context)</span><br>        <span class="hljs-keyword">throws</span> InstantiationException, IllegalAccessException, <br>        ClassNotFoundException &#123;<br>    <span class="hljs-type">Application</span> <span class="hljs-variable">app</span> <span class="hljs-operator">=</span> (Application)clazz.newInstance();<br>    app.attach(context);<br>    <span class="hljs-keyword">return</span> app;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>一旦 Application 实例被创建，它会调用 <code>attach()</code> 方法将上下文与 Application 实例关联,应用就能访问系统资源和进行初始化操作</p>
+<p><code>Application</code> 类中的 <code>attach()</code> 方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-meta">@UnsupportedAppUsage</span><br><span class="hljs-comment">/* package */</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">attach</span><span class="hljs-params">(Context context)</span> &#123;<br>    attachBaseContext(context);<br>    setLoadedApk(context);<br>    &#125;<br></code></pre></td></tr></table></figure>
+<p>它通过 <code>attachBaseContext()</code> 方法将上下文与 Application 实例关联,并通过 <code>setLoadedApk()</code> 方法将当前应用的 LoadedApk 设置到 Application 实例中</p>
+<blockquote>
+<p>LoadedApk 表示已加载的的应用 APK 的类，包含了与应用相关的资源、配置信息、类加载器等</p>
+</blockquote>
+<p>由上面的分析可以知道在 app 的启动过程中，<code>attachBaseContext()</code> 和 <code>onCreate</code> 是最先获得代码执行权限的</p>
+<h3 id="从-LoadedApk-到-DexFile">从 LoadedApk 到 DexFile</h3>
+<p>在 <code>ActivityThread.handleBindApplication()</code> 中，系统先通过 <code>getPackageInfo()</code> 得到 <code>LoadedApk</code>，随后创建 <code>ContextImpl</code>，再调用 <code>LoadedApk.makeApplicationInner()</code> 去实例化 <code>Application</code></p>
+<p>在这个过程中，<code>makeApplicationInner()</code> 会先调用 <code>getClassLoader()</code>，再通过 <code>Instrumentation.newApplication()</code> 反射创建目标 <code>Application</code> 实例。</p>
+<p>这说明对于 Android 系统来说，<code>Application</code>、<code>Activity</code>、<code>Service</code> 这些组件能够被正常创建，有一个前提：<strong>必须先有一个系统认可的类加载器，把应用代码接入当前进程</strong></p>
+<p>继续看 Android 的类加载实现，应用常见的 <code>PathClassLoader</code>、<code>DexClassLoader</code> 本质上都继承自 <code>BaseDexClassLoader</code></p>
+<p>在 <code>BaseDexClassLoader</code> 中，真正负责管理 dex 路径的核心字段是 <code>pathList</code>，它的类型是 <code>DexPathList</code>；而在 <code>DexPathList</code> 中，最关键的字段则是 <code>dexElements</code></p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs text">LoadedApk<br>  ↓<br>ClassLoader(PathClassLoader / DexClassLoader / BaseDexClassLoader)<br>  ↓<br>DexPathList(pathList)<br>  ↓<br>dexElements<br>  ↓<br>DexFile<br></code></pre></td></tr></table></figure>
+<p>当系统要加载某个类时，最终会沿着这条链一路往下，遍历 dexElements 中的每一个 element，再尝试从对应的 DexFile 里找到并定义这个类</p>
+<h3 id="App-加壳原理">App 加壳原理</h3>
+<p>理解了这条系统正式类加载链之后，再回头看加壳程序的行为就会更清楚</p>
+<p>壳在启动早期确实可以自己创建一个 <code>DexClassLoader</code>，也可以在自己的逻辑里先完成 dex 的解密与加载；但如果这个类加载器只是壳私下持有，而没有接入系统正式使用的类加载环境，那么它加载出来的类对于 Android 框架层仍然是“不可见”的</p>
+<p>因为系统后续在创建 <code>Application</code>、<code>Activity</code>、<code>Service</code> 等组件时，使用的不是壳随便 new 出来的任意 <code>ClassLoader</code>，而是当前应用对应 <code>LoadedApk</code> 所维护的那一套正式类加载链</p>
+<p>所以壳还要做一步：要么直接替换 <code>LoadedApk</code> 持有的类加载器，要么修改已有类加载器内部的 <code>DexPathList.dexElements</code>，把解密后的真实 dex 插进去，使这些真实类对系统框架层可见</p>
+<p>而完成这一步，壳需要选择一个合适的时机，比如通过替换 APP 原本的 <code>Application</code> 类,并且自定义实现其中的 <code>attachBaseContext()</code> 和 <code>onCreate()</code> 方法，然后在这两个函数中实现 dex 的解密</p>
+<h3 id="Fart-脱壳机的原理">Fart 脱壳机的原理</h3>
+<p>一个 fart 脱壳机运行的关键步骤如下：</p>
+<ul>
+<li>识别目标包或者进程</li>
+<li>不让安卓对 dex 做默认编译优化，阻止它被正常 dexopt 成 AOT/JIT</li>
+<li>在应用启动早期自动注入脱壳线程</li>
+<li>从运行时拿到目标进程已加载的 DexFile</li>
+<li>主动遍历类并触发方法执行</li>
+<li>强制这些方法走解释器</li>
+<li>在解释器逐指令执行时，在合适的时机 Dump 真实的 CodeItem</li>
+<li>把内存中的 dex 整体 dump 出来</li>
+<li>把 CodeItem 回填到 dex，生成恢复后的文件</li>
+</ul>
+<p>加固壳可以对 dex 文件做变形、抽取、方法体置空、跳转解密等等，但是应用运行时一定会在某一刻拿到真实 DexFile 和真实 CodeItem,所以就要在这个时机把它们截获出来</p>
+<h3 id="Fart-脱壳的实现">Fart 脱壳的实现</h3>
+<p>以下分析参考项目 <a target="_blank" rel="noopener" href="https://github.com/Youlor/unpacker/tree/master">Youpk/unpacker</a>,研究其实现原理</p>
+<h4 id="java-入口分析">java 入口分析</h4>
+<p>原项目的 java 入口在 <code>unpacker-master\android-7.1.2_r33\frameworks\base\core\java\cn\youlor\Unpacker.java</code></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><code class="hljs java"><span class="hljs-keyword">package</span> cn.youlor;<br><span class="hljs-keyword">import</span> android.app.ActivityThread;<br><span class="hljs-keyword">import</span> android.os.Looper;<br><span class="hljs-keyword">import</span> java.io.BufferedReader;<br><span class="hljs-keyword">import</span> java.io.FileReader;<br><span class="hljs-keyword">import</span> java.io.File;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Unpacker</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">String</span> <span class="hljs-variable">UNPACK_CONFIG</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;/data/local/tmp/unpacker.config&quot;</span>;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-variable">UNPACK_INTERVAL</span> <span class="hljs-operator">=</span> <span class="hljs-number">10</span> * <span class="hljs-number">1000</span>;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">Thread</span> <span class="hljs-variable">unpackerThread</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">shouldUnpack</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">should_unpack</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-type">String</span> <span class="hljs-variable">processName</span> <span class="hljs-operator">=</span> ActivityThread.currentProcessName();<br>        <span class="hljs-type">BufferedReader</span> <span class="hljs-variable">br</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>        <span class="hljs-keyword">try</span> &#123;<br>            br = <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FileReader</span>(UNPACK_CONFIG));<br>            String line;<br>            <span class="hljs-keyword">while</span> ((line = br.readLine()) != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-keyword">if</span> (line.equals(processName)) &#123;<br>                    should_unpack = <span class="hljs-literal">true</span>;<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>            &#125;<br>            br.close();<br>        &#125;<br>        <span class="hljs-keyword">catch</span> (Exception ignored) &#123;<br>            <br>        &#125;<br>        <span class="hljs-keyword">return</span> should_unpack;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">unpack</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-keyword">if</span> (Unpacker.unpackerThread != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-keyword">return</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (!shouldUnpack()) &#123;<br>            <span class="hljs-keyword">return</span>;<br>        &#125;<br>        <br>        <span class="hljs-comment">//开启线程调用</span><br>        Unpacker.unpackerThread = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>() &#123;<br>            <span class="hljs-meta">@Override</span> <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) &#123;<br>                    <span class="hljs-keyword">try</span> &#123;<br>                        Thread.sleep(UNPACK_INTERVAL);<br>                    &#125;<br>                    <span class="hljs-keyword">catch</span> (InterruptedException e) &#123;<br>                        e.printStackTrace();<br>                    &#125;<br>                    Unpacker.unpackNative();<br>                &#125;<br>            &#125;<br>        &#125;;<br>        Unpacker.unpackerThread.start();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">native</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">unpackNative</span><span class="hljs-params">()</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>读取 <code>/data/local/tmp/unpacker.config</code> 配置文件</p>
+<p>这里的 config 文件中存放的是 APP 的包名/进程名，在使用脱壳工具时自行配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">adb shell <span class="hljs-string">&quot;echo cn.youlor.mydemo &gt;&gt; /data/local/tmp/unpacker.config&quot;</span><br></code></pre></td></tr></table></figure>
+<p>然后通过 <code>ActivityThread.currentProcessName()</code> 获取目标进程名并判断是否命中，如果命中目标进程就会启动一个后台线程，每隔 10 秒调用一次 <code>unpackNative()</code>,这里面就是真正的脱壳逻辑</p>
+<p>原项目是把这个入口挂载到 <code>ActivityThread</code> 的 <code>handleBindApplication()</code> 中的，插在 <code>mInitialApplication = app</code> 之后，<code>installContentProviders(...)</code> 之前,又最开始的分析可以知道，这个位置是刚初始化 application 实例的时候</p>
+<p><img src="/images/fart/AT_Unpacker_ori.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<h4 id="native-层分析">native 层分析</h4>
+<p>native 核心在 <code>android-7.1.2_r33\art\runtime\unpacker\unpacker.cc</code>,分析一下里面的关键逻辑</p>
+<h5 id="获取-dump-目录">获取 dump 目录</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-meta">#<span class="hljs-keyword">define</span> UNPACKER_WORKSPACE <span class="hljs-string">&quot;unpacker&quot;</span></span><br><br><span class="hljs-function">std::string <span class="hljs-title">Unpacker::getDumpDir</span><span class="hljs-params">()</span> </span>&#123;<br>  Thread* <span class="hljs-type">const</span> self = Thread::<span class="hljs-built_in">Current</span>();<br>  JNIEnv* env = self-&gt;<span class="hljs-built_in">GetJniEnv</span>();<br>  jclass cls_ActivityThread = env-&gt;<span class="hljs-built_in">FindClass</span>(<span class="hljs-string">&quot;android/app/ActivityThread&quot;</span>);<br>  jmethodID mid_currentActivityThread = env-&gt;<span class="hljs-built_in">GetStaticMethodID</span>(cls_ActivityThread, <span class="hljs-string">&quot;currentActivityThread&quot;</span>, <span class="hljs-string">&quot;()Landroid/app/ActivityThread;&quot;</span>);<br>  jobject obj_ActivityThread = env-&gt;<span class="hljs-built_in">CallStaticObjectMethod</span>(cls_ActivityThread, mid_currentActivityThread);<br>  jfieldID fid_mInitialApplication = env-&gt;<span class="hljs-built_in">GetFieldID</span>(cls_ActivityThread, <span class="hljs-string">&quot;mInitialApplication&quot;</span>, <span class="hljs-string">&quot;Landroid/app/Application;&quot;</span>);<br>  jobject obj_mInitialApplication = env-&gt;<span class="hljs-built_in">GetObjectField</span>(obj_ActivityThread, fid_mInitialApplication);<br>  jclass cls_Context = env-&gt;<span class="hljs-built_in">FindClass</span>(<span class="hljs-string">&quot;android/content/Context&quot;</span>);<br>  jmethodID mid_getApplicationInfo = env-&gt;<span class="hljs-built_in">GetMethodID</span>(cls_Context, <span class="hljs-string">&quot;getApplicationInfo&quot;</span>,<br>                                                      <span class="hljs-string">&quot;()Landroid/content/pm/ApplicationInfo;&quot;</span>);<br>  jobject obj_app_info = env-&gt;<span class="hljs-built_in">CallObjectMethod</span>(obj_mInitialApplication, mid_getApplicationInfo);<br>  jclass cls_ApplicationInfo = env-&gt;<span class="hljs-built_in">FindClass</span>(<span class="hljs-string">&quot;android/content/pm/ApplicationInfo&quot;</span>);<br>  jfieldID fid_dataDir = env-&gt;<span class="hljs-built_in">GetFieldID</span>(cls_ApplicationInfo, <span class="hljs-string">&quot;dataDir&quot;</span>, <span class="hljs-string">&quot;Ljava/lang/String;&quot;</span>);<br>  jstring dataDir = (jstring)env-&gt;<span class="hljs-built_in">GetObjectField</span>(obj_app_info, fid_dataDir);<br>  <span class="hljs-type">const</span> <span class="hljs-type">char</span> *cstr_dataDir = env-&gt;<span class="hljs-built_in">GetStringUTFChars</span>(dataDir, <span class="hljs-literal">nullptr</span>);<br>  <span class="hljs-function">std::string <span class="hljs-title">dump_dir</span><span class="hljs-params">(cstr_dataDir)</span></span>;<br>  dump_dir += <span class="hljs-string">&quot;/&quot;</span>;<br>  dump_dir += UNPACKER_WORKSPACE;<br>  env-&gt;<span class="hljs-built_in">ReleaseStringUTFChars</span>(dataDir, cstr_dataDir);<br>  <span class="hljs-keyword">return</span> dump_dir;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>先获取 <code>ActivityThread</code>，再从中取出当前进程对应的 <code>Application</code> 对象，再调用 <code>getApplicationInfo()</code> 获取 <code>ApplicationInfo</code>,然后读取其中的 <code>dataDir</code> 字段，也就是应用自己的私有数据目录，之后把这个 java 字符串转换成 c++ 字符串，在末尾拼接一个 <code>/unpacker</code> 并把整个完整路径返回</p>
+<p>根据后面的代码对应生成的结构目录是</p>
+<figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs oxygene">&lt;dataDir&gt;/unpacker<br>&lt;dataDir&gt;/unpacker/dex<br>&lt;dataDir&gt;/unpacker/<span class="hljs-keyword">method</span><br>&lt;<span class="hljs-title function_">dataDir</span>&gt;/<span class="hljs-title function_">unpacker</span>/<span class="hljs-title function_">unpacker</span>.<span class="hljs-title function_">json</span><br></code></pre></td></tr></table></figure>
+<p>其中 <code>unpacker.json</code> 记录了每个 dex 的信息，在后续主动调用时可能会遇到中断崩溃的情况，有了这个 json，下次线程再触发时，就可以从中断的位置继续而不是从头开始</p>
+<h5 id="从-ART-枚举当前进程所有的-dex-文件">从 ART 枚举当前进程所有的 dex 文件</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function">std::list&lt;<span class="hljs-type">const</span> DexFile*&gt; <span class="hljs-title">Unpacker::getDexFiles</span><span class="hljs-params">()</span> </span>&#123;<br>  std::list&lt;<span class="hljs-type">const</span> DexFile*&gt; dex_files;<br>  Thread* <span class="hljs-type">const</span> self = Thread::<span class="hljs-built_in">Current</span>();<br>  ClassLinker* class_linker = Runtime::<span class="hljs-built_in">Current</span>()-&gt;<span class="hljs-built_in">GetClassLinker</span>();<br>  <span class="hljs-function">ReaderMutexLock <span class="hljs-title">mu</span><span class="hljs-params">(self, *class_linker-&gt;DexLock())</span></span>;<br>  <span class="hljs-type">const</span> std::list&lt;ClassLinker::DexCacheData&gt;&amp; dex_caches = class_linker-&gt;<span class="hljs-built_in">GetDexCachesData</span>();<br>  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span> it = dex_caches.<span class="hljs-built_in">begin</span>(); it != dex_caches.<span class="hljs-built_in">end</span>(); ++it) &#123;<br>    ClassLinker::DexCacheData data = *it;<br>    <span class="hljs-type">const</span> DexFile* dex_file = data.dex_file;<br>    <span class="hljs-type">const</span> std::string&amp; dex_location = dex_file-&gt;<span class="hljs-built_in">GetLocation</span>();<br>    <span class="hljs-keyword">if</span> (dex_location.<span class="hljs-built_in">rfind</span>(<span class="hljs-string">&quot;/system/&quot;</span>, <span class="hljs-number">0</span>) == <span class="hljs-number">0</span>) &#123;<br>      <span class="hljs-keyword">continue</span>;<br>    &#125;<br>    dex_files.<span class="hljs-built_in">push_back</span>(dex_file);<br>  &#125;<br>  <span class="hljs-keyword">return</span> dex_files;<br>&#125;<br></code></pre></td></tr></table></figure>
+<blockquote>
+<p>运行时 dex 加载：APK -&gt; ClassLoader -&gt; ART -&gt; DexFile -&gt; DexCache -&gt; ClassLinker</p>
+</blockquote>
+<p><code>ClassLoader</code> 把 dex 交给 ART，ART 创建 <code>DexFile</code> 对象，同时创建 <code>DexCache</code> 来缓存解析后的方法字段等信息，由 <code>ClassLinker</code> 统一管理</p>
+<p>这里先通过 <code>Runtime::Current()-&gt;GetClassLinker()</code> 拿到 <code>ClassLinker</code> 实例，再通过 <code>class_linker-&gt;GetDexCachesData()</code> 从 ART 当前已加载的 dex cache 视图里拿 dex，之后再过滤掉系统 dex</p>
+<h5 id="dump-整体-dex">dump 整体 dex</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Unpacker::dumpAllDexes</span><span class="hljs-params">()</span> </span>&#123;<br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> DexFile* dex_file : Unpacker_dex_files_) &#123;<br>    std::string dump_path = <span class="hljs-built_in">getDexDumpPath</span>(dex_file);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-built_in">access</span>(dump_path.<span class="hljs-built_in">c_str</span>(), F_OK) != <span class="hljs-number">-1</span>) &#123;<br>      <span class="hljs-built_in">ULOGI</span>(<span class="hljs-string">&quot;%s already dumped, ignored&quot;</span>, dump_path.<span class="hljs-built_in">c_str</span>());<br>      <span class="hljs-keyword">continue</span>;<br>    &#125;<br>    <span class="hljs-type">const</span> <span class="hljs-type">uint8_t</span>* begin = dex_file-&gt;<span class="hljs-built_in">Begin</span>();<br>    <span class="hljs-type">size_t</span> size = dex_file-&gt;<span class="hljs-built_in">Size</span>();<br>    <span class="hljs-type">int</span> fd = <span class="hljs-built_in">open</span>(dump_path.<span class="hljs-built_in">c_str</span>(), O_RDWR | O_CREAT, <span class="hljs-number">0777</span>);<br>    <span class="hljs-keyword">if</span> (fd == <span class="hljs-number">-1</span>) &#123;<br>      <span class="hljs-built_in">ULOGE</span>(<span class="hljs-string">&quot;open %s error: %s&quot;</span>, dump_path.<span class="hljs-built_in">c_str</span>(), <span class="hljs-built_in">strerror</span>(errno));<br>      <span class="hljs-keyword">continue</span>;<br>    &#125;<br><br>    <span class="hljs-function">std::vector&lt;<span class="hljs-type">uint8_t</span>&gt; <span class="hljs-title">data</span><span class="hljs-params">(size)</span></span>;<br>    <span class="hljs-built_in">memcpy</span>(data.<span class="hljs-built_in">data</span>(), <span class="hljs-string">&quot;dex\n035&quot;</span>, <span class="hljs-number">8</span>);<br>    <span class="hljs-built_in">memcpy</span>(data.<span class="hljs-built_in">data</span>() + <span class="hljs-number">8</span>, begin + <span class="hljs-number">8</span>, size - <span class="hljs-number">8</span>);<br><br>    <span class="hljs-type">size_t</span> written_size = <span class="hljs-built_in">write</span>(fd, data.<span class="hljs-built_in">data</span>(), size);<br>    <span class="hljs-keyword">if</span> (written_size &lt; size) &#123;<br>      <span class="hljs-built_in">ULOGW</span>(<span class="hljs-string">&quot;fwrite %s %zu/%zu error: %s&quot;</span>, dump_path.<span class="hljs-built_in">c_str</span>(), written_size, size, <span class="hljs-built_in">strerror</span>(errno));<br>    &#125;<br>    <span class="hljs-built_in">close</span>(fd);<br>    <span class="hljs-built_in">ULOGI</span>(<span class="hljs-string">&quot;dump dex %s to %s successful!&quot;</span>, dex_file-&gt;<span class="hljs-built_in">GetLocation</span>().<span class="hljs-built_in">c_str</span>(), dump_path.<span class="hljs-built_in">c_str</span>());<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>遍历已经收集到的 dex,从 <code>DexFile</code> 里面取出<strong>内存起始地址</strong>和<strong>大小</strong>，另外把 dex 文件的前 8 个字节替换成标准 dex 文件的魔数 <code>dex\n035</code>,再拷贝剩余内容并写入到文件中</p>
+<h5 id="核心部分-invokeAllMethods">核心部分 invokeAllMethods()</h5>
+<p>主动调用所有方法</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-function"><span class="hljs-type">void</span> <span class="hljs-title">Unpacker::invokeAllMethods</span><span class="hljs-params">()</span> </span>&#123;<br>  <span class="hljs-comment">//dump类的六种status: </span><br>  <span class="hljs-comment">//Ready: 该类准备dump</span><br>  <span class="hljs-comment">//Resolved: ResolveClass成功</span><br>  <span class="hljs-comment">//ResolveClassFailed: ResolveClass失败</span><br>  <span class="hljs-comment">//Inited: EnsureInitialized成功</span><br>  <span class="hljs-comment">//EnsureInitializedFailed: EnsureInitialized失败</span><br>  <span class="hljs-comment">//Dumped: dump所有method成功</span><br><br>  Thread* <span class="hljs-type">const</span> self = Thread::<span class="hljs-built_in">Current</span>();<br>  ClassLinker* class_linker = Runtime::<span class="hljs-built_in">Current</span>()-&gt;<span class="hljs-built_in">GetClassLinker</span>();<br><br>  <span class="hljs-keyword">for</span> (<span class="hljs-type">const</span> DexFile* dex_file : Unpacker_dex_files_) &#123;<br>    <span class="hljs-type">uint32_t</span> class_idx = <span class="hljs-number">0</span>;<br>    <span class="hljs-type">bool</span> skip_clinit = <span class="hljs-literal">false</span>;<br>    cJSON* dex = <span class="hljs-literal">nullptr</span>;<br>    cJSON* current = <span class="hljs-literal">nullptr</span>;<br>    cJSON* failures = <span class="hljs-literal">nullptr</span>;<br>    cJSON* dexes = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(Unpacker_json_, <span class="hljs-string">&quot;dexes&quot;</span>);<br>    <span class="hljs-built_in">CHECK</span>(dexes != <span class="hljs-literal">nullptr</span>);<br>    <span class="hljs-built_in">cJSON_ArrayForEach</span>(dex, dexes) &#123;<br>      cJSON *location = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(dex, <span class="hljs-string">&quot;location&quot;</span>);<br>      cJSON *dump_path = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(dex, <span class="hljs-string">&quot;dump_path&quot;</span>);<br>      cJSON *class_size = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(dex, <span class="hljs-string">&quot;class_size&quot;</span>);<br>      <span class="hljs-type">char</span>* location_str = <span class="hljs-built_in">cJSON_GetStringValue</span>(location);<br>      <span class="hljs-type">char</span>* dump_path_str = <span class="hljs-built_in">cJSON_GetStringValue</span>(dump_path);<br>      <span class="hljs-type">uint32_t</span> class_size_num = <span class="hljs-built_in">cJSON_GetNumberValue</span>(class_size);<br>      <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(location_str, dex_file-&gt;<span class="hljs-built_in">GetLocation</span>().<span class="hljs-built_in">c_str</span>()) == <span class="hljs-number">0</span><br>        &amp;&amp; <span class="hljs-built_in">strcmp</span>(dump_path_str, <span class="hljs-built_in">getDexDumpPath</span>(dex_file).<span class="hljs-built_in">c_str</span>()) == <span class="hljs-number">0</span><br>        &amp;&amp; class_size_num == dex_file-&gt;<span class="hljs-built_in">NumClassDefs</span>()) &#123;<br>        <span class="hljs-comment">// 已经处理过的dex</span><br>        current = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(dex, <span class="hljs-string">&quot;current&quot;</span>);<br>        failures = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(dex, <span class="hljs-string">&quot;failures&quot;</span>);<br>        cJSON *index = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(current, <span class="hljs-string">&quot;index&quot;</span>);<br>        cJSON *descriptor = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(current, <span class="hljs-string">&quot;descriptor&quot;</span>);<br>        cJSON *status = <span class="hljs-built_in">cJSON_GetObjectItemCaseSensitive</span>(current, <span class="hljs-string">&quot;status&quot;</span>);<br>        <span class="hljs-type">uint32_t</span> index_num = <span class="hljs-built_in">cJSON_GetNumberValue</span>(index);<br>        <span class="hljs-type">char</span>* descriptor_str = <span class="hljs-built_in">cJSON_GetStringValue</span>(descriptor);<br>        <span class="hljs-type">char</span>* status_str = <span class="hljs-built_in">cJSON_GetStringValue</span>(status);<br>        <span class="hljs-built_in">CHECK</span>(<span class="hljs-built_in">strcmp</span>(descriptor_str, dex_file-&gt;<span class="hljs-built_in">GetClassDescriptor</span>(dex_file-&gt;<span class="hljs-built_in">GetClassDef</span>(index_num))) == <span class="hljs-number">0</span>);<br>        <br>        <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(status_str, <span class="hljs-string">&quot;Resolved&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>          <span class="hljs-comment">//如果status为Resolved, 说明进程在EnsureInitialized时结束了, 很大可能是&lt;clinit&gt;调用时进程崩溃/退出, 则不调用&lt;clinit&gt;而直接dump method</span><br>          skip_clinit = <span class="hljs-literal">true</span>;<br>          class_idx = index_num;<br>        &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-built_in">strcmp</span>(status_str, <span class="hljs-string">&quot;Ready&quot;</span>) == <span class="hljs-number">0</span>) &#123;<br>          class_idx = index_num;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>          class_idx = index_num + <span class="hljs-number">1</span>;<br>        &#125;<br>        <span class="hljs-keyword">break</span>;<br>      &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">if</span> (dex == <span class="hljs-literal">nullptr</span>) &#123;<br>      dex = <span class="hljs-built_in">cJSON_CreateObject</span>();<br>      <span class="hljs-built_in">cJSON_AddStringToObject</span>(dex, <span class="hljs-string">&quot;location&quot;</span>, dex_file-&gt;<span class="hljs-built_in">GetLocation</span>().<span class="hljs-built_in">c_str</span>());<br>      <span class="hljs-built_in">cJSON_AddStringToObject</span>(dex, <span class="hljs-string">&quot;dump_path&quot;</span>, <span class="hljs-built_in">getDexDumpPath</span>(dex_file).<span class="hljs-built_in">c_str</span>());<br>      <span class="hljs-built_in">cJSON_AddNumberToObject</span>(dex, <span class="hljs-string">&quot;class_size&quot;</span>, dex_file-&gt;<span class="hljs-built_in">NumClassDefs</span>());<br>      current = <span class="hljs-built_in">cJSON_AddObjectToObject</span>(dex, <span class="hljs-string">&quot;current&quot;</span>);<br>      <span class="hljs-built_in">cJSON_AddNumberToObject</span>(current, <span class="hljs-string">&quot;index&quot;</span>, class_idx);<br>      <span class="hljs-built_in">cJSON_AddStringToObject</span>(current, <span class="hljs-string">&quot;descriptor&quot;</span>, dex_file-&gt;<span class="hljs-built_in">GetClassDescriptor</span>(dex_file-&gt;<span class="hljs-built_in">GetClassDef</span>(class_idx)));<br>      <span class="hljs-built_in">cJSON_AddStringToObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-string">&quot;Ready&quot;</span>);<br>      failures = <span class="hljs-built_in">cJSON_AddArrayToObject</span>(dex, <span class="hljs-string">&quot;failures&quot;</span>);<br>      <span class="hljs-built_in">cJSON_AddItemToArray</span>(dexes, dex);<br>    &#125;<br>    <span class="hljs-built_in">CHECK</span>(current != <span class="hljs-literal">nullptr</span>);<br><br>    mirror::DexCache* dex_cache = class_linker-&gt;<span class="hljs-built_in">FindDexCache</span>(self, *dex_file, <span class="hljs-literal">false</span>);<br>    <span class="hljs-function">StackHandleScope&lt;2&gt; <span class="hljs-title">hs</span><span class="hljs-params">(self)</span></span>;<br>    <span class="hljs-function">Handle&lt;mirror::ClassLoader&gt; <span class="hljs-title">h_class_loader</span><span class="hljs-params">(hs.NewHandle(Unpacker_class_loader_))</span></span>;<br>    <span class="hljs-function">Handle&lt;mirror::DexCache&gt; <span class="hljs-title">h_dex_cache</span><span class="hljs-params">(hs.NewHandle(dex_cache))</span></span>;<br>    <br>    <span class="hljs-keyword">for</span> (; class_idx &lt; dex_file-&gt;<span class="hljs-built_in">NumClassDefs</span>(); class_idx++) &#123;<br>      <span class="hljs-type">const</span> <span class="hljs-type">char</span>* class_descriptor = dex_file-&gt;<span class="hljs-built_in">GetClassDescriptor</span>(dex_file-&gt;<span class="hljs-built_in">GetClassDef</span>(class_idx));<br>      <span class="hljs-built_in">ULOGI</span>(<span class="hljs-string">&quot;dumping class %s %u/%u in %s&quot;</span>, class_descriptor, <br>            class_idx, dex_file-&gt;<span class="hljs-built_in">NumClassDefs</span>(), dex_file-&gt;<span class="hljs-built_in">GetLocation</span>().<span class="hljs-built_in">c_str</span>());<br><br>      <span class="hljs-comment">//Ready</span><br>      <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;index&quot;</span>, <span class="hljs-built_in">cJSON_CreateNumber</span>(class_idx));<br>      <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;descriptor&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(class_descriptor));<br>      <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;Ready&quot;</span>));<br>      <span class="hljs-built_in">writeJson</span>();<br><br>      mirror::Class* klass = class_linker-&gt;<span class="hljs-built_in">ResolveType</span>(*dex_file, dex_file-&gt;<span class="hljs-built_in">GetClassDef</span>(class_idx).class_idx_, h_dex_cache, h_class_loader);<br>      <span class="hljs-keyword">if</span> (klass == <span class="hljs-literal">nullptr</span>) &#123;<br>        <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;ResolveClassFailed&quot;</span>));<br>        std::string reason = <span class="hljs-built_in">StringPrintf</span>(<span class="hljs-string">&quot;ResolveClass error: %s&quot;</span>, self-&gt;<span class="hljs-built_in">GetException</span>()-&gt;<span class="hljs-built_in">Dump</span>().<span class="hljs-built_in">c_str</span>());<br>        cJSON *failure = <span class="hljs-built_in">cJSON_CreateObject</span>();<br>        <span class="hljs-built_in">cJSON_AddNumberToObject</span>(failure, <span class="hljs-string">&quot;index&quot;</span>, class_idx);<br>        <span class="hljs-built_in">cJSON_AddStringToObject</span>(failure, <span class="hljs-string">&quot;descriptor&quot;</span>, dex_file-&gt;<span class="hljs-built_in">GetClassDescriptor</span>(dex_file-&gt;<span class="hljs-built_in">GetClassDef</span>(class_idx)));<br>        <span class="hljs-built_in">cJSON_AddStringToObject</span>(failure, <span class="hljs-string">&quot;reason&quot;</span>, reason.<span class="hljs-built_in">c_str</span>());<br>        <span class="hljs-built_in">cJSON_AddItemToArray</span>(failures, failure);<br>        <span class="hljs-built_in">writeJson</span>();<br>        self-&gt;<span class="hljs-built_in">ClearException</span>();<br>        skip_clinit = <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">continue</span>;<br>      &#125;<br>      <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;Resolved&quot;</span>));<br>      <span class="hljs-built_in">writeJson</span>();<br>      <span class="hljs-function">StackHandleScope&lt;1&gt; <span class="hljs-title">hs2</span><span class="hljs-params">(self)</span></span>;<br>      <span class="hljs-function">Handle&lt;mirror::Class&gt; <span class="hljs-title">h_class</span><span class="hljs-params">(hs<span class="hljs-number">2.</span>NewHandle(klass))</span></span>;<br>      <span class="hljs-keyword">if</span> (!skip_clinit) &#123;<br>        <span class="hljs-type">bool</span> suc = class_linker-&gt;<span class="hljs-built_in">EnsureInitialized</span>(self, h_class, <span class="hljs-literal">true</span>, <span class="hljs-literal">true</span>);<br>        <span class="hljs-keyword">if</span> (!suc) &#123;<br>          <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;EnsureInitializedFailed&quot;</span>));<br>          <span class="hljs-built_in">writeJson</span>();<br>          self-&gt;<span class="hljs-built_in">ClearException</span>();<br>          <span class="hljs-function">ObjectLock&lt;mirror::Class&gt; <span class="hljs-title">lock</span><span class="hljs-params">(self, h_class)</span></span>;<br>          mirror::Class::<span class="hljs-built_in">SetStatus</span>(h_class, mirror::Class::kStatusInitialized, self);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>          <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;Inited&quot;</span>));<br>          <span class="hljs-built_in">writeJson</span>();<br>        &#125;<br>      &#125; <span class="hljs-keyword">else</span> &#123;<br>        ObjectLock&lt;mirror::Class&gt; <span class="hljs-built_in">lock</span>(self, h_class);<br>        mirror::Class::<span class="hljs-built_in">SetStatus</span>(h_class, mirror::Class::kStatusInitialized, self);<br>        skip_clinit = <span class="hljs-literal">false</span>;<br>        <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;Inited&quot;</span>));<br>        <span class="hljs-built_in">writeJson</span>();<br>      &#125;<br>      <br>      <span class="hljs-type">size_t</span> pointer_size = class_linker-&gt;<span class="hljs-built_in">GetImagePointerSize</span>();<br>      <span class="hljs-keyword">auto</span> methods = klass-&gt;<span class="hljs-built_in">GetDeclaredMethods</span>(pointer_size);<br><br>      Unpacker::<span class="hljs-built_in">enableFakeInvoke</span>();<br>      <span class="hljs-keyword">for</span> (<span class="hljs-keyword">auto</span>&amp; m : methods) &#123;<br>        ArtMethod* method = &amp;m;<br>        <span class="hljs-keyword">if</span> (!method-&gt;<span class="hljs-built_in">IsProxyMethod</span>() &amp;&amp; method-&gt;<span class="hljs-built_in">IsInvokable</span>()) &#123;<br>          <span class="hljs-type">uint32_t</span> args_size = (<span class="hljs-type">uint32_t</span>)ArtMethod::<span class="hljs-built_in">NumArgRegisters</span>(method-&gt;<span class="hljs-built_in">GetShorty</span>());<br>          <span class="hljs-keyword">if</span> (!method-&gt;<span class="hljs-built_in">IsStatic</span>()) &#123;<br>            args_size += <span class="hljs-number">1</span>;<br>          &#125;<br>          <br>          JValue result;<br>          <span class="hljs-function">std::vector&lt;<span class="hljs-type">uint32_t</span>&gt; <span class="hljs-title">args</span><span class="hljs-params">(args_size, <span class="hljs-number">0</span>)</span></span>;<br>          <span class="hljs-keyword">if</span> (!method-&gt;<span class="hljs-built_in">IsStatic</span>()) &#123;<br>            mirror::Object* thiz = klass-&gt;<span class="hljs-built_in">AllocObject</span>(self);<br>            args[<span class="hljs-number">0</span>] = StackReference&lt;mirror::Object&gt;::<span class="hljs-built_in">FromMirrorPtr</span>(thiz).<span class="hljs-built_in">AsVRegValue</span>();  <br>          &#125;<br>          method-&gt;<span class="hljs-built_in">Invoke</span>(self, args.<span class="hljs-built_in">data</span>(), args_size, &amp;result, method-&gt;<span class="hljs-built_in">GetShorty</span>());<br>        &#125;<br>      &#125;<br>      Unpacker::<span class="hljs-built_in">disableFakeInvoke</span>();<br><br>      <span class="hljs-built_in">cJSON_ReplaceItemInObject</span>(current, <span class="hljs-string">&quot;status&quot;</span>, <span class="hljs-built_in">cJSON_CreateString</span>(<span class="hljs-string">&quot;Dumped&quot;</span>));<br>      <span class="hljs-built_in">writeJson</span>();<br>    &#125;<br>  &#125;<br>&#125;<br></code></pre></td></tr></table></figure>
+<p>在 <code>invokeAllMethods()</code> 进行前有两项前置工作已经准备好了:获取了当前进程的所有业务 dex；拿到了 当前 app 的 class loader</p>
+<p>然后进行了两层遍历，外层遍历每个 dex，内层遍历这个 dex 中的每个类，在这个过程中，每个 class 会经历 Ready -&gt; Resolved -&gt; Inited -&gt; Dumped 这样的流程，如果失败就还有 ResolveClassFailed 和 EnsureInitializedFailed 两个状态；这样设计的目的是每处理一个 class，都把状态写进 json，如果遇到中断了，下次就能接着中断的位置继续处理</p>
+<blockquote>
+<p>Resolved 说明这个类已经 <code>ResolveType()</code> 成功了；<code>Init</code> 说明这个类已经 <code>EnsureInitialized()</code> 成功了；<code>Dumped</code> 说明这个类的方法已经被 fake invoke 过了</p>
+</blockquote>
+<p>总体其实是这个流程</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs smali">Ready<br>  ↓<br>ResolveType<br>  ├─ 失败 → ResolveClassFailed<br>  └─ 成功 → Resolved<br>              ↓<br>        EnsureInitialized<br>          ├─ 失败 → EnsureInitializedFailed<br>          └─ 成功 → Inited<br>                        ↓<br>                 <span class="hljs-built_in"> invoke </span>all methods<br>                        ↓<br>                     Dumped<br></code></pre></td></tr></table></figure>
+<p>其中的 <code>invoke all methods</code> 是取出类的 declared method,遍历，过滤掉代理方法和不可调用的方法，之后的 <code>method-&gt;Invoke(self, args.data(), args_size, &amp;result, method-&gt;GetShorty());</code> 就是真正的 invoke,把当前方法按照 ART 的调用机制执行一遍</p>
+<p>fake invoke 的核心作用有两个，一是让非 native 方法强制走解释器，二是让 native 方法不要真的执行</p>
+<p>在 unpacker_art.diff 中，改了 <code>ArtMethod::Invoke</code>，加了两个关键分支：</p>
+<figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs diff">// If the runtime is not yet started or it is required by the debugger, then perform the<br>   // Invocation by the interpreter, explicitly forcing interpretation over JIT to prevent<br>   // cycling around the various JIT/Interpreter methods that handle method invocation.<br><span class="hljs-deletion">-  if (UNLIKELY(!runtime-&gt;IsStarted() || Dbg::IsForcedInterpreterNeededForCalling(self, this))) &#123;</span><br><span class="hljs-addition">+  //patch by Youlor</span><br><span class="hljs-addition">+  //++++++++++++++++++++++++++++</span><br><span class="hljs-addition">+  //如果是主动调用fake invoke并且不是native方法则强制走解释器</span><br><span class="hljs-addition">+  if (UNLIKELY(!runtime-&gt;IsStarted() || Dbg::IsForcedInterpreterNeededForCalling(self, this) </span><br><span class="hljs-addition">+      || (Unpacker::isFakeInvoke(self, this) &amp;&amp; !this-&gt;IsNative()))) &#123;</span><br><span class="hljs-addition">+  //++++++++++++++++++++++++++++</span><br>     if (IsStatic()) &#123;<br>       art::interpreter::EnterInterpreterFromInvoke(<br>           self, this, nullptr, args, result, /*stay_in_interpreter*/ true);<br><span class="hljs-meta">@@ -266,6 +276,15 @@</span> void ArtMethod::Invoke(Thread* self, uint32_t* args, uint32_t args_size, JValue*<br>           self, this, receiver, args + 1, result, /*stay_in_interpreter*/ true);<br>     &#125;<br>   &#125; else &#123;<br><span class="hljs-addition">+    //patch by Youlor</span><br><span class="hljs-addition">+    //++++++++++++++++++++++++++++</span><br><span class="hljs-addition">+    //如果是主动调用fake invoke并且是native方法则不执行</span><br><span class="hljs-addition">+    if (Unpacker::isFakeInvoke(self, this) &amp;&amp; this-&gt;IsNative()) &#123;</span><br><span class="hljs-addition">+      // Pop transition.</span><br><span class="hljs-addition">+      self-&gt;PopManagedStackFragment(fragment);</span><br><span class="hljs-addition">+      return;</span><br><span class="hljs-addition">+    &#125;</span><br><span class="hljs-addition">+    //++++++++++++++++++++++++++++</span><br>     DCHECK_EQ(runtime-&gt;GetClassLinker()-&gt;GetImagePointerSize(), sizeof(void*));<br></code></pre></td></tr></table></figure>
+<p>如果这是 fake invoke，而且方法不是 native，就强制通过 EnterInterpreterFromInvoke() 进解释器</p>
+<p>另外如果是 fake invoke，但目标方法是 native，那就直接 return，根本不要执行</p>
+<p>总结下来，一个方法从被扫到到被 dump 出来，经历的流程是这样的：</p>
+<ul>
+<li><code>invokeAllMethods()</code> 找到一个方法，执行 <code>method-&gt;Invoke()</code></li>
+<li>因为当前处于 <code>fake invoke</code> 状态，<code>ArtMethod::Invoke</code> 不走正常编译路径，强制走解释器</li>
+<li>解释器开始执行这个方法的 dex 指令</li>
+<li>每执行一条指令前，会调用 <code>beforeInstructionExecute()</code>,判断现在是否拿到了真实代码</li>
+<li>如果拿到了就 <code>dumpMethod()</code>,直接结束这次解释执行</li>
+</ul>
+<p>默认是使用 fake invoke,只在识别到特定的壳时就会切到 real invoke,因为一般情况下当这个方法第一次被执行到时，运行时已经能拿到真实 CodeItem，或者很快就能拿到，直接 dumpMethod 就行，而部分壳的方法入口不是原始业务代码，而是先跳走，跳到一段壳自己的逻辑，运行完后再跳回原始代码区域，所以就得先让它沿着壳 stub 跑几步，等中间那个关键调用执行完，真实代码才暴露出来</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-comment">//继续解释执行返回false, dump完成返回true</span><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">Unpacker::beforeInstructionExecute</span><span class="hljs-params">(Thread *self, ArtMethod *method, <span class="hljs-type">uint32_t</span> dex_pc, <span class="hljs-type">int</span> inst_count)</span> </span>&#123;<br>  <span class="hljs-keyword">if</span> (Unpacker::<span class="hljs-built_in">isFakeInvoke</span>(self, method)) &#123;<br>    <span class="hljs-type">const</span> <span class="hljs-type">uint16_t</span>* <span class="hljs-type">const</span> insns = method-&gt;<span class="hljs-built_in">GetCodeItem</span>()-&gt;insns_;<br>    <span class="hljs-type">const</span> Instruction* inst = Instruction::<span class="hljs-built_in">At</span>(insns + dex_pc);<br>    <span class="hljs-type">uint16_t</span> inst_data = inst-&gt;<span class="hljs-built_in">Fetch16</span>(<span class="hljs-number">0</span>);<br>    Instruction::Code opcode = inst-&gt;<span class="hljs-built_in">Opcode</span>(inst_data);<br><br>    <span class="hljs-comment">//对于一般的方法抽取(非ijiami, najia), 直接在第一条指令处dump即可</span><br>    <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">0</span> &amp;&amp; opcode != Instruction::GOTO &amp;&amp; opcode != Instruction::GOTO_16 &amp;&amp; opcode != Instruction::GOTO_32) &#123;<br>      Unpacker::<span class="hljs-built_in">dumpMethod</span>(method);<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    <span class="hljs-comment">//ijiami, najia的特征为: goto: goto_decrypt; nop; ... ; return; const vx, n; invoke-static xxx; goto: goto_origin;</span><br>    <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">0</span> &amp;&amp; opcode &gt;= Instruction::GOTO &amp;&amp; opcode &lt;= Instruction::GOTO_32) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">1</span> &amp;&amp; opcode &gt;= Instruction::CONST_4 &amp;&amp; opcode &lt;= Instruction::CONST_WIDE_HIGH16) &#123;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">2</span> &amp;&amp; (opcode == Instruction::INVOKE_STATIC || opcode == Instruction::INVOKE_STATIC_RANGE)) &#123;<br>      <span class="hljs-comment">//让这条指令真正的执行</span><br>      Unpacker::<span class="hljs-built_in">disableFakeInvoke</span>();<br>      Unpacker::<span class="hljs-built_in">enableRealInvoke</span>();<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">3</span>) &#123;<br>      <span class="hljs-keyword">if</span> (opcode &gt;= Instruction::GOTO &amp;&amp; opcode &lt;= Instruction::GOTO_32) &#123;<br>        <span class="hljs-comment">//写入时将第一条GOTO用nop填充</span><br>        <span class="hljs-type">const</span> Instruction* inst_first = Instruction::<span class="hljs-built_in">At</span>(insns);<br>        Instruction::Code first_opcode = inst_first-&gt;<span class="hljs-built_in">Opcode</span>(inst-&gt;<span class="hljs-built_in">Fetch16</span>(<span class="hljs-number">0</span>));<br>        <span class="hljs-built_in">CHECK</span>(first_opcode &gt;= Instruction::GOTO &amp;&amp; first_opcode &lt;= Instruction::GOTO_32);<br>        <span class="hljs-built_in">ULOGD</span>(<span class="hljs-string">&quot;found najia/ijiami %s&quot;</span>, <span class="hljs-built_in">PrettyMethod</span>(method).<span class="hljs-built_in">c_str</span>());<br>        <span class="hljs-keyword">switch</span> (first_opcode)<br>        &#123;<br>        <span class="hljs-keyword">case</span> Instruction::GOTO:<br>          Unpacker::<span class="hljs-built_in">dumpMethod</span>(method, <span class="hljs-number">2</span>);<br>          <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> Instruction::GOTO_16:<br>          Unpacker::<span class="hljs-built_in">dumpMethod</span>(method, <span class="hljs-number">4</span>);<br>          <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">case</span> Instruction::GOTO_32:<br>          Unpacker::<span class="hljs-built_in">dumpMethod</span>(method, <span class="hljs-number">8</span>);<br>          <span class="hljs-keyword">break</span>;<br>        <span class="hljs-keyword">default</span>:<br>          <span class="hljs-keyword">break</span>;<br>        &#125;<br>      &#125; <span class="hljs-keyword">else</span> &#123;<br>        Unpacker::<span class="hljs-built_in">dumpMethod</span>(method);<br>      &#125;<br>      <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>    &#125;<br>    Unpacker::<span class="hljs-built_in">dumpMethod</span>(method);<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br><br><span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">Unpacker::afterInstructionExecute</span><span class="hljs-params">(Thread *self, ArtMethod *method, <span class="hljs-type">uint32_t</span> dex_pc, <span class="hljs-type">int</span> inst_count)</span> </span>&#123;<br>  <span class="hljs-type">const</span> <span class="hljs-type">uint16_t</span>* <span class="hljs-type">const</span> insns = method-&gt;<span class="hljs-built_in">GetCodeItem</span>()-&gt;insns_;<br>  <span class="hljs-type">const</span> Instruction* inst = Instruction::<span class="hljs-built_in">At</span>(insns + dex_pc);<br>  <span class="hljs-type">uint16_t</span> inst_data = inst-&gt;<span class="hljs-built_in">Fetch16</span>(<span class="hljs-number">0</span>);<br>  Instruction::Code opcode = inst-&gt;<span class="hljs-built_in">Opcode</span>(inst_data);<br>  <span class="hljs-keyword">if</span> (inst_count == <span class="hljs-number">2</span> &amp;&amp; (opcode == Instruction::INVOKE_STATIC || opcode == Instruction::INVOKE_STATIC_RANGE) <br>      &amp;&amp; Unpacker::<span class="hljs-built_in">isRealInvoke</span>(self, method)) &#123;<br>    Unpacker::<span class="hljs-built_in">enableFakeInvoke</span>();<br>    Unpacker::<span class="hljs-built_in">disableRealInvoke</span>();<br>  &#125;<br>  <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>&#125;<br></code></pre></td></tr></table></figure>
+<h5 id="dump-method">dump method</h5>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-type">uint32_t</span> index = method-&gt;<span class="hljs-built_in">GetDexMethodIndex</span>();<br>std::string str_name = <span class="hljs-built_in">PrettyMethod</span>(method);<br><span class="hljs-type">const</span> DexFile::CodeItem* code_item = method-&gt;<span class="hljs-built_in">GetCodeItem</span>();<br><span class="hljs-type">uint32_t</span> code_item_size = (<span class="hljs-type">uint32_t</span>)Unpacker::<span class="hljs-built_in">getCodeItemSize</span>(method);<br><br></code></pre></td></tr></table></figure>
+<h5 id="unpack">unpack()</h5>
+<p>最终入口 unpack() 只有 4 步：初始化环境，收集整体 dex，主动收集真实方法体，回收状态</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs cpp"><span class="hljs-built_in">init</span>()<br><span class="hljs-built_in">dumpAllDexes</span>()<br><span class="hljs-built_in">invokeAllMethods</span>()<br><span class="hljs-built_in">fini</span>()<br></code></pre></td></tr></table></figure>
+<h4 id="修补-dex">修补 dex</h4>
+<p>之后对于 dump 出来的 dex 进行修复，回填 CodeItem，生成最终的 dex 文件</p>
+<p>根据上面的工作，已经获得了整体的 dex 骨架，里面有：string/type/proto/method/class 索引、class defs、method ids，但很多方法体可能还是不完整的，就需要通过 _codeitem.bin 即来自运行时 dump 的真实方法体，含有 methodIndex、方法签名字符串<br>
+、codeItemSize、完整 CodeItem，按 methodIndex 找到 dex 里的那个方法，把它原来的 code section 替换成 dump 出来的真实 CodeItem</p>
+<h3 id="参考">参考</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/Youlor/unpacker/tree/master">unpacker</a><br>
+<a target="_blank" rel="noopener" href="https://github.com/hanbinglengyue/FART">FART</a><br>
+<a target="_blank" rel="noopener" href="https://cs.android.com/android/platform/superproject/+/android-16.0.0_r1:">Android 16 source code</a></p>
+<link rel="stylesheet" href="/css/spoiler.css" type="text/css"><script src="/js/spoiler.js" type="text/javascript" async></script>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Android/" class="print-no-link">#Android</a>
+      
+        <a href="/tags/Fart/" class="print-no-link">#Fart</a>
+      
+        <a href="/tags/%E8%84%B1%E5%A3%B3/" class="print-no-link">#脱壳</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Fart -- 基于主动 ART 主动调用脱壳学习</div>
+      <div>http://example.com/2026/04/08/fart/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Eleven</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月8日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/01/solve_two_branch_jump/" title="BN IL 层解决多条件控制的双分支间接跳转">
+                        <span class="hidden-mobile">BN IL 层解决多条件控制的双分支间接跳转</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -40,7 +40,7 @@
 <meta property="og:image" content="http://example.com/2026/04/01/images/solve_two_branch_jump/fla.png">
 <meta property="og:image" content="http://example.com/2026/04/01/images/solve_two_branch_jump/wkflow.png">
 <meta property="article:published_time" content="2026-03-31T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-04-06T08:47:47.064Z">
+<meta property="article:modified_time" content="2026-04-06T15:43:42.037Z">
 <meta property="article:author" content="Eleven">
 <meta property="article:tag" content="Android">
 <meta property="article:tag" content="间接跳转">
@@ -320,7 +320,7 @@
 <p>这一处间接跳转有三个 <code>cond</code>， 分别是 <code>x23 != 0</code>, <code>x28 != 0</code>,<code>x27 != 0</code>,再往前看这三个变量，发现它们被初始化为同一个来自 <code>var_4b1</code> 的值</p>
 <p>所以本质上这三个条件是<strong>等价的</strong>，都是在判断 <code>var_4b1 != 0</code>，而最终跳转的目标地址也只有<strong>两个</strong>，当条件为真时的 TrueAddr 和条件为假时的 FalseAddr</p>
 <h2 id="mlil-层处理">mlil 层处理</h2>
-<p>选择在 mlil 层处理的原因是 patch 汇编需要顾及的问题太多，如果遇到复杂的混淆，容易遇到修改空间不足或者坏程序的控制流或数据流等问题，而直接修改 il 的话可以随意添加任意数量的指令来实现想要的功能，并且 mlil 也更易阅读和理解逻辑</p>
+<p>选择在 mlil 层处理的原因是 patch 汇编需要顾及的问题太多，如果遇到复杂的混淆，容易遇到修改空间不足或者破坏程序的控制流或数据流等问题，而直接修改 il 的话可以随意添加任意数量的指令来实现想要的功能，并且 mlil 也更易阅读和理解逻辑</p>
 <p>同时 il 层还能看 SSA 形式的变量，方便做数据流追踪</p>
 <blockquote>
 <p>SSA （静态单赋值）是指每个变量只被赋值一次，每次赋值都会创建一个新的变量版本</p>
@@ -339,7 +339,7 @@
 <p>把每个 SSA 变量对应到它的来源表达式（或 phi 节点），同时建立地址到指令的索引</p>
 <figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs py">ssa_defs = &#123;&#125;<br>addr_insn_ssa = &#123;&#125;<br>addr_insn_non_ssa = &#123;&#125;<br><br><span class="hljs-keyword">for</span> bb <span class="hljs-keyword">in</span> mlil_ssa.basic_blocks:<br>    <span class="hljs-keyword">for</span> insn <span class="hljs-keyword">in</span> bb:<br>        addr_insn_ssa[insn.address] = insn<br>        <span class="hljs-keyword">if</span> insn.operation == Op.MLIL_SET_VAR_SSA:<br>            ssa_defs[insn.dest] = insn.src<br>        <span class="hljs-keyword">elif</span> insn.operation == Op.MLIL_VAR_PHI:<br>            ssa_defs[insn.dest] = insn<br></code></pre></td></tr></table></figure>
 <p><code>ssa_defs</code> 记录 SSA 变量的定义表达式，<code>addr_insn_ssa</code> 和 <code>addr_insn_non_ssa</code> 分别记录 SSA 和非 SSA 形式的指令地址到指令对象的映射</p>
-<p>遍历 mlil ssa，如果是普通赋值比如 <code>x8#3 = expr</code> 就记录 <code>ssa_defs[x8#3] = expr</code>，如果是 phi 函数 <code>x8#4 = phi(x8#2, x8#3)</code> 就记录 <code>ssa_defs[x8#4] = phi(x8#2, x8#3)</code></p>
+<p>遍历 mlil ssa，如果是普通赋值比如 <code>x8#3 = expr</code> 就记录 <code>ssa_defs[x8#3] = expr</code>，如果是 phi 函数比如 <code>x8#4 = phi(x8#2, x8#3)</code> 就记录 <code>ssa_defs[x8#4] = phi(x8#2, x8#3)</code></p>
 <blockquote>
 <p>phi 函数是 SSA 形式中用来合并不同控制流路径上同一变量的不同版本的特殊函数，表示在某个控制流汇合点上变量的值可能来自多个不同前驱</p>
 </blockquote>
@@ -577,6 +577,12 @@
                 <div class="post-prevnext my-3">
                   <article class="post-prev col-6">
                     
+                    
+                      <a href="/2026/04/08/fart/" title="Fart -- 基于主动 ART 主动调用脱壳学习">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Fart -- 基于主动 ART 主动调用脱壳学习</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
                     
                   </article>
                   <article class="post-next col-6">
