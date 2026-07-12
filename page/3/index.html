@@ -239,6 +239,69 @@
     <article class="col-12 col-md-12 mx-auto index-info">
       <h2 class="index-header">
         
+        <a href="/2025/09/04/Anti-debugging(1)/" target="_self">
+          windows 反调试
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt index-excerpt__noimg" href="/2025/09/04/Anti-debugging(1)/" target="_self">
+        <div>
+          API 反调试 IsDebuggerPresent 一个很简单的函数，用于检测当前进程是否被调试  函数原型  1BOOL IsDebuggerPresent(); 如果当前进程运行在调试器的上下文中，返回值为非零值，否则返回值为零  工作原理  每个 Windows 进程中都有一个叫进程环境块（Process Environment Block, PEB）的内核数据结构，
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2025-09-04 00:00" pubdate>
+              2025-09-04
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/Notes/" class="category-chain-item">Notes</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Reverse/">#Reverse</a>
+            
+              <a href="/tags/Anti-debugging/">#Anti-debugging</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+    <article class="col-12 col-md-12 mx-auto index-info">
+      <h2 class="index-header">
+        
         <a href="/2025/08/26/NPCCTF2025/" target="_self">
           NPC²CTF 2025 Reverse 方向复现
         </a>
@@ -247,7 +310,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/26/NPCCTF2025/" target="_self">
         <div>
-          Week1 esrever 主逻辑 ida 中点击发现在 main 和 start 之间无限跳转，搜索字符串再 x 交叉引用到关键汇编，发现这部分汇编全部飘红，反编译失败 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616
+          Week1 esrever 主逻辑 ida 中点击发现在 main 和 start 之间无限跳转，搜索字符串再 x 交叉引用到关键汇编，发现这部分汇编全部飘红，反编译失败 1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859
         </div>
       </a>
 
@@ -308,7 +371,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/25/NSSCTF2025/" target="_self">
         <div>
-          checkit java 层 附件是 apk, java 层没什么东西 MainActivity 如下,关键在于调用了本地方法 checkInput 123456789101112131415161718192021222324252627282930313233package com.test.ezre;import android.os.Bundle;import android.view.V
+          checkit java 层 附件是 apk, java 层没什么东西 MainActivity 如下,关键在于调用了本地方法 checkInput 123456789101112131415161718192021222324252627282930313233package com.test.ezre;import android.os.Bundle;import android.vi
         </div>
       </a>
 
@@ -369,7 +432,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/17/LilCTF2025/" target="_self">
         <div>
-          Reverse obfusheader.h 控制流混淆，题目中有给提示跟踪数据流 附件用 ida 打开之后有花指令和很多未识别成代码的数据，花指令的结构都是类似的一种  在标签处(loc_14000C392)按 U,得到 12345.text:000000014000C390                 jz      short near ptr unk_14000C393.text:000
+          Reverse obfusheader.h 控制流混淆，题目中有给提示跟踪数据流 附件用 ida 打开之后有花指令和很多未识别成代码的数据，花指令的结构都是类似的一种  在标签处(loc_14000C392)按 U,得到 12345.text:000000014000C390                 jz      short near ptr unk_14000C393.t
         </div>
       </a>
 
@@ -432,7 +495,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/08/01/llvm/" target="_self">
         <div>
-          写在前面 这篇文章的前半部分包括写的环境搭建都是基于 LLVM 源码的构建方式，重点在于帮助了解 llvm 的结构，如果目的只是编写 Pass 的话，直接跳到 自己编写 LLVM Pass 部分即可 LLVM 环境搭建 由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https://github.com/llvm/llvm-project.git 里面
+          写在前面 这篇文章的前半部分包括写的环境搭建都是基于 LLVM 源码的构建方式，重点在于帮助了解 llvm 的结构，如果目的只是编写 Pass 的话，直接跳到 自己编写 LLVM Pass 部分即可 LLVM 环境搭建 由于我的 Ubuntu 版本不够，无法直接 apt install llvm-20,所以就去 https://github.com/llvm/llvm-project.
         </div>
       </a>
 
@@ -493,7 +556,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/21/cuda/" target="_self">
         <div>
-          写在前面 CUDA (Compute Unified Device Architecture) 是由 NVIDIA 开发的一种并行计算平台和编程模型；它允许软件开发者和研究人员利用 NVIDIA GPU 的强大并行处理能力来加速通用计算任务，而不仅仅局限于图形渲染 cuda 逆向本身不难，一般是使用 cuobjump 来获得 ptx 汇编 ，根据汇编理出加密逻辑最后进行解密即可 PTX 基础知识
+          写在前面 CUDA (Compute Unified Device Architecture) 是由 NVIDIA 开发的一种并行计算平台和编程模型；它允许软件开发者和研究人员利用 NVIDIA GPU 的强大并行处理能力来加速通用计算任务，而不仅仅局限于图形渲染 cuda 逆向本身不难，一般是使用 cuobjump 来获得 ptx 汇编 ，根据汇编理出加密逻辑最后进行解密即可 PTX
         </div>
       </a>
 
@@ -556,7 +619,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/20/XYCTF2025/" target="_self">
         <div>
-          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 123456VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123; //DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserved:
+          CrackMe ida 打开看到 WinMain 函数，同时注意到有一个 TlsCallback_0 函数 123456VOID NTAPI TlsCallback(PVOID DllHandle, DWORD dwReason, PVOID Reserved) &#123; //DllHandle:对于 exe 是进程句柄，对于 dll 是模块句柄；dwReason:回调原因；Reserve
         </div>
       </a>
 
@@ -617,7 +680,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/15/pyd/" target="_self">
         <div>
-          what’s pyd .pyd 文件本质上是一个 Windows 的 DLL 文件, 通过 C/C++ 编译器（如 MSVC）把 C/C++ 代码编译成二进制形式，实现了 Python 扩展模块的接口，可以通过 import xxx 的方式像普通的 .py 文件那样导入使用 preparation 先在 windows 下自己编译一个带有调试信息的 pyd 文件，主要用于后续 bindiff 比较
+          what’s pyd .pyd 文件本质上是一个 Windows 的 DLL 文件, 通过 C/C++ 编译器（如 MSVC）把 C/C++ 代码编译成二进制形式，实现了 Python 扩展模块的接口，可以通过 import xxx 的方式像普通的 .py 文件那样导入使用 preparation 先在 windows 下自己编译一个带有调试信息的 pyd 文件，主要用于后续 bin
         </div>
       </a>
 
@@ -680,7 +743,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/07/02/android_note/" target="_self">
         <div>
-          安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) Binder 工作原理 通过 Binder，Android 可以跨越不同进程和内存空间进行数据交换和调用远程方法 当进程 A 想要获取进程 B 中某个对象的方法时，它先通过 Binder 获取 B 的接口对象，这个接口对象其实就是 B 中服
+          安卓四大组件 Activity(活动)、Service(服务)、BroadcastReceiver(广播接收者)、ContentProvider(内容提供者) Binder 工作原理 通过 Binder，Android 可以跨越不同进程和内存空间进行数据交换和调用远程方法 当进程 A 想要获取进程 B 中某个对象的方法时，它先通过 Binder 获取 B 的接口对象，这个接口对象其实就
         </div>
       </a>
 
@@ -741,7 +804,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2025/05/24/vm/" target="_self">
         <div>
-          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32_t edx
+          [GWCTF 2019]babyvm 修结构体 ida 中查看 main 函数，点进 sub_CD1 里  前4个字段：写入4个32位整数（DWORD），偏移分别为0, 4, 8, 12,这是在设置寄存器 1234uint32_t eax;    // 偏移 0uint32_t ebx;    // 偏移 4 (初始值为18)uint32_t ecx;    // 偏移 8uint32
         </div>
       </a>
 
@@ -751,67 +814,6 @@
             <i class="iconfont icon-date"></i>
             <time datetime="2025-05-24 00:00" pubdate>
               2025-05-24
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/CTF/" class="category-chain-item">CTF</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/Reverse/">#Reverse</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-    <article class="col-12 col-md-12 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2025/05/03/XYCTF2024/" target="_self">
-          XYCTF 2024 Reverse 方向复现
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt index-excerpt__noimg" href="/2025/05/03/XYCTF2024/" target="_self">
-        <div>
-          你是真的大学生吗? 附件是MS-DOS executable (EXE)文件，ida 不能反编译，硬看汇编  解密脚本 123456789101112131415161718192021222324252627&#x27;&#x27;&#x27;T[20]=C[20]^C[0]al=T[20]T[19]=C[19]^al即T[19]=C[19]^T[20]al=T[19]T[18]=C[18]^a
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2025-05-03 00:00" pubdate>
-              2025-05-03
             </time>
           </div>
         
